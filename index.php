@@ -25,7 +25,7 @@ echo $OUTPUT->heading(get_string('status', 'local_linkchecker_robot'));
 
 $action           = optional_param('action', '', PARAM_ALPHANUMEXT);
 $config = get_config('local_linkchecker_robot');
-$crawlstarted = $config->crawlstarted;
+$crawlstarted = property_exists($config, 'crawlstarted') ? $config->crawlstarted : 0;
 
 $robot = new \local_linkchecker_robot\robot\crawler();
 
@@ -43,7 +43,7 @@ $boterror = $robot->is_bot_valid();
 ?>
 
 <table>
-<tr><td>Bot user <td><?php echo $boterror ? $boterror : 'Good: ' .$botuser->username ?>
+<tr><td>Bot user <td><?php echo $boterror ? $boterror : 'Good' ?>
 <tr><td>Current crawl started at <td><?php echo $crawlstarted ? userdate( $crawlstarted) : 'Never run' ?>
 <tr><td> how many in the queue
 <tr><td> how many expected in the queue (ie from last time)

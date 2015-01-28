@@ -63,6 +63,11 @@ if ($hassiteconfig) {
                                                     new lang_string('botpassworddesc',   'local_linkchecker_robot'),
                                                     'moodlebot' ));
 
+        $settings->add(new admin_setting_configtext('local_linkchecker_robot/useragent',
+                                                    new lang_string('useragent',         'local_linkchecker_robot'),
+                                                    new lang_string('useragentdesc',     'local_linkchecker_robot'),
+                                                    'MoodleLinkChecker' ));
+
         $settings->add(new admin_setting_configtextarea('local_linkchecker_robot/excludeexturl',
                                                     new lang_string('excludeexturl',     'local_linkchecker_robot'),
                                                     new lang_string('excludeexturldesc', 'local_linkchecker_robot'),

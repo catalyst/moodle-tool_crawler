@@ -38,6 +38,6 @@ $PAGE->set_heading($header);
 
 echo $OUTPUT->header();
 
-echo "Hello robot!";
+echo "Hello robot: '$USER->username'";
 
 echo $OUTPUT->footer();

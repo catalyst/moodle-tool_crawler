@@ -37,6 +37,8 @@ $string['botusername'] = 'Bot username';
 $string['botusernamedesc'] = 'The username of the moodle user to crawl as';
 $string['botpassword'] = 'Bot password';
 $string['botpassworddesc'] = 'The password of the moodle user to crawl as. This user should have site wide view permission, but very limited edit permissions, and be configured to use basic auth.';
+$string['useragent'] = 'Bot user agent string';
+$string['useragentdesc'] = 'The User agent string it use in the http headers + the version of this plugin';
 $string['excludeexturl'] = 'Exclude external URL\'s';
 $string['excludeexturldesc'] = 'One url regex per line, each is matched against the full url';
 $string['excludemdlurl'] = 'Exclude moodle URL\'s';
@@ -45,7 +47,7 @@ $string['excludemdldom'] = 'Exclude moodle DOM\'s';
 $string['excludemdldomdesc'] = 'One xpath expression per line, these parts of the DOM will be removed before links are extracted';
 $string['maxtime'] = 'Max execution time';
 $string['maxtimedesc'] = 'The timeout for each crawl request';
-$string['maxcrontime'] = 'Max execution time in seconds';
-$string['maxcrontimedesc'] = 'A soft limit to how much time the robot will spend on each cron run across multiple crawls, NOT each url. In seconds';
+$string['maxcrontime'] = 'Cron run limit';
+$string['maxcrontimedesc'] = 'The crawler will keep crawling until this limit is hit on each cron tick. In seconds';
 
 
