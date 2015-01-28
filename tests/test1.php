@@ -1,5 +1,6 @@
 <?php
-/* This file is part of Moodle - http://moodle.org/
+
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,9 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
- * Defines the version of local_linkchecker_robot
+ * A test authenticated page that we can check over the network
  *
  * @package    local_linkchecker_robot
  * @author     Brendan Heywood <brendan@catalyst-au.net>
@@ -24,9 +24,20 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+require_once(dirname(dirname(dirname(__FILE__))) . '/../config.php');
 
-$plugin->version   = 2015019100;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2013110500;        // Requires this Moodle version
-$plugin->component = 'local_linkchecker_robot'; // To check on upgrade, that module sits in correct place
+require_login();
 
+$header = 'Hello robot!';
+
+$context = context_user::instance($USER->id);
+$PAGE->set_context($context);
+$PAGE->set_url('/local/linkchecker_robot/tests/test1.php');
+$PAGE->set_title($header);
+$PAGE->set_heading($header);
+
+echo $OUTPUT->header();
+
+echo "Hello robot!";
+
+echo $OUTPUT->footer();

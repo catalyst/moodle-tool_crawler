@@ -25,9 +25,58 @@
 
 namespace local_linkchecker_robot\robot;
 
-#require_once("$CFG->dirroot/local/linkchecker_robot/lib.php");
+require_once($CFG->dirroot.'/local/linkchecker_robot/lib.php');
+require_once($CFG->dirroot.'/user/lib.php');
 
 class crawler {
+
+    /*
+     * checks that the bot user exists and password works etc
+     * returns true, or a error string
+     */
+    public function is_bot_valid() {
+
+        global $DB;
+
+        $config = get_config('local_linkchecker_robot');
+        $botusername  = $config->botusername;
+        if (!$botusername){
+            return 'CONFIG MISSING';
+        }
+        if (!$botuser = $DB->get_record('user', array('username'=>$botusername) )) {
+            return 'BOT USER MISSING <a href="?action=makebot">Auto create</a>';
+        }
+        // check auth?
+        // check password?
+
+        // do a test crawl over the network
+    }
+
+    /*
+     *
+     */
+    public function auto_create_bot() {
+
+        global $DB;
+
+        $config = get_config('local_linkchecker_robot');
+        $botusername  = $config->botusername;
+        $botuser = $DB->get_record('user', array('username'=>$botusername) );
+        if ($botuser){
+            return $botuser;
+        } else {
+            $botuser = (object) array();
+            $botuser->username  = $botusername;
+            $botuser->password  = hash_internal_user_password($config->botpassword);
+            $botuser->firstname = 'Link checker';
+            $botuser->lastname  = 'Robot';
+            $botuser->auth      = 'basic';
+
+            $botuser->id = user_create_user($botuser, false, false);
+
+            return $botuser;
+        }
+    }
 
     /*
      * crawls a single url and then passes it off to a mime type handler
