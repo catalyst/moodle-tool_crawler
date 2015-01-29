@@ -27,7 +27,7 @@ namespace local_linkchecker_robot\task;
 
 require_once("$CFG->dirroot/local/linkchecker_robot/lib.php");
 
-class sync_task extends \core\task\scheduled_task {
+class crawl_task extends \core\task\scheduled_task {
 
     public function get_name() {
         return get_string('pluginname', 'local_linkchecker_robot');

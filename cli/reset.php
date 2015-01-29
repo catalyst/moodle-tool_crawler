@@ -36,6 +36,7 @@ global $DB;
 $DB->delete_records('config_plugins',  array('plugin'=>'local_linkchecker_robot','name' =>'crawlstart') );
 
 // delete all url's from the DB
+$DB->delete_records('linkchecker_url');
 // delete all links from the DB
 
 // kill robot cookies?

@@ -37,9 +37,9 @@ function local_linkchecker_robot_crawl() {
     if (!$crawlstart ) {
 
         $start = time();
-        $robot->crawl($config->seedurl);
         $DB->insert_record('config_plugins', array('plugin'=>'local_linkchecker_robot','name' =>'crawlstart', 'value'=>$start) );
-        print "Started a new crawl of {$config->seedurl} at " . userdate($start) . "\n";
+        $robot->mark_for_crawl($config->seedurl);
+        print "Added seed url {$config->seedurl} to queue " . userdate($start) . "\n";
 
     }
 
@@ -47,6 +47,16 @@ function local_linkchecker_robot_crawl() {
     // find the next url in the queue and crawl it
 
     // if the queue is empty then mark the crawl as ended
+
+    $hasmore = true;
+    while ($hasmore){
+
+        $hasmore = $robot->process_queue();
+        $hasmore = false;
+    }
+
+    // find urls which are have lastcrawled = null, OR lastcrawled < needs crawl
+
 
 
 }

@@ -1,18 +1,8 @@
 
 
 * make a settings page
- - auth method (one driver per auth pluin, only do basic)
- - what is the crawl user / password
- - what is the seed url
- - exclusion urls
  - query params to strip
  - last full scrape starting at seed url
-
- - auth tester
-
- - crawler settings
- - max crawls per cron tick
- - robot user agent string
 
  - crawler status
    - how many urls have been crawled this time?
@@ -45,8 +35,8 @@
 * make an edge table
  - from id
  - to id
- - course id
- - 
+ - link text
+
 
  - last seen timestamp
  - link context, is the link in a block? if so what is the block id
