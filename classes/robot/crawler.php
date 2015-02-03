@@ -340,7 +340,7 @@ class crawler {
             }
 
             // TODO find some context of the link, like the nearest id
-            $this->link_from_node_to_url($node, $href);
+            $this->link_from_node_to_url($node, $href, $e->innertext);
         }
 
         // Store some context about where we are
@@ -368,7 +368,7 @@ class crawler {
      * upserts a link between two nodes in the url graph
      * if the url is invalid returns false
      */
-    private function link_from_node_to_url($from, $url){
+    private function link_from_node_to_url($from, $url, $text){
 
         global $DB;
 
@@ -384,10 +384,12 @@ class crawler {
             $link->a       = $from->id;
             $link->b       = $to->id;
             $link->lastmod = time();
+            $link->text    = $text;
             $link->id = $DB->insert_record('linkchecker_edge', $link);
         } else {
 //e('up lnk');
             $link->lastmod = time();
+            $link->text    = $text;
             $DB->update_record('linkchecker_edge', $link);
         }
         return $link;

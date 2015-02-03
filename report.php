@@ -38,6 +38,7 @@ if ($report == 'broken') {
          WHERE b.httpcode != ?";
     $data  = $DB->get_records_sql("SELECT b.id,
                                           b.url broken,
+                                          l.text,
                                           a.*,
                                           c.shortname"       . $sql, array('200'), $start, $perpage);
     $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, array('200'));
@@ -46,7 +47,7 @@ if ($report == 'broken') {
 
     echo "<p>Found ".$count;
 
-    $table->head = array('Broken URL', 'From page', 'Course');
+    $table->head = array('Broken URL', 'From page', 'Course', 'Link text');
 
     $table->data = array();
     foreach ($data as $row){
@@ -54,6 +55,7 @@ if ($report == 'broken') {
             html_writer::link($row->broken, $row->broken),
             html_writer::link($row->url, $row->url),
             $row->shortname,
+            $row->text,
         );
     }
 
