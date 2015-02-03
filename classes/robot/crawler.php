@@ -36,6 +36,9 @@ class crawler {
     function __construct() {
 
         $this->config = get_config('local_linkchecker_robot');
+        if (!property_exists ($this->config, 'crawlstart') ) {
+            $this->config->crawlstart = 0;
+        }
     }
 
 
@@ -72,11 +75,13 @@ class crawler {
     }
 
     /*
-     *
+     * Auto create the moodle user that the robot logs in as
      */
     public function auto_create_bot() {
 
         global $DB, $CFG;
+
+        // TODO roles?
 
         $botusername  = $this->config->botusername;
         $botuser = $DB->get_record('user', array('username'=>$botusername) );
@@ -104,15 +109,60 @@ class crawler {
 
     /*
      * Adds a url to the queue for crawling
+     * and returns the node record
+     * if the url is invalid returns false
      */
-    public function mark_for_crawl($url) {
+    public function mark_for_crawl($baseurl, $url) {
 
         global $DB, $CFG;
 
+        // Filter out non http protocols like mailto:cqulibrary@cqu.edu.au
+        $bits = parse_url($url);
+        if (array_key_exists('scheme', $bits)
+            && !($bits['scheme'] == 'http' || $bits['scheme'] == 'https') ){
+            return false;
+        }
+
         // All url's must be fully qualified
-        if ( substr ( $url ,0, 4) != 'http' ){
+        // If it is server relative the add the wwwroot
+        if ( substr ( $url ,0, 1) == '/'){
             $url = $CFG->wwwroot . $url;
         }
+
+        // If the url is relative then prepend the from page url
+        if (substr ( $url ,0, 4) != 'http' ){
+            $rslash = strrpos($baseurl, '/');
+            $url = substr($baseurl,0,$rslash+1) . $url;
+            // TODO 
+            // fix up ../ links
+        }
+
+        // If this url is external then check the ext whitelist
+        $mdlw = strlen($CFG->wwwroot);
+        $bad = 0;
+        if (substr ($url,0,$mdlw) === $CFG->wwwroot){
+            $excludes = str_replace("\r",'', $this->config->excludemdlurl);
+        } else {
+            $excludes = str_replace("\r",'', $this->config->excludeexturl);
+        }
+        $excludes = explode("\n", $excludes);
+        if (sizeof($excludes) > 0 && $excludes[0]){
+            foreach ($excludes as $exclude){
+                if (strpos($url, $exclude) > 0 ){
+                    $bad = 1;
+                    break;
+                }
+            }
+        }
+        if ($bad){
+            return false;
+        }
+
+        // Ideally this limit should be around 2000 chars but moodle has DB field size limits
+        if (strlen($url) > 1333){
+            return false;
+        }
+
 
         $node = $DB->get_record('linkchecker_url', array('url' => $url) );
 
@@ -122,21 +172,62 @@ class crawler {
             $node->createdate = time();
             $node->url        = $url;
             $node->external   = strpos($url, $CFG->wwwroot) === 0 ? 0 : 1;
-            $DB->insert_record('linkchecker_url', $node);
+            $node->id = $DB->insert_record('linkchecker_url', $node);
 
         } else {
 
             $node->needscrawl = $this->config->crawlstart;
-            // if in the queue, and it has an older last scrape timestamp than the start scrape time
-            // touch it as markde for scrape
-            // TODO
-            noimpl();
+            $DB->update_record('linkchecker_url', $node);
         }
-
+        return $node;
     }
 
+    /*
+     * When did the current crawl start?
+     */
+    public function get_crawlstart() {
+        return property_exists($this->config, 'crawlstart') ? $this->config->crawlstart : 0;
+    }
+
+    /*
+     * When did the last crawl finish?
+     */
+    public function get_last_crawlend() {
+        return property_exists($this->config, 'crawlend') ? $this->config->crawlend : 0;
+    }
+
+    /*
+     * When did the crawler last process anything?
+     */
+    public function get_last_crawltick() {
+        return property_exists($this->config, 'crawltick') ? $this->config->crawltick : 0;
+    }
+
+    /*
+     * Many urls are in the queue now (more will probably be added)
+     */
     public function get_queue_size() {
-        noimpl();
+        global $DB;
+
+        $queuesize = $DB->get_field_sql("SELECT COUNT(*)
+                                           FROM {linkchecker_url}
+                                          WHERE lastcrawled IS NULL
+                                             OR lastcrawled < needscrawl"
+                                       );
+        return $queuesize;
+    }
+
+    /*
+     * Many urls have been processed off the queue
+     */
+    public function get_processed() {
+        global $DB;
+
+        return $DB->get_field_sql("SELECT COUNT(*)
+                                           FROM {linkchecker_url}
+                                          WHERE lastcrawled > :start",
+                                    array('start' =>  $this->config->crawlstart)
+                                       );
     }
 
     /*
@@ -176,9 +267,8 @@ class crawler {
         $result = $this->scrape($node->url);
         $result = (object) array_merge((array) $node, (array) $result);
 
-        // add url whitelist
-        if ($result->external == 0){
-
+        // TODO add external url whitelist
+        if ($result->external == 0 && $result->httpcode == '200'){
 
             if ($result->mimetype == 'text/html'){
                 $this->extract_links($result);
@@ -186,15 +276,31 @@ class crawler {
         }
 
         // Wait until we've finished processing the links before we save:
-//        $DB->update_record('linkchecker_url', $result);
+        $DB->update_record('linkchecker_url', $result);
 
     }
 
+
+    /*
+     * Given a recently crawled node, extract links to other pages
+     *
+     * Should only be run on internal moodle pages
+     */
     private function extract_links($node){
 
         global $CFG;
 
-        $html = str_get_html($node->contents);
+        $raw = $node->contents;
+
+        // Strip out any data uri's (parse doesn't like them)
+        $raw = preg_replace('/"data:[^"]*?"/', '', $raw);
+
+        $html = str_get_html($raw);
+
+        // If couldn't parse html
+        if (!$html){
+            return;
+        }
 
         // Remove any chunks of DOM that we know to be safe and don't want to follow
         $excludes = explode("\n", $this->config->excludemdldom);
@@ -205,11 +311,6 @@ class crawler {
         }
 
         $seen = array();
-        $mdlw = strlen($CFG->wwwroot);
-
-        $excludes = str_replace("\r",'', $this->config->excludemdlurl);
-        $excludes = explode("\n", $excludes);
-
         foreach($html->find('a[href]') as $e) {
             $href = $e->href;
             if (array_key_exists($href,$seen ) ){
@@ -219,19 +320,8 @@ class crawler {
             if (substr ($href,0,1) === '#'){
                 continue;
             }
-            if (substr ($href,0,$mdlw) === $CFG->wwwroot){
-                // We are an internal link
-                $bad = 0;
-                foreach ($excludes as $exclude){
-                    if (strpos($href, $exclude) > 0 ){
-                        $bad = 1;
-                        break;
-                    }
-                }
-            }
-            if ($bad){
-                continue;
-            }
+
+            // TODO find some context of the link, like the nearest id
             $this->link_from_node_to_url($node, $href);
         }
 
@@ -239,26 +329,43 @@ class crawler {
         // TODO look at body element classes course-2 cmid-4 context-40
 
         // attempt to discover what course we are in
-//        $node->courseid = ?
+        //        $node->courseid = ?
 
         // attempt to discover what module we are in
-//        $node->cmid = ?
-
-
-        // find all links
-        // Is this url ok to parse?
-        // TODO
-
+        //        $node->cmid = ?
 
         return $node;
 
     }
 
-    private function link_from_node_to_url($node, $url){
 
-print $url."\n";
-        // if url isn't a node then create it
-        // create the link
+    /*
+     * upserts a link between two nodes in the url graph
+     * if the url is invalid returns false
+     */
+    private function link_from_node_to_url($from, $url){
+
+        global $DB;
+
+        $to = $this->mark_for_crawl($from->url, $url);
+        if ($to === false){
+            return false;
+        }
+
+        $link = $DB->get_record('linkchecker_edge', array('a'=>$from->id, 'b'=>$to->id));
+        if (!$link){
+e("{$from->id} {$from->url} to $url");
+            $link          = new \stdClass();
+            $link->a       = $from->id;
+            $link->b       = $to->id;
+            $link->lastmod = time();
+            $link->id = $DB->insert_record('linkchecker_edge', $link);
+        } else {
+e('up lnk');
+            $link->lastmod = time();
+            $DB->update_record('linkchecker_edge', $link);
+        }
+        return $link;
     }
 
     /*
@@ -266,6 +373,8 @@ print $url."\n";
      * The format returns is ready to directly insert into the DB queue
      */
     public function scrape($url) {
+
+        e("Crawl: $url");
 
         global $CFG;
         $cookieFileLocation = $CFG->dataroot . '/linkchecker_cookies.txt';

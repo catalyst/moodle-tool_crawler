@@ -71,17 +71,30 @@ if ($hassiteconfig) {
         $settings->add(new admin_setting_configtextarea('local_linkchecker_robot/excludeexturl',
                                                     new lang_string('excludeexturl',     'local_linkchecker_robot'),
                                                     new lang_string('excludeexturldesc', 'local_linkchecker_robot'),
-                                                    '' ));
+                                                    'http://moodle.org/' ));
 
         $settings->add(new admin_setting_configtextarea('local_linkchecker_robot/excludemdlurl',
                                                     new lang_string('excludemdlurl',     'local_linkchecker_robot'),
                                                     new lang_string('excludemdlurldesc', 'local_linkchecker_robot'),
-                                                    "sesskey\n/login/\n/admin/" ));
+                                                    "sesskey
+/admin
+/blog
+/badges
+/blocks/quickmail
+/calendar
+/login
+/message
+/report
+/user
+/tag/" ));
 
         $settings->add(new admin_setting_configtextarea('local_linkchecker_robot/excludemdldom',
                                                     new lang_string('excludemdldom',     'local_linkchecker_robot'),
                                                     new lang_string('excludemdldomdesc', 'local_linkchecker_robot'),
-                                                    ".block.block_settings" ));
+                                                    ".block.block_settings
+.block.block_book_toc
+.block.block_navigation
+.block.block_cqu_assessment" ));
 
         $settings->add(new admin_setting_configtext('local_linkchecker_robot/maxtime',
                                                     new lang_string('maxtime',           'local_linkchecker_robot'),

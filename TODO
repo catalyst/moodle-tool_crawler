@@ -1,8 +1,16 @@
 
 
-* make a settings page
- - query params to strip
- - last full scrape starting at seed url
+
+Task timing setup
+----------------
+
+Because this is continually hitting your prod system, you may want to only run the robot crawler at defined times, such as every minute but only during night hours.
+
+
+Task API setup
+
+
+
 
  - crawler status
    - how many urls have been crawled this time?
@@ -10,39 +18,7 @@
    - how many urls are not yet crawled
    - make this a page that refreshes every couple seconds
 
- - ignore links in contexts, ie 'block' ignore all links in blocks,
-   or 'block_admin_bookmark' ignore links in the admin block
-   essentially a bunch of css'ish selectors to cull from the dom
 
-
-* make a node db table
- - url (with stripped params) primary
- - last scraped
- - first scraped?
- - touch timestamp - if this is newer than the site level 'lastscrape' then this url is due for rescraping
- - response code / header - if not yet scraped should be null
- - last response code?
- - course context id   fkey
- - module type id      fkey
- - activity context id fkey
- - mime type of the resource
- - ignored by userid
- - ignore by timestamp
- - failedtries
- - bytes of resource
- - redirect location
-
-* make an edge table
- - from id
- - to id
- - link text
-
-
- - last seen timestamp
- - link context, is the link in a block? if so what is the block id
- - is the link in a book page, or forum post etc?
- - ignored by userid
- - ignore by timestamp
 
 * the robot
  - set the site level scrape time to now
@@ -50,18 +26,11 @@
  - scrape a page
  - find links, create if needed the next pages, create if needed the links, touch the timestamp
 
-* create a page
- - strip the url of bad query params like sess key
- - check it against the excluded urls
- - if it is a local url thats cool
- - don't create links from external to external urls
+ - and which isn't 'ignored' do we care?
 
+* finishing a crawl
 
- - now look through the queue and grab the next 1 (or batch of X) and repeat
-     find the oldest touched url,
-     which is newer than site scrape,
-     and which hasn't been scraped since the touch
-     and which isn't 'ignored'
+* when do we start a new recrawl? right away?
 
 
 * orphans pages?

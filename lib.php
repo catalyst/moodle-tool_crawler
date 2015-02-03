@@ -25,20 +25,21 @@
 
 function local_linkchecker_robot_crawl() {
 
-    global $DB;
+    global $DB, $CFG;
 
     $config = get_config('local_linkchecker_robot');
 
     $crawlstart = $DB->get_field('config_plugins', 'value', array('plugin'=>'local_linkchecker_robot','name' =>'crawlstart') );
+    $crawlend   = $DB->get_field('config_plugins', 'value', array('plugin'=>'local_linkchecker_robot','name' =>'crawlend'  ) );
 
     $robot = new \local_linkchecker_robot\robot\crawler();
 
     // If we need to start a new crawl, push the seed url into the crawl queue
-    if (!$crawlstart ) {
+    if (!$crawlstart || $crawlstart < $crawlend){
 
         $start = time();
-        $DB->insert_record('config_plugins', array('plugin'=>'local_linkchecker_robot','name' =>'crawlstart', 'value'=>$start) );
-        $robot->mark_for_crawl($config->seedurl);
+        set_config('crawlstart', $start, 'local_linkchecker_robot');
+        $robot->mark_for_crawl($CFG->wwwroot.'/', $config->seedurl);
         print "Added seed url {$config->seedurl} to queue " . userdate($start) . "\n";
 
     }
@@ -48,15 +49,23 @@ function local_linkchecker_robot_crawl() {
 
     // if the queue is empty then mark the crawl as ended
 
+    $cronstart = time();
+    $cronstop = $cronstart + $config->maxcrontime;
+
     $hasmore = true;
-    while ($hasmore){
+    $hastime = true;
+    while ($hasmore && $hastime){
 
         $hasmore = $robot->process_queue();
-        $hasmore = false;
+        $hastime = time() < $cronstop;
+e("time $hastime $cronstop " .time());
+        set_config('crawltick', time(), 'local_linkchecker_robot');
     }
 
-    // find urls which are have lastcrawled = null, OR lastcrawled < needs crawl
-
-
+    if ($hastime){
+        // Time left over, which means the queue is empty!
+        // Mark the crawl as ended
+        set_config('crawlend', time(), 'local_linkchecker_robot');
+    }
 
 }

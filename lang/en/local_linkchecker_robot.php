@@ -26,7 +26,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Link checker';
+$string['pluginname'] = 'Link checker robot';
 
 $string['status'] = 'Link checker status';
 
@@ -44,7 +44,7 @@ $string['excludeexturldesc'] = 'One url regex per line, each is matched against 
 $string['excludemdlurl'] = 'Exclude moodle URL\'s';
 $string['excludemdlurldesc'] = 'One url regex per line, each is matched excluding the wwwroot';
 $string['excludemdldom'] = 'Exclude moodle DOM\'s';
-$string['excludemdldomdesc'] = 'One xpath expression per line, these parts of the DOM will be removed before links are extracted';
+$string['excludemdldomdesc'] = 'One css / xpath expression per line, these parts of the DOM will be removed before links are extracted';
 $string['maxtime'] = 'Max execution time';
 $string['maxtimedesc'] = 'The timeout for each crawl request';
 $string['maxcrontime'] = 'Cron run limit';

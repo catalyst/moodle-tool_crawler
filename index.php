@@ -23,9 +23,8 @@ admin_externalpage_setup('local_linkchecker_robot_status');
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('status', 'local_linkchecker_robot'));
 
-$action           = optional_param('action', '', PARAM_ALPHANUMEXT);
-$config = get_config('local_linkchecker_robot');
-$crawlstarted = property_exists($config, 'crawlstarted') ? $config->crawlstarted : 0;
+$action         = optional_param('action', '', PARAM_ALPHANUMEXT);
+$config         = get_config('local_linkchecker_robot');
 
 $robot = new \local_linkchecker_robot\robot\crawler();
 
@@ -37,16 +36,24 @@ if ($action == 'makebot') {
 
 }
 
-$boterror = $robot->is_bot_valid();
-
+$crawlstart     = $robot->get_crawlstart();
+$crawlend       = $robot->get_last_crawlend();
+$crawltick      = $robot->get_last_crawltick();
+$boterror       = $robot->is_bot_valid();
+$queuesize      = $robot->get_queue_size();
+$processed      = $robot->get_processed();
+$oldqueuesize   = -1; // $robot->get_old_queue_size();
 
 ?>
 
 <table>
-<tr><td>Bot user <td><?php echo $boterror ? $boterror : 'Good' ?>
-<tr><td>Current crawl started at <td><?php echo $crawlstarted ? userdate( $crawlstarted) : 'Never run' ?>
-<tr><td> how many in the queue
-<tr><td> how many expected in the queue (ie from last time)
+<tr><td>Bot user                        <td><?php echo $boterror   ? $boterror : 'Good' ?>
+<tr><td>Current crawl started at        <td><?php echo $crawlstart ? userdate( $crawlstart) : 'Never run' ?>
+<tr><td>Last crawl ended at             <td><?php echo $crawlend   ? userdate( $crawlend)   : 'Never finished' ?>
+<tr><td>Last crawl process              <td><?php echo $crawltick  ? userdate( $crawltick)  : '-' ?>
+<tr><td>How many URL's in the queue     <td><?php echo $queuesize ?>
+<tr><td>How many URL's processed so far <td><?php echo $processed ?>
+<tr><td>Expected new URL's              <td><?php echo $oldqueuesize ?>
 <tr><td> very rough eta
 </table>
 

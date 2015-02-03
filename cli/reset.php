@@ -38,6 +38,7 @@ $DB->delete_records('config_plugins',  array('plugin'=>'local_linkchecker_robot'
 // delete all url's from the DB
 $DB->delete_records('linkchecker_url');
 // delete all links from the DB
+$DB->delete_records('linkchecker_edge');
 
 // kill robot cookies?
 
