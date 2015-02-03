@@ -218,14 +218,27 @@ class crawler {
     }
 
     /*
-     * Many urls have been processed off the queue
+     * How many urls have been processed off the queue
      */
     public function get_processed() {
         global $DB;
 
         return $DB->get_field_sql("SELECT COUNT(*)
                                            FROM {linkchecker_url}
-                                          WHERE lastcrawled > :start",
+                                          WHERE lastcrawled >= :start",
+                                    array('start' =>  $this->config->crawlstart)
+                                       );
+    }
+
+    /*
+     * How many urls have been processed off the queue
+     */
+    public function get_old_queue_size() {
+        global $DB;
+
+        return $DB->get_field_sql("SELECT COUNT(*)
+                                           FROM {linkchecker_url}
+                                          WHERE lastcrawled < :start",
                                     array('start' =>  $this->config->crawlstart)
                                        );
     }
@@ -272,7 +285,12 @@ class crawler {
 
             if ($result->mimetype == 'text/html'){
                 $this->extract_links($result);
+            } else {
+
+                // TODO Possibly we can infer the course purely from the url
+                // maybe the plugin serving urls?
             }
+
         }
 
         // Wait until we've finished processing the links before we save:
@@ -325,14 +343,21 @@ class crawler {
             $this->link_from_node_to_url($node, $href);
         }
 
-
-        // TODO look at body element classes course-2 cmid-4 context-40
-
-        // attempt to discover what course we are in
-        //        $node->courseid = ?
-
-        // attempt to discover what module we are in
-        //        $node->cmid = ?
+        // Store some context about where we are
+        foreach ($html->find('body') as $body){
+            $classes = explode(" ", $body->class);
+            foreach ($classes as $cl){
+                if (substr($cl,0,7) == 'course-'){
+                    $node->courseid = substr($cl,7);
+                }
+                if (substr($cl,0,8) == 'context-'){
+                    $node->contextid = substr($cl,8);
+                }
+                if (substr($cl,0,5) == 'cmid-'){
+                    $node->cmid = substr($cl,5);
+                }
+            }
+        }
 
         return $node;
 
@@ -354,14 +379,14 @@ class crawler {
 
         $link = $DB->get_record('linkchecker_edge', array('a'=>$from->id, 'b'=>$to->id));
         if (!$link){
-e("{$from->id} {$from->url} to $url");
+//e("{$from->id} {$from->url} to $url");
             $link          = new \stdClass();
             $link->a       = $from->id;
             $link->b       = $to->id;
             $link->lastmod = time();
             $link->id = $DB->insert_record('linkchecker_edge', $link);
         } else {
-e('up lnk');
+//e('up lnk');
             $link->lastmod = time();
             $DB->update_record('linkchecker_edge', $link);
         }
@@ -373,8 +398,6 @@ e('up lnk');
      * The format returns is ready to directly insert into the DB queue
      */
     public function scrape($url) {
-
-        e("Crawl: $url");
 
         global $CFG;
         $cookieFileLocation = $CFG->dataroot . '/linkchecker_cookies.txt';

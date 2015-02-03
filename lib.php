@@ -35,12 +35,12 @@ function local_linkchecker_robot_crawl() {
     $robot = new \local_linkchecker_robot\robot\crawler();
 
     // If we need to start a new crawl, push the seed url into the crawl queue
-    if (!$crawlstart || $crawlstart < $crawlend){
+    if (!$crawlstart || $crawlstart <= $crawlend){
 
         $start = time();
         set_config('crawlstart', $start, 'local_linkchecker_robot');
         $robot->mark_for_crawl($CFG->wwwroot.'/', $config->seedurl);
-        print "Added seed url {$config->seedurl} to queue " . userdate($start) . "\n";
+#        print "Added seed url {$config->seedurl} to queue " . userdate($start) . "\n";
 
     }
 
@@ -58,7 +58,6 @@ function local_linkchecker_robot_crawl() {
 
         $hasmore = $robot->process_queue();
         $hastime = time() < $cronstop;
-e("time $hastime $cronstop " .time());
         set_config('crawltick', time(), 'local_linkchecker_robot');
     }
 

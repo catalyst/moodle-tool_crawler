@@ -23,21 +23,47 @@ admin_externalpage_setup('local_linkchecker_robot_status');
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('status', 'local_linkchecker_robot'));
 
-$action           = optional_param('action', '', PARAM_ALPHANUMEXT);
+$report     = optional_param('report',  '', PARAM_ALPHANUMEXT);
+$page       = optional_param('page',    0,  PARAM_INT);
+$perpage    = optional_param('perpage', 50, PARAM_INT);
+$start = $page * $perpage;
 
-if ($report == '') {
+if ($report == 'broken') {
 
-} else {
+    $sql = "
+          FROM {linkchecker_url}  b
+     LEFT JOIN {linkchecker_edge} l ON l.b = b.id
+     LEFT JOIN {linkchecker_url}  a ON l.a = a.id
+     LEFT JOIN {course} c ON c.id = a.courseid
+         WHERE b.httpcode != ?";
+    $data  = $DB->get_records_sql("SELECT b.id,
+                                          b.url broken,
+                                          a.*,
+                                          c.shortname"       . $sql, array('200'), $start, $perpage);
+    $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, array('200'));
 
-    $DB->get_records_sql("
+    $table = new html_table();
 
-    ");
+    echo "<p>Found ".$count;
+
+    $table->head = array('Broken URL', 'From page', 'Course');
+
+    $table->data = array();
+    foreach ($data as $row){
+        $table->data[] = array(
+            html_writer::link($row->broken, $row->broken),
+            html_writer::link($row->url, $row->url),
+            $row->shortname,
+        );
+    }
+
+    echo html_writer::table($table);
+
+    $baseurl = new moodle_url('/local/linkchecker_robot/report.php', array('perpage' => $perpage, 'report' => $report));
+    echo $OUTPUT->paging_bar($count, $page, $perpage, $baseurl);
+
 
 }
 
-
-?>
-
-<?php
 echo $OUTPUT->footer();
 

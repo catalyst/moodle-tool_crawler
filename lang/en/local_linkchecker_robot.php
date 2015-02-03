@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Link checker robot';
 
-$string['status'] = 'Link checker status';
+$string['status'] = 'Link checker reports';
 
 $string['checker_help'] = '<a href="{$a->url}">Robot status page</a>';
 $string['seedurl'] = 'Seed URL';

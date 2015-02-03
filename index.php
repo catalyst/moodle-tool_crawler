@@ -42,27 +42,37 @@ $crawltick      = $robot->get_last_crawltick();
 $boterror       = $robot->is_bot_valid();
 $queuesize      = $robot->get_queue_size();
 $processed      = $robot->get_processed();
-$oldqueuesize   = -1; // $robot->get_old_queue_size();
+$oldqueuesize   = $robot->get_old_queue_size();
 
 ?>
 
 <table>
 <tr><td>Bot user                        <td><?php echo $boterror   ? $boterror : 'Good' ?>
-<tr><td>Current crawl started at        <td><?php echo $crawlstart ? userdate( $crawlstart) : 'Never run' ?>
+<tr><td>Current crawl started at        <td><?php echo $crawlstart ? userdate( $crawlstart) : 'Never run'      ?>
 <tr><td>Last crawl ended at             <td><?php echo $crawlend   ? userdate( $crawlend)   : 'Never finished' ?>
-<tr><td>Last crawl process              <td><?php echo $crawltick  ? userdate( $crawltick)  : '-' ?>
-<tr><td>How many URL's in the queue     <td><?php echo $queuesize ?>
-<tr><td>How many URL's processed so far <td><?php echo $processed ?>
-<tr><td>Expected new URL's              <td><?php echo $oldqueuesize ?>
-<tr><td> very rough eta
+<tr><td>Last crawl process              <td><?php echo $crawltick  ? userdate( $crawltick)  : '-'              ?>
+<tr><td>How many URL's in the queue     <td><?php echo $queuesize    ?>
+<tr><td>How many URL's processed so far <td><?php echo $processed    ?>
+<tr><td>Last queue size                 <td><?php echo $oldqueuesize ?>
 </table>
 
+
+<h3>Summary</h3>
+
+<p>Broken URL's:
+<?php echo $DB->get_field_sql("SELECT COUNT(*)
+                                 FROM {linkchecker_url}
+                                WHERE httpcode != ?", array('200') ); ?>
+ <a href="report.php?report=broken">See all</a>
+
+<!--
 <p>crawl as
 <p> link to course level reports
 <p> link to global reports
 <p>broken urls:
 <p>Slow urls
 <p>high linked urls
+-->
 
 <?php
 echo $OUTPUT->footer();

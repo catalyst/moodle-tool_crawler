@@ -58,7 +58,7 @@ if ($hassiteconfig) {
                                                     new lang_string('botusernamedesc',   'local_linkchecker_robot'),
                                                     'moodlebot' ));
 
-        $settings->add(new admin_setting_configtext('local_linkchecker_robot/botpassword',
+        $settings->add(new admin_setting_configpasswordunmask('local_linkchecker_robot/botpassword',
                                                     new lang_string('botpassword',       'local_linkchecker_robot'),
                                                     new lang_string('botpassworddesc',   'local_linkchecker_robot'),
                                                     'moodlebot' ));
