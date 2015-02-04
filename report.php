@@ -33,25 +33,32 @@ if ($report == 'broken') {
      LEFT JOIN {linkchecker_url}  a ON l.a = a.id
      LEFT JOIN {course} c ON c.id = a.courseid
          WHERE b.httpcode != ?";
+    $opts = array('200');
     $data  = $DB->get_records_sql("SELECT b.id || '-' || a.id,
                                           b.url broken,
+                                          b.httpcode,
                                           l.text,
-                                          a.*,
-                                          c.shortname"       . $sql, array('200'), $start, $perpage);
-    $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, array('200'));
+                                          a.url,
+                                          a.title,
+                                          a.courseid,
+                                          c.shortname" . $sql . " ORDER BY httpcode DESC", $opts, $start, $perpage);
+    $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
 
     $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
-    $table->head = array('Broken URL', 'From page', 'Title', 'Course', 'Link text');
+    $table->head = array('Code', 'Broken URL', 'From page', 'Course');
     $table->data = array();
     foreach ($data as $row) {
+        $text = trim($row->text);
+        if (!$text || $text == ""){
+            $text = 'Missing';
+        }
         $table->data[] = array(
-            html_writer::link($row->broken, $row->broken),
-            html_writer::link($row->url, substr($row->url, $mdlw) ),
-            $row->title,
-            $row->shortname,
-            $row->text,
+            $row->httpcode,
+            html_writer::link($row->broken, $text),
+            html_writer::link($row->url, $row->title),
+            html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname),
         );
     }
 
@@ -63,34 +70,34 @@ if ($report == 'broken') {
      LEFT JOIN {linkchecker_url}  a ON l.a = a.id
      LEFT JOIN {course} c ON c.id = a.courseid
          WHERE b.filesize > ?";
-    $opts = array('2000');
+    $opts = array('150000');
     $data  = $DB->get_records_sql("SELECT b.id || '-' || a.id,
                                           b.url target,
                                           b.filesize,
                                           l.text,
                                           a.title,
                                           a.url,
+                                          a.courseid,
                                           c.shortname"       . $sql . " ORDER BY b.filesize DESC", $opts, $start, $perpage);
     $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
 
     $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
-    $table->head = array('Size', 'URL', 'From page', 'Title', 'Course');
+    $table->head = array('Size', 'Slow URL', 'From page', 'Course');
     $table->data = array();
     foreach ($data as $row) {
         $size = $row->filesize * 1;
         $text = trim($row->text);
         if (!$text || $text == ""){
-            $text = 'missin';
+            $text = 'Missing';
         }
         $table->data[] = array(
-            $size > 1048576 ? (round(100 * $size / 1048576 ) * .01 . 'MB') :
-            ($size > 1024   ? (round(10  * $size / 1024    ) * .1  . 'KB') : $size . 'B'),
+            $size > 1000000 ? (round(100 * $size / 1000000 ) * .01 . 'MB') :
+            ($size > 1000   ? (round(10  * $size / 1000    ) * .1  . 'KB') : $size . 'B'),
             html_writer::link($row->target, $text),
-            html_writer::link($row->url, substr($row->url, $mdlw) ),
-            $row->title,
-            $row->shortname,
+            html_writer::link($row->url, $row->title),
+            html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname),
         );
     }
 
