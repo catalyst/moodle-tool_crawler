@@ -36,7 +36,7 @@ if ($report == 'broken') {
      LEFT JOIN {linkchecker_url}  a ON l.a = a.id
      LEFT JOIN {course} c ON c.id = a.courseid
          WHERE b.httpcode != ?";
-    $data  = $DB->get_records_sql("SELECT b.id,
+    $data  = $DB->get_records_sql("SELECT b.id || '-' || a.id,
                                           b.url broken,
                                           l.text,
                                           a.*,
