@@ -47,13 +47,16 @@ if ($report == 'broken') {
 
     echo "<p>Found ".$count;
 
-    $table->head = array('Broken URL', 'From page', 'Course', 'Link text');
+    $table->head = array('Broken URL', 'From page', 'Title', 'Course', 'Link text');
+
+    $mdlw = strlen($CFG->wwwroot);
 
     $table->data = array();
-    foreach ($data as $row){
+    foreach ($data as $row) {
         $table->data[] = array(
             html_writer::link($row->broken, $row->broken),
-            html_writer::link($row->url, $row->url),
+            html_writer::link($row->url, substr($row->url, $mdlw) ),
+            $row->title,
             $row->shortname,
             $row->text,
         );

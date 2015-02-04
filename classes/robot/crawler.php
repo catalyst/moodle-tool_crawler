@@ -33,7 +33,7 @@ class crawler {
 
     protected $config;
 
-    function __construct() {
+    public function __construct() {
 
         $this->config = get_config('local_linkchecker_robot');
         if (!property_exists ($this->config, 'crawlstart') ) {
@@ -54,11 +54,11 @@ class crawler {
         if (!$botusername) {
             return 'CONFIG MISSING';
         }
-        if (!$botuser = $DB->get_record('user', array('username'=>$botusername) )) {
+        if (!$botuser = $DB->get_record('user', array('username' => $botusername) )) {
             return 'BOT USER MISSING <a href="?action=makebot">Auto create</a>';
         }
 
-        // do a test crawl over the network
+        // Do a test crawl over the network.
         $result = $this->scrape($CFG->wwwroot.'/local/linkchecker_robot/tests/test1.php');
         if ($result->httpcode != '200') {
             return 'BOT could not request test page';
@@ -84,8 +84,8 @@ class crawler {
         // TODO roles?
 
         $botusername  = $this->config->botusername;
-        $botuser = $DB->get_record('user', array('username'=>$botusername) );
-        if ($botuser){
+        $botuser = $DB->get_record('user', array('username' => $botusername) );
+        if ($botuser) {
             return $botuser;
         } else {
             $botuser = (object) array();
@@ -116,58 +116,57 @@ class crawler {
 
         global $DB, $CFG;
 
-        // Filter out non http protocols like mailto:cqulibrary@cqu.edu.au
+        // Filter out non http protocols like mailto:cqulibrary@cqu.edu.au etc.
         $bits = parse_url($url);
         if (array_key_exists('scheme', $bits)
-            && !($bits['scheme'] == 'http' || $bits['scheme'] == 'https') ){
+            && !($bits['scheme'] == 'http' || $bits['scheme'] == 'https') ) {
             return false;
         }
 
-        // All url's must be fully qualified
-        // If it is server relative the add the wwwroot
-        if ( substr ( $url ,0, 1) == '/'){
+        // All url's must be fully qualified.
+        // If it is server relative the add the wwwroot.
+        if ( substr($url, 0, 1) == '/') {
             $url = $CFG->wwwroot . $url;
         }
 
-        // If the url is relative then prepend the from page url
-        if (substr ( $url ,0, 4) != 'http' ){
+        // If the url is relative then prepend the from page url.
+        if (substr($url, 0, 4) != 'http' ) {
             $rslash = strrpos($baseurl, '/');
-            $url = substr($baseurl,0,$rslash+1) . $url;
-            // TODO 
+            $url = substr($baseurl, 0, $rslash + 1) . $url;
+            // TODO
             // fix up ../ links
         }
 
-        // If this url is external then check the ext whitelist
+        // If this url is external then check the ext whitelist.
         $mdlw = strlen($CFG->wwwroot);
         $bad = 0;
-        if (substr ($url,0,$mdlw) === $CFG->wwwroot){
-            $excludes = str_replace("\r",'', $this->config->excludemdlurl);
+        if (substr ($url, 0, $mdlw) === $CFG->wwwroot) {
+            $excludes = str_replace("\r", '', $this->config->excludemdlurl);
         } else {
-            $excludes = str_replace("\r",'', $this->config->excludeexturl);
+            $excludes = str_replace("\r", '', $this->config->excludeexturl);
         }
         $excludes = explode("\n", $excludes);
-        if (sizeof($excludes) > 0 && $excludes[0]){
-            foreach ($excludes as $exclude){
-                if (strpos($url, $exclude) > 0 ){
+        if (count($excludes) > 0 && $excludes[0]) {
+            foreach ($excludes as $exclude) {
+                if (strpos($url, $exclude) > 0 ) {
                     $bad = 1;
                     break;
                 }
             }
         }
-        if ($bad){
+        if ($bad) {
             return false;
         }
 
-        // Ideally this limit should be around 2000 chars but moodle has DB field size limits
-        if (strlen($url) > 1333){
+        // Ideally this limit should be around 2000 chars but moodle has DB field size limits.
+        if (strlen($url) > 1333) {
             return false;
         }
-
 
         $node = $DB->get_record('linkchecker_url', array('url' => $url) );
 
-        if(!$node) {
-            // if not in the queue then add it
+        if (!$node) {
+            // If not in the queue then add it.
             $node = (object) array();
             $node->createdate = time();
             $node->url        = $url;
@@ -226,7 +225,7 @@ class crawler {
         return $DB->get_field_sql("SELECT COUNT(*)
                                            FROM {linkchecker_url}
                                           WHERE lastcrawled >= :start",
-                                    array('start' =>  $this->config->crawlstart)
+                                    array('start' => $this->config->crawlstart)
                                        );
     }
 
@@ -239,7 +238,7 @@ class crawler {
         return $DB->get_field_sql("SELECT COUNT(*)
                                            FROM {linkchecker_url}
                                           WHERE lastcrawled < :start",
-                                    array('start' =>  $this->config->crawlstart)
+                                    array('start' => $this->config->crawlstart)
                                        );
     }
 
@@ -259,7 +258,7 @@ class crawler {
                                     ');
 
         $node = array_pop($nodes);
-        if ($node){
+        if ($node) {
             $this->crawl($node);
             return true;
         }
@@ -280,10 +279,10 @@ class crawler {
         $result = $this->scrape($node->url);
         $result = (object) array_merge((array) $node, (array) $result);
 
-        // TODO add external url whitelist
-        if ($result->external == 0 && $result->httpcode == '200'){
+        // TODO add external url whitelist.
+        if ($result->external == 0 && $result->httpcode == '200') {
 
-            if ($result->mimetype == 'text/html'){
+            if ($result->mimetype == 'text/html') {
                 $this->extract_links($result);
             } else {
 
@@ -293,7 +292,7 @@ class crawler {
 
         }
 
-        // Wait until we've finished processing the links before we save:
+        // Wait until we've finished processing the links before we save.
         $DB->update_record('linkchecker_url', $result);
 
     }
@@ -304,60 +303,62 @@ class crawler {
      *
      * Should only be run on internal moodle pages
      */
-    private function extract_links($node){
+    private function extract_links($node) {
 
         global $CFG;
 
         $raw = $node->contents;
 
-        // Strip out any data uri's (parse doesn't like them)
+        // Strip out any data uri's - the parser doesn't like them.
         $raw = preg_replace('/"data:[^"]*?"/', '', $raw);
 
         $html = str_get_html($raw);
 
-        // If couldn't parse html
-        if (!$html){
+        // If couldn't parse html.
+        if (!$html) {
             return;
         }
 
-        // Remove any chunks of DOM that we know to be safe and don't want to follow
+        // Remove any chunks of DOM that we know to be safe and don't want to follow.
         $excludes = explode("\n", $this->config->excludemdldom);
-        foreach ($excludes as $exclude){
-            foreach($html->find($exclude) as $e) {
+        foreach ($excludes as $exclude) {
+            foreach ($html->find($exclude) as $e) {
                 $e->outertext = '';
             }
         }
 
         $seen = array();
-        foreach($html->find('a[href]') as $e) {
+        foreach ($html->find('a[href]') as $e) {
             $href = $e->href;
-            if (array_key_exists($href,$seen ) ){
+            if (array_key_exists($href, $seen ) ) {
                 continue;
             }
             $seen[$href] = 1;
-            if (substr ($href,0,1) === '#'){
+            if (substr ($href, 0, 1) === '#') {
                 continue;
             }
 
-            // TODO find some context of the link, like the nearest id
+            // TODO find some context of the link, like the nearest id.
             $this->link_from_node_to_url($node, $href, $e->innertext);
         }
 
-        // Store some context about where we are
-        foreach ($html->find('body') as $body){
+        // Store some context about where we are.
+        foreach ($html->find('body') as $body) {
             $classes = explode(" ", $body->class);
-            foreach ($classes as $cl){
-                if (substr($cl,0,7) == 'course-'){
-                    $node->courseid = substr($cl,7);
+            foreach ($classes as $cl) {
+                if (substr($cl, 0, 7) == 'course-') {
+                    $node->courseid = substr($cl, 7);
                 }
-                if (substr($cl,0,8) == 'context-'){
-                    $node->contextid = substr($cl,8);
+                if (substr($cl, 0, 8) == 'context-') {
+                    $node->contextid = substr($cl, 8);
                 }
-                if (substr($cl,0,5) == 'cmid-'){
-                    $node->cmid = substr($cl,5);
+                if (substr($cl, 0, 5) == 'cmid-') {
+                    $node->cmid = substr($cl, 5);
                 }
             }
         }
+
+        $node->title = $html->find('title', 0)->plaintext;
 
         return $node;
 
@@ -368,18 +369,17 @@ class crawler {
      * upserts a link between two nodes in the url graph
      * if the url is invalid returns false
      */
-    private function link_from_node_to_url($from, $url, $text){
+    private function link_from_node_to_url($from, $url, $text) {
 
         global $DB;
 
         $to = $this->mark_for_crawl($from->url, $url);
-        if ($to === false){
+        if ($to === false) {
             return false;
         }
 
-        $link = $DB->get_record('linkchecker_edge', array('a'=>$from->id, 'b'=>$to->id));
-        if (!$link){
-//e("{$from->id} {$from->url} to $url");
+        $link = $DB->get_record('linkchecker_edge', array('a' => $from->id, 'b' => $to->id));
+        if (!$link) {
             $link          = new \stdClass();
             $link->a       = $from->id;
             $link->b       = $to->id;
@@ -387,7 +387,6 @@ class crawler {
             $link->text    = $text;
             $link->id = $DB->insert_record('linkchecker_edge', $link);
         } else {
-//e('up lnk');
             $link->lastmod = time();
             $link->text    = $text;
             $DB->update_record('linkchecker_edge', $link);
@@ -402,7 +401,7 @@ class crawler {
     public function scrape($url) {
 
         global $CFG;
-        $cookieFileLocation = $CFG->dataroot . '/linkchecker_cookies.txt';
+        $cookiefilelocation = $CFG->dataroot . '/linkchecker_cookies.txt';
 
         $s = curl_init();
         curl_setopt($s, CURLOPT_URL,             $url);
@@ -413,8 +412,8 @@ class crawler {
         curl_setopt($s, CURLOPT_RETURNTRANSFER,  true);
         curl_setopt($s, CURLOPT_FOLLOWLOCATION,  true);
         curl_setopt($s, CURLOPT_FRESH_CONNECT,   true);
-        curl_setopt($s, CURLOPT_COOKIEJAR,       $cookieFileLocation);
-        curl_setopt($s, CURLOPT_COOKIEFILE,      $cookieFileLocation);
+        curl_setopt($s, CURLOPT_COOKIEJAR,       $cookiefilelocation);
+        curl_setopt($s, CURLOPT_COOKIEFILE,      $cookiefilelocation);
 
         $result = (object) array();
         $result->url              = $url;
@@ -422,12 +421,12 @@ class crawler {
         $result->httpcode         = curl_getinfo($s, CURLINFO_HTTP_CODE );
         $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
         $mimetype                 = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
-        $mimetype                 = preg_replace('/; .*/','', $mimetype);
+        $mimetype                 = preg_replace('/; .*/', '', $mimetype);
         $result->mimetype         = $mimetype;
         $result->lastcrawled      = time();
         $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
-        $final                    = curl_getinfo($s,CURLINFO_EFFECTIVE_URL);
-        if ($final != $url){
+        $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
+        if ($final != $url) {
             $result->redirect = $final;
         } else {
             $result->redirect = '';

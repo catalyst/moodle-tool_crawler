@@ -82,6 +82,7 @@ if ($hassiteconfig) {
 /badges
 /blocks/quickmail
 /calendar
+/enrol
 /login
 /message
 /report

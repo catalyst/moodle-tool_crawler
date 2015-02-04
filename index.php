@@ -32,8 +32,6 @@ if ($action == 'makebot') {
 
     $botuser = $robot->auto_create_bot();
 
-} else {
-
 }
 
 $crawlstart     = $robot->get_crawlstart();
