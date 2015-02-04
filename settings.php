@@ -40,6 +40,10 @@ if ($hassiteconfig) {
                                            get_string('broken', 'local_linkchecker_robot'),
                                            $CFG->wwwroot . '/local/linkchecker_robot/report.php?report=broken') );
 
+    $ADMIN->add('local_linkchecker_cat', new admin_externalpage('local_linkchecker_robot_oversize',
+                                           get_string('oversize', 'local_linkchecker_robot'),
+                                           $CFG->wwwroot . '/local/linkchecker_robot/report.php?report=oversize') );
+
 
     // Local plugin settings
 
@@ -89,6 +93,7 @@ if ($hassiteconfig) {
                                                     new lang_string('excludemdlurl',     'local_linkchecker_robot'),
                                                     new lang_string('excludemdlurldesc', 'local_linkchecker_robot'),
                                                     "sesskey
+grading
 /admin
 /blog
 /badges

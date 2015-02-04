@@ -16,9 +16,7 @@
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
-
 require_capability('moodle/site:config', context_system::instance());
-
 
 $report     = optional_param('report',  '', PARAM_ALPHANUMEXT);
 $page       = optional_param('page',    0,  PARAM_INT);
@@ -26,9 +24,6 @@ $perpage    = optional_param('perpage', 50, PARAM_INT);
 $start = $page * $perpage;
 
 admin_externalpage_setup('local_linkchecker_robot_'.$report);
-
-echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string($report, 'local_linkchecker_robot'));
 
 if ($report == 'broken') {
 
@@ -45,14 +40,10 @@ if ($report == 'broken') {
                                           c.shortname"       . $sql, array('200'), $start, $perpage);
     $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, array('200'));
 
-    $table = new html_table();
-
-    echo "<p>Found ".$count;
-
-    $table->head = array('Broken URL', 'From page', 'Title', 'Course', 'Link text');
-
     $mdlw = strlen($CFG->wwwroot);
 
+    $table = new html_table();
+    $table->head = array('Broken URL', 'From page', 'Title', 'Course', 'Link text');
     $table->data = array();
     foreach ($data as $row) {
         $table->data[] = array(
@@ -64,13 +55,52 @@ if ($report == 'broken') {
         );
     }
 
-    echo html_writer::table($table);
+} else if ($report == 'oversize') {
 
-    $baseurl = new moodle_url('/local/linkchecker_robot/report.php', array('perpage' => $perpage, 'report' => $report));
-    echo $OUTPUT->paging_bar($count, $page, $perpage, $baseurl);
+    $sql = "
+          FROM {linkchecker_url}  b
+     LEFT JOIN {linkchecker_edge} l ON l.b = b.id
+     LEFT JOIN {linkchecker_url}  a ON l.a = a.id
+     LEFT JOIN {course} c ON c.id = a.courseid
+         WHERE b.filesize > ?";
+    $opts = array('2000');
+    $data  = $DB->get_records_sql("SELECT b.id || '-' || a.id,
+                                          b.url target,
+                                          b.filesize,
+                                          l.text,
+                                          a.title,
+                                          a.url,
+                                          c.shortname"       . $sql . " ORDER BY b.filesize DESC", $opts, $start, $perpage);
+    $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
 
+    $mdlw = strlen($CFG->wwwroot);
+
+    $table = new html_table();
+    $table->head = array('Size', 'URL', 'From page', 'Title', 'Course');
+    $table->data = array();
+    foreach ($data as $row) {
+        $size = $row->filesize * 1;
+        $text = trim($row->text);
+        if (!$text || $text == ""){
+            $text = 'missin';
+        }
+        $table->data[] = array(
+            $size > 1048576 ? (round(100 * $size / 1048576 ) * .01 . 'MB') :
+            ($size > 1024   ? (round(10  * $size / 1024    ) * .1  . 'KB') : $size . 'B'),
+            html_writer::link($row->target, $text),
+            html_writer::link($row->url, substr($row->url, $mdlw) ),
+            $row->title,
+            $row->shortname,
+        );
+    }
 
 }
 
+echo $OUTPUT->header();
+echo $OUTPUT->heading(get_string($report, 'local_linkchecker_robot'));
+echo "<p>Found ".$count;
+echo html_writer::table($table);
+$baseurl = new moodle_url('/local/linkchecker_robot/report.php', array('perpage' => $perpage, 'report' => $report));
+echo $OUTPUT->paging_bar($count, $page, $perpage, $baseurl);
 echo $OUTPUT->footer();
 

@@ -30,6 +30,7 @@ $string['pluginname'] = 'Link checker robot';
 
 $string['status'] = 'Robot status';
 $string['broken'] = 'Broken URLs';
+$string['oversize'] = 'Big / slow URLs';
 
 $string['checker_help'] = '<a href="{$a->url}">Robot status page</a>';
 $string['seedurl'] = 'Seed URL';
