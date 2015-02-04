@@ -18,15 +18,17 @@ require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
 require_capability('moodle/site:config', context_system::instance());
-admin_externalpage_setup('local_linkchecker_robot_status');
 
-echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('status', 'local_linkchecker_robot'));
 
 $report     = optional_param('report',  '', PARAM_ALPHANUMEXT);
 $page       = optional_param('page',    0,  PARAM_INT);
 $perpage    = optional_param('perpage', 50, PARAM_INT);
 $start = $page * $perpage;
+
+admin_externalpage_setup('local_linkchecker_robot_'.$report);
+
+echo $OUTPUT->header();
+echo $OUTPUT->heading(get_string($report, 'local_linkchecker_robot'));
 
 if ($report == 'broken') {
 

@@ -27,10 +27,21 @@ defined('MOODLE_INTERNAL') || die;
 
 if ($hassiteconfig) {
 
-    $statusurl = $CFG->wwwroot . '/local/linkchecker_robot/index.php';
+    // Site admin reports
 
-    $status = new admin_externalpage('local_linkchecker_robot_status', get_string('status', 'local_linkchecker_robot'), $statusurl);
-    $ADMIN->add('reports', $status);
+    $cat =  new admin_category('local_linkchecker_cat', 'Link checker');
+    $ADMIN->add('reports', $cat);
+
+    $ADMIN->add('local_linkchecker_cat', new admin_externalpage('local_linkchecker_robot_status',
+                                           get_string('status', 'local_linkchecker_robot'),
+                                           $CFG->wwwroot . '/local/linkchecker_robot/index.php') );
+
+    $ADMIN->add('local_linkchecker_cat', new admin_externalpage('local_linkchecker_robot_broken',
+                                           get_string('broken', 'local_linkchecker_robot'),
+                                           $CFG->wwwroot . '/local/linkchecker_robot/report.php?report=broken') );
+
+
+    // Local plugin settings
 
     $settings = new admin_settingpage('local_linkchecker_robot', get_string('pluginname', 'local_linkchecker_robot'));
     // Add the admin page to the menu tree if it ain't exist.
@@ -45,8 +56,9 @@ if ($hassiteconfig) {
         // link to site tools, eg crawl as
 
         $settings->add(new admin_setting_heading('linkchecker',
-                                                    '', 
-                                                    new lang_string('checker_help',      'local_linkchecker_robot', array('url'=>$statusurl) )));
+                                                    '',
+                                                    new lang_string('checker_help',      'local_linkchecker_robot',
+                                                    array('url' => '/local/linkchecker_robot/index.php') )));
 
         $settings->add(new admin_setting_configtext('local_linkchecker_robot/seedurl',
                                                     new lang_string('seedurl',           'local_linkchecker_robot'),
