@@ -119,7 +119,9 @@ class crawler {
         // Filter out non http protocols like mailto:cqulibrary@cqu.edu.au etc.
         $bits = parse_url($url);
         if (array_key_exists('scheme', $bits)
-            && !($bits['scheme'] == 'http' || $bits['scheme'] == 'https') ) {
+            && $bits['scheme'] != 'http'
+            && $bits['scheme'] != 'https'
+            ) {
             return false;
         }
 
