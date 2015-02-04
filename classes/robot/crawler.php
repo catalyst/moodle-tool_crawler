@@ -332,6 +332,8 @@ class crawler {
         $seen = array();
         foreach ($html->find('a[href]') as $e) {
             $href = $e->href;
+            $href = str_replace('&amp;', '&', $href);
+
             if (array_key_exists($href, $seen ) ) {
                 continue;
             }
