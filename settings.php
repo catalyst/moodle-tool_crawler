@@ -111,6 +111,7 @@ grading
                                                     new lang_string('excludemdldomdesc', 'local_linkchecker_robot'),
                                                     ".block.block_settings
 .block.block_book_toc
+.block.block_calendar_month
 .block.block_navigation
 .block.block_cqu_assessment" ));
 
