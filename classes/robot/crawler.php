@@ -425,7 +425,7 @@ class crawler {
         $result->httpcode         = curl_getinfo($s, CURLINFO_HTTP_CODE );
         $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
         $mimetype                 = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
-        $mimetype                 = preg_replace('/; .*/', '', $mimetype);
+        $mimetype                 = preg_replace('/;.*/', '', $mimetype);
         $result->mimetype         = $mimetype;
         $result->lastcrawled      = time();
         $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);

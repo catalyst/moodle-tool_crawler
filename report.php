@@ -35,13 +35,13 @@ if ($report == 'broken') {
          WHERE b.httpcode != ?";
     $opts = array('200');
     $data  = $DB->get_records_sql("SELECT b.id || '-' || a.id,
-                                          b.url broken,
+                                          b.url target,
                                           b.httpcode,
                                           l.text,
                                           a.url,
                                           a.title,
                                           a.courseid,
-                                          c.shortname" . $sql . " ORDER BY httpcode DESC", $opts, $start, $perpage);
+                                          c.shortname" . $sql . " ORDER BY httpcode DESC, c.shortname ASC", $opts, $start, $perpage);
     $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
 
     $mdlw = strlen($CFG->wwwroot);
@@ -56,7 +56,8 @@ if ($report == 'broken') {
         }
         $table->data[] = array(
             $row->httpcode,
-            html_writer::link($row->broken, $text),
+            html_writer::link($row->target, $text) .
+            '<br><small>' . $row->target . '</small>',
             html_writer::link($row->url, $row->title),
             html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname),
         );
@@ -66,35 +67,39 @@ if ($report == 'broken') {
 
     $sql = "
           FROM {linkchecker_url}  b
-     LEFT JOIN {linkchecker_edge} l ON l.b = b.id
-     LEFT JOIN {linkchecker_url}  a ON l.a = a.id
-     LEFT JOIN {course} c ON c.id = a.courseid
+     LEFT JOIN {course} c ON c.id = b.courseid
          WHERE b.lastcrawled IS NOT NULL";
     $opts = array();
-    $data  = $DB->get_records_sql("SELECT b.id || '-' || a.id,
+    $data  = $DB->get_records_sql("SELECT b.id,
                                           b.url target,
                                           b.lastcrawled,
-                                          l.text,
-                                          a.title,
-                                          a.url,
-                                          a.courseid,
+                                          b.filesize,
+                                          b.httpcode,
+                                          b.title,
+                                          b.mimetype,
+                                          b.courseid,
                                           c.shortname"       . $sql . " ORDER BY b.lastcrawled DESC", $opts, $start, $perpage);
     $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
 
     $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
-    $table->head = array('Last crawled', 'URL', 'From page', 'Course');
+    $table->head = array('Last crawled', 'Code', 'Size', 'URL', 'Type', 'Course');
     $table->data = array();
     foreach ($data as $row) {
-        $text = trim($row->text);
+        $text = trim($row->title);
         if (!$text || $text == ""){
-            $text = 'Missing';
+            $text = 'UNKNOWN';
         }
+        $size = $row->filesize * 1;
         $table->data[] = array(
-            userdate($row->lastcrawled),
-            html_writer::link($row->target, $text),
-            html_writer::link($row->url, $row->title),
+            userdate($row->lastcrawled, '%y/%m/%d,&nbsp;%H:%M:%S'),
+            $row->httpcode,
+            $size > 1000000 ? (round(100 * $size / 1000000 ) * .01 . 'MB') :
+            ($size > 1000   ? (round(10  * $size / 1000    ) * .1  . 'KB') : $size . 'B'),
+            html_writer::link($row->target, $text) .
+            '<br><small>' . $row->target . '</small>',
+            $row->mimetype,
             html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname),
         );
     }
@@ -132,7 +137,8 @@ if ($report == 'broken') {
         $table->data[] = array(
             $size > 1000000 ? (round(100 * $size / 1000000 ) * .01 . 'MB') :
             ($size > 1000   ? (round(10  * $size / 1000    ) * .1  . 'KB') : $size . 'B'),
-            html_writer::link($row->target, $text),
+            html_writer::link($row->target, $text) .
+            '<br><small>' . $row->target . '</small>',
             html_writer::link($row->url, $row->title),
             html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname),
         );
@@ -142,7 +148,8 @@ if ($report == 'broken') {
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string($report, 'local_linkchecker_robot'));
-echo "<p>Found ".$count;
+echo "<p>Found " . $count. "</p>";
+echo "<p>NOTE: Duplicate URL's with multiple incoming links are only scraped once.</p>";
 echo html_writer::table($table);
 $baseurl = new moodle_url('/local/linkchecker_robot/report.php', array('perpage' => $perpage, 'report' => $report));
 echo $OUTPUT->paging_bar($count, $page, $perpage, $baseurl);
