@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Link checker robot';
 
 $string['status'] = 'Robot status';
+$string['recent'] = 'Recently crawled';
 $string['broken'] = 'Broken URLs';
 $string['oversize'] = 'Big / slow URLs';
 

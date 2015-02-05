@@ -62,6 +62,43 @@ if ($report == 'broken') {
         );
     }
 
+} else if ($report == 'recent') {
+
+    $sql = "
+          FROM {linkchecker_url}  b
+     LEFT JOIN {linkchecker_edge} l ON l.b = b.id
+     LEFT JOIN {linkchecker_url}  a ON l.a = a.id
+     LEFT JOIN {course} c ON c.id = a.courseid
+         WHERE b.lastcrawled IS NOT NULL";
+    $opts = array();
+    $data  = $DB->get_records_sql("SELECT b.id || '-' || a.id,
+                                          b.url target,
+                                          b.lastcrawled,
+                                          l.text,
+                                          a.title,
+                                          a.url,
+                                          a.courseid,
+                                          c.shortname"       . $sql . " ORDER BY b.lastcrawled DESC", $opts, $start, $perpage);
+    $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
+
+    $mdlw = strlen($CFG->wwwroot);
+
+    $table = new html_table();
+    $table->head = array('Last crawled', 'URL', 'From page', 'Course');
+    $table->data = array();
+    foreach ($data as $row) {
+        $text = trim($row->text);
+        if (!$text || $text == ""){
+            $text = 'Missing';
+        }
+        $table->data[] = array(
+            userdate($row->lastcrawled),
+            html_writer::link($row->target, $text),
+            html_writer::link($row->url, $row->title),
+            html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname),
+        );
+    }
+
 } else if ($report == 'oversize') {
 
     $sql = "
