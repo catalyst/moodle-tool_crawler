@@ -281,11 +281,10 @@ class crawler {
         $result = $this->scrape($node->url);
         $result = (object) array_merge((array) $node, (array) $result);
 
-        // TODO add external url whitelist.
-        if ($result->external == 0 && $result->httpcode == '200') {
+        if ($result->httpcode == '200') {
 
             if ($result->mimetype == 'text/html') {
-                $this->extract_links($result);
+                $this->parse_html($result, $result->external);
             } else {
 
                 // TODO Possibly we can infer the course purely from the url
@@ -305,7 +304,7 @@ class crawler {
      *
      * Should only be run on internal moodle pages
      */
-    private function extract_links($node) {
+    private function parse_html($node, $external) {
 
         global $CFG;
 
@@ -319,6 +318,13 @@ class crawler {
         // If couldn't parse html.
         if (!$html) {
             return;
+        }
+
+        $node->title = $html->find('title', 0)->plaintext;
+
+        // Everything after this is only for internal moodle pages
+        if ($external){
+            return $node;
         }
 
         // Remove any chunks of DOM that we know to be safe and don't want to follow.
@@ -362,10 +368,7 @@ class crawler {
             }
         }
 
-        $node->title = $html->find('title', 0)->plaintext;
-
         return $node;
-
     }
 
 
