@@ -414,7 +414,7 @@ class crawler {
         curl_setopt($s, CURLOPT_URL,             $url);
         curl_setopt($s, CURLOPT_TIMEOUT,         $this->config->maxtime);
         curl_setopt($s, CURLOPT_USERPWD,         $this->config->botusername.':'.$this->config->botpassword);
-        curl_setopt($s, CURLOPT_USERAGENT,       $this->config->useragent . '/' . $this->config->version );
+        curl_setopt($s, CURLOPT_USERAGENT,       $this->config->useragent . '/' . $this->config->version . ' ('.$CFG->wwwroot.')' );
         curl_setopt($s, CURLOPT_MAXREDIRS,       5);
         curl_setopt($s, CURLOPT_RETURNTRANSFER,  true);
         curl_setopt($s, CURLOPT_FOLLOWLOCATION,  true);

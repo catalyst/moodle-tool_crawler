@@ -16,14 +16,41 @@
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
-require_capability('moodle/site:config', context_system::instance());
 
 $report     = optional_param('report',  '', PARAM_ALPHANUMEXT);
 $page       = optional_param('page',    0,  PARAM_INT);
 $perpage    = optional_param('perpage', 50, PARAM_INT);
+$courseid   = optional_param('course',  0,  PARAM_INT);
 $start = $page * $perpage;
 
-admin_externalpage_setup('local_linkchecker_robot_'.$report);
+$sqlfilter = '';
+
+$baseurl = new moodle_url('/local/linkchecker_robot/report.php', array(
+    'perpage' => $perpage,
+    'report' => $report,
+    'course' => $courseid
+));
+
+if ($courseid){
+    // If course then this is an a course editor report
+    $course = get_course($courseid);
+    require_login($course);
+
+    $coursecontext = context_course::instance($courseid);
+    require_capability('moodle/course:update', $coursecontext);
+
+    $PAGE->set_context($coursecontext);
+    $PAGE->set_url($baseurl);
+    $PAGE->set_pagelayout('admin');
+    $PAGE->set_title( get_string($report, 'local_linkchecker_robot') );
+    $sqlfilter = ' AND c.id = '.$courseid;
+
+} else {
+
+    // If no course then this is an admin only report
+    require_capability('moodle/site:config', context_system::instance());
+    admin_externalpage_setup('local_linkchecker_robot_'.$report);
+}
 
 if ($report == 'broken') {
 
@@ -32,7 +59,9 @@ if ($report == 'broken') {
      LEFT JOIN {linkchecker_edge} l ON l.b = b.id
      LEFT JOIN {linkchecker_url}  a ON l.a = a.id
      LEFT JOIN {course} c ON c.id = a.courseid
-         WHERE b.httpcode != ?";
+         WHERE b.httpcode != ?
+        $sqlfilter
+    ";
     $opts = array('200');
     $data  = $DB->get_records_sql("SELECT b.id || '-' || a.id,
                                           b.url target,
@@ -58,7 +87,8 @@ if ($report == 'broken') {
             $row->httpcode,
             html_writer::link($row->target, $text) .
             '<br><small>' . $row->target . '</small>',
-            html_writer::link($row->url, $row->title),
+            html_writer::link($row->url, $row->title) .
+            '<br><small>' . substr($row->url, $mdlw) . '</small>',
             html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname),
         );
     }
@@ -151,7 +181,6 @@ echo $OUTPUT->heading(get_string($report, 'local_linkchecker_robot'));
 echo "<p>Found " . $count. "</p>";
 echo "<p>NOTE: Duplicate URL's with multiple incoming links are only scraped once.</p>";
 echo html_writer::table($table);
-$baseurl = new moodle_url('/local/linkchecker_robot/report.php', array('perpage' => $perpage, 'report' => $report));
 echo $OUTPUT->paging_bar($count, $page, $perpage, $baseurl);
 echo $OUTPUT->footer();
 

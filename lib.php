@@ -72,3 +72,44 @@ function local_linkchecker_robot_crawl() {
     }
 
 }
+
+
+/*
+ * Given a course and $PAGE?
+ * return a summary count of broken links in this course, by error code level
+ * return a summary count of large urls in this course
+ * return a list of broken links on this page in particular
+ *
+ */
+function local_linkchecker_robot_summary($courseid, $url) {
+
+    global $DB;
+
+    $result = array();
+    $result['large']  = array();
+    $result['nearby'] = array();
+
+
+    // Breakdown counts of status codes by 200, 300, 400, 500
+    $result['broken']   = $DB->get_records_sql("
+         SELECT substr(b.httpcode,0,2) code,
+                count(substr(b.httpcode,0,2))
+           FROM {linkchecker_url}   b
+      LEFT JOIN {linkchecker_edge}  l ON l.b  = b.id
+      LEFT JOIN {linkchecker_url}   a ON l.a  = a.id
+      LEFT JOIN {course}            c ON c.id = a.courseid
+          WHERE a.courseid = :course
+       GROUP BY substr(b.httpcode,0,2)
+    ", array('course' => $courseid) );
+
+    $e = (object) array('count'=>0);
+    if (!array_key_exists('2', $result['broken'])) { $result['broken']['2'] = $e; }
+    if (!array_key_exists('3', $result['broken'])) { $result['broken']['3'] = $e; }
+    if (!array_key_exists('4', $result['broken'])) { $result['broken']['4'] = $e; }
+    if (!array_key_exists('5', $result['broken'])) { $result['broken']['5'] = $e; }
+
+#e($result);
+    return $result;
+}
+
+
