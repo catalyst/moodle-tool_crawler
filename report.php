@@ -177,9 +177,8 @@ if ($report == 'broken') {
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string($report, 'local_linkchecker_robot'));
-echo "<p>Found " . $count. "</p>";
-echo "<p>NOTE: Duplicate URL's with multiple incoming links are only scraped once.</p>";
+echo $OUTPUT->heading('Found ' . $count . ' ' . get_string($report, 'local_linkchecker_robot'));
+echo "<p>Duplicate URL's will only be searched once.</p>";
 echo html_writer::table($table);
 echo $OUTPUT->paging_bar($count, $page, $perpage, $baseurl);
 echo $OUTPUT->footer();
