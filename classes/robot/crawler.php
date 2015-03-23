@@ -293,7 +293,7 @@ class crawler {
 
         }
 
-        function detectUTF8($string) {
+        $detectutf8 = function ($string) {
                 return preg_match('%(?:
                 [\xC2-\xDF][\x80-\xBF]        # non-overlong 2-byte
                 |\xE0[\xA0-\xBF][\x80-\xBF]               # excluding overlongs
@@ -303,9 +303,9 @@ class crawler {
                 |[\xF1-\xF3][\x80-\xBF]{3}                  # planes 4-15
                 |\xF4[\x80-\x8F][\x80-\xBF]{2}    # plane 16
                 )+%xs', $string);
-        }
+        };
 
-        if (!detectUTF8($result->title)) {
+        if (!$detectutf8($result->title)) {
             $result->title = utf8_decode($result->title);
         }
 
