@@ -441,6 +441,51 @@ class crawler {
         $result = (object) array();
         $result->url              = $url;
         $result->contents         = curl_exec($s);
+        $data = $result->contents;
+
+        // See http://stackoverflow.com/questions/9351694/setting-php-default-encoding-to-utf-8
+        unset($charset);
+        $content_type = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
+
+        /* 1: HTTP Content-Type: header */
+        preg_match( '@([\w/+]+)(;\s*charset=(\S+))?@i', $content_type, $matches );
+        if ( isset( $matches[3] ) )
+            $charset = $matches[3];
+
+        /* 2: <meta> element in the page */
+        if (!isset($charset)) {
+            preg_match( '@<meta\s+http-equiv="Content-Type"\s+content="([\w/]+)(;\s*charset=([^\s"]+))?@i', $data, $matches );
+            if ( isset( $matches[3] ) )
+                $charset = $matches[3];
+        }
+
+        /* 3: <xml> element in the page */
+        if (!isset($charset)) {
+            preg_match( '@<\?xml.+encoding="([^\s"]+)@si', $data, $matches );
+            if ( isset( $matches[1] ) )
+                $charset = $matches[1];
+        }
+
+        /* 4: PHP's heuristic detection */
+        if (!isset($charset)) {
+            $encoding = mb_detect_encoding($data);
+            if ($encoding)
+                $charset = $encoding;
+        }
+
+        /* 5: Default for HTML */
+        if (!isset($charset)) {
+            if (strstr($content_type, "text/html") === 0)
+                $charset = "ISO 8859-1";
+        }
+
+        /* Convert it if it is anything but UTF-8 */
+        /* You can change "UTF-8"  to "UTF-8//IGNORE" to
+           ignore conversion errors and still output something reasonable */
+        if (isset($charset) && strtoupper($charset) != "UTF-8") {
+             $result->contents  = iconv($charset, 'UTF-8', $result->contents);
+        }
+
         $result->httpcode         = curl_getinfo($s, CURLINFO_HTTP_CODE );
         $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
         $mimetype                 = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
