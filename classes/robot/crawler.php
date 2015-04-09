@@ -106,6 +106,39 @@ class crawler {
         }
     }
 
+    public function absolute_url($base, $rel) {
+        /* return if already absolute URL */
+        if (parse_url($rel, PHP_URL_SCHEME) != '') {
+            return $rel;
+        }
+
+        /* queries and anchors */
+        if ($rel[0]=='#' || $rel[0]=='?') {
+            return $base.$rel;
+        }
+
+        /* parse base URL and convert to local variables:
+           $scheme, $host, $path */
+        extract(parse_url($base));
+
+        /* remove non-directory element from path */
+        $path = preg_replace('#/[^/]*$#', '', $path);
+
+        /* destroy path if relative url points to root */
+        if ($rel[0] == '/') $path = '';
+
+        /* dirty absolute URL */
+        $abs = "$host$path/$rel";
+
+        /* replace '//' or '/./' or '/foo/../' with '/' */
+        $re = array('#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#');
+        for($n=1; $n>0; $abs=preg_replace($re, '/', $abs, -1, $n)) {}
+
+        /* absolute URL is ready! */
+        return $scheme.'://'.$abs;
+    }
+
+
 
     /*
      * Adds a url to the queue for crawling
@@ -116,6 +149,8 @@ class crawler {
 
         global $DB, $CFG;
 
+        $url = $this->absolute_url($baseurl, $url);
+
         // Filter out non http protocols like mailto:cqulibrary@cqu.edu.au etc.
         $bits = parse_url($url);
         if (array_key_exists('scheme', $bits)
@@ -123,20 +158,6 @@ class crawler {
             && $bits['scheme'] != 'https'
             ) {
             return false;
-        }
-
-        // All url's must be fully qualified.
-        // If it is server relative the add the wwwroot.
-        if ( substr($url, 0, 1) == '/') {
-            $url = $CFG->wwwroot . $url;
-        }
-
-        // If the url is relative then prepend the from page url.
-        if (substr($url, 0, 4) != 'http' ) {
-            $rslash = strrpos($baseurl, '/');
-            $url = substr($baseurl, 0, $rslash + 1) . $url;
-            // TODO
-            // fix up ../ links
         }
 
         // If this url is external then check the ext whitelist.
