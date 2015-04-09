@@ -28,10 +28,19 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Link checker robot';
 
+$string['settings'] = 'Settings';
 $string['status'] = 'Robot status';
-$string['recent'] = 'Recently crawled';
-$string['broken'] = 'Broken URLs';
-$string['oversize'] = 'Big / slow URLs';
+$string['recent'] = 'Recently crawled URL\'s';
+$string['recent_header'] = '';
+$string['broken'] = 'Broken links';
+$string['broken_header'] = '<p>Duplicate URLs will only be searched once.</p>';
+$string['oversize'] = 'Big / slow links';
+$string['oversize_header'] = '';
+$string['queued'] = 'Queued URL\'s';
+$string['queued_header'] = '<p>The title and course are only known if the URL has been seen on a previous crawl.</p>';
+
+$string['event:crawlstart'] = 'Link check crawl started';
+$string['event:crawlstartdesc'] = 'Link check crawl started {$a}';
 
 $string['checker_help'] = '<a href="{$a->url}">Robot status page</a>';
 $string['seedurl'] = 'Seed URL';

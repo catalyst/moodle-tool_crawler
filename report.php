@@ -17,6 +17,8 @@
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
+require_login();
+
 $report     = optional_param('report',  '', PARAM_ALPHANUMEXT);
 $page       = optional_param('page',    0,  PARAM_INT);
 $perpage    = optional_param('perpage', 50, PARAM_INT);
@@ -30,6 +32,15 @@ $baseurl = new moodle_url('/local/linkchecker_robot/report.php', array(
     'report' => $report,
     'course' => $courseid
 ));
+
+
+function http_code($row) {
+    $msg = isset($row->httpmsg) ? $row->httpmsg : '?';
+    $code = $row->httpcode;
+    $cc = substr($code,0,1);
+    $code = "$msg<br><small class='link-$cc"."xx'>$code</small>";
+    return $code;
+}
 
 if ($courseid){
     // If course then this is an a course editor report
@@ -66,6 +77,7 @@ if ($report == 'broken') {
     $data  = $DB->get_records_sql("SELECT b.id || '-' || a.id,
                                           b.url target,
                                           b.httpcode,
+                                          b.httpmsg,
                                           l.text,
                                           a.url,
                                           a.title,
@@ -84,11 +96,46 @@ if ($report == 'broken') {
             $text = 'Missing';
         }
         $table->data[] = array(
-            $row->httpcode,
+            http_code($row),
             html_writer::link($row->target, $text) .
             '<br><small>' . $row->target . '</small>',
             html_writer::link($row->url, $row->title) .
             '<br><small>' . substr($row->url, $mdlw) . '</small>',
+            html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname),
+        );
+    }
+
+} else if ($report == 'queued') {
+
+    $sql = "
+          FROM {linkchecker_url}  a
+     LEFT JOIN {course} c ON c.id = a.courseid
+         WHERE a.lastcrawled IS NULL
+            OR a.lastcrawled < needscrawl";
+    $opts = array();
+    $data  = $DB->get_records_sql("SELECT a.id,
+                                          a.url target,
+                                          a.title,
+                                          a.lastcrawled,
+                                          a.needscrawl,
+                                          a.courseid,
+                                          c.shortname"       . $sql . " ORDER BY a.needscrawl ASC, a.id ASC", $opts, $start, $perpage);
+    $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
+
+    $mdlw = strlen($CFG->wwwroot);
+
+    $table = new html_table();
+    $table->head = array('When queued', 'URL', 'In course');
+    $table->data = array();
+    foreach ($data as $row) {
+        $text = trim($row->title);
+        if (!$text || $text == ""){
+            $text = 'Not yet known';
+        }
+        $table->data[] = array(
+            userdate($row->needscrawl, '%h %e,&nbsp;%H:%M:%S'),
+            html_writer::link($row->target, $text) .
+            '<br><small>' . $row->target . '</small>',
             html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname),
         );
     }
@@ -105,6 +152,7 @@ if ($report == 'broken') {
                                           b.lastcrawled,
                                           b.filesize,
                                           b.httpcode,
+                                          b.httpmsg,
                                           b.title,
                                           b.mimetype,
                                           b.courseid,
@@ -114,17 +162,18 @@ if ($report == 'broken') {
     $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
-    $table->head = array('Last crawled', 'Code', 'Size', 'URL', 'Type', 'Course');
+    $table->head = array('Last&nbsp;crawled&nbsp;time', 'Response', 'Size', 'URL', 'Mime type', 'In course');
     $table->data = array();
     foreach ($data as $row) {
         $text = trim($row->title);
         if (!$text || $text == ""){
             $text = 'UNKNOWN';
         }
+        $code = http_code($row);
         $size = $row->filesize * 1;
         $table->data[] = array(
-            userdate($row->lastcrawled, '%y/%m/%d,&nbsp;%H:%M:%S'),
-            $row->httpcode,
+            userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
+            $code,
             $size > 1000000 ? (round(100 * $size / 1000000 ) * .01 . 'MB') :
             ($size > 1000   ? (round(10  * $size / 1000    ) * .1  . 'KB') : $size . 'B'),
             html_writer::link($row->target, $text) .
@@ -143,7 +192,7 @@ if ($report == 'broken') {
      LEFT JOIN {course} c ON c.id = a.courseid
          WHERE b.filesize > ?";
     $opts = array('150000');
-    $data  = $DB->get_records_sql("SELECT b.id || '-' || a.id,
+    $data  = $DB->get_records_sql("SELECT b.id || '-' || a.id || '-' || l.id,
                                           b.url target,
                                           b.filesize,
                                           l.text,
@@ -167,18 +216,33 @@ if ($report == 'broken') {
         $table->data[] = array(
             $size > 1000000 ? (round(100 * $size / 1000000 ) * .01 . 'MB') :
             ($size > 1000   ? (round(10  * $size / 1000    ) * .1  . 'KB') : $size . 'B'),
-            html_writer::link($row->target, $text) .
-            '<br><small>' . $row->target . '</small>',
-            html_writer::link($row->url, $row->title),
+            html_writer::link($row->target, $text) .    '<br><small>' . $row->target . '</small>',
+            html_writer::link($row->url, $row->title) . '<br><small>' . $row->url    . '</small>',
             html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname),
         );
     }
 
 }
 
+$reports = array('queued', 'recent', 'broken', 'oversize');
+
 echo $OUTPUT->header();
+if ($courseid){
+} else {
+    echo html_writer::link("/admin/settings.php?section=local_linkchecker_robot", get_string('settings', 'local_linkchecker_robot'));
+    echo ' | ';
+    echo html_writer::link("index.php", get_string('status', 'local_linkchecker_robot'));
+    foreach ($reports as $rpt){
+        echo ' | ';
+        if ($report == $rpt){
+            echo '<b>' . html_writer::link("report.php?report=$rpt", get_string($rpt, 'local_linkchecker_robot')) . '</b>';
+        } else {
+            echo html_writer::link("report.php?report=$rpt", get_string($rpt, 'local_linkchecker_robot'));
+        }
+    }
+}
 echo $OUTPUT->heading('Found ' . $count . ' ' . get_string($report, 'local_linkchecker_robot'));
-echo "<p>Duplicate URLs will only be searched once.</p>";
+echo get_string($report . '_header', 'local_linkchecker_robot');
 echo html_writer::table($table);
 echo $OUTPUT->paging_bar($count, $page, $perpage, $baseurl);
 echo $OUTPUT->footer();

@@ -1,57 +1,46 @@
-
-
-
 Task timing setup
 ----------------
 
-Because this is continually hitting your prod system, you may want to only run the robot crawler at defined times, such as every minute but only during night hours.
+
+https://moodle.cqu.edu.au/local/linkchecker_robot/report.php?report=oversize
 
 
-Task API setup
+keep old links for always, 1 week, 1 month, never
 
+* make a crawl stats table, when started, how many ticks, how many urls queued, how many links, how many broken urls, when finished
 
+config for 'big' file size limit
 
+mark a url to be rescraped next, delete all it's links and touch it's needscrape timestamp
 
- - crawler status
-   - how many urls have been crawled this time?
-   - how many new urls found
-   - how many urls are not yet crawled
-   - make this a page that refreshes every couple seconds
+make a cron / config for when we clean up old links and urls, default to a week ago
 
+make all the reports work at course level, filter properly, crumb trails
 
+add the big links to the block
+
+be able to filter drill down to a course from admin report
+
+fix bug MOODLE-786
 
 * the robot
- - set the site level scrape time to now
- - start at the seed
- - scrape a page
  - find links, create if needed the next pages, create if needed the links, touch the timestamp
 
  - and which isn't 'ignored' do we care?
 
-* finishing a crawl
-
-* when do we start a new recrawl? right away?
-
-
 * orphans pages?
  - if broken, clean them up (ie url was a typo, so we get an entry that will never work, remove it later when it's edge is gone)
 
-
 * orphaned links?
  - do we remove them?
-
 
 * capability
  - ignore a broken page
  - ignore a broken course link
 
-
-* report: admin and course level reports
- - internal urls which re busted, what pages are they on / course
- - cross course links (mostly help? maybe the umbrella courses)
- - most popular pages linked to
+* cross course links (mostly help? maybe the umbrella courses)
+* most popular pages linked to
 
 * do we also need a block to show some quick stats?
  - broken links, grouped by course pages
-
 

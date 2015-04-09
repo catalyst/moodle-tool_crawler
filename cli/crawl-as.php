@@ -51,7 +51,9 @@ if ($unrecognized) {
 }
 
 $help =
-"Bulk restore of courses
+"Crawl a url as the robot and parse it.
+
+Useful for when a page has been corrected and you want to instantly reflect this.
 
 Options:
 -h, --help      Print out this help

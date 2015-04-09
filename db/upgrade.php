@@ -1,5 +1,5 @@
 <?php
-/* This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,22 +14,33 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
- * Defines the version of local_linkchecker_robot
- *
  * @package    local_linkchecker_robot
  * @author     Brendan Heywood <brendan@catalyst-au.net>
- * @copyright  Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015040801;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2013110500;        // Requires this Moodle version
-$plugin->component = 'local_linkchecker_robot'; // To check on upgrade, that module sits in correct place
-$plugin->dependencies = array(
-    'auth_basic' => ANY_VERSION,
-);
+function xmldb_local_linkchecker_robot_upgrade($oldversion) {
+    global $DB;
 
+    $dbman = $DB->get_manager();
+
+    if ($oldversion < 2015040801) {
+
+        // Define field httpmsg to be added to linkchecker_url.
+        $table = new xmldb_table('linkchecker_url');
+        $field = new xmldb_field('httpmsg', XMLDB_TYPE_TEXT, null, null, null, null, null, 'ignoredtime');
+
+        // Conditionally launch add field httpmsg.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Linkchecker_robot savepoint reached.
+        upgrade_plugin_savepoint(true, 2015040801, 'local', 'linkchecker_robot');
+    }
+
+    return true;
+}

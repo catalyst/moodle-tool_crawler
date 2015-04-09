@@ -173,11 +173,12 @@ class crawler {
             $node->createdate = time();
             $node->url        = $url;
             $node->external   = strpos($url, $CFG->wwwroot) === 0 ? 0 : 1;
+            $node->needscrawl = time();
             $node->id = $DB->insert_record('linkchecker_url', $node);
 
         } else {
 
-            $node->needscrawl = $this->config->crawlstart;
+            $node->needscrawl = time();
             $DB->update_record('linkchecker_url', $node);
         }
         return $node;
@@ -257,6 +258,8 @@ class crawler {
                                          FROM {linkchecker_url}
                                         WHERE lastcrawled IS NULL
                                            OR lastcrawled < needscrawl
+                                     ORDER BY needscrawl ASC, id ASC
+                                        LIMIT 1
                                     ');
 
         $node = array_pop($nodes);
@@ -364,6 +367,24 @@ class crawler {
                 continue;
             }
 
+            // If this url is external then check the ext whitelist.
+            $mdlw = strlen($CFG->wwwroot);
+            $bad = 0;
+            if (substr ($href, 0, $mdlw) === $CFG->wwwroot) {
+                $excludes = str_replace("\r", '', $this->config->excludemdlurl);
+            } else {
+                $excludes = str_replace("\r", '', $this->config->excludeexturl);
+            }
+            $excludes = explode("\n", $excludes);
+            if (count($excludes) > 0 && $excludes[0]) {
+                foreach ($excludes as $exclude) {
+                    if (strpos($href, $exclude) > 0 ) {
+                        $bad = 1;
+                        break;
+                    }
+                }
+            }
+
             // TODO find some context of the link, like the nearest id.
             $this->link_from_node_to_url($node, $href, $e->innertext);
         }
@@ -435,12 +456,18 @@ class crawler {
         curl_setopt($s, CURLOPT_RETURNTRANSFER,  true);
         curl_setopt($s, CURLOPT_FOLLOWLOCATION,  true);
         curl_setopt($s, CURLOPT_FRESH_CONNECT,   true);
+        curl_setopt($s, CURLOPT_HEADER,          true);
         curl_setopt($s, CURLOPT_COOKIEJAR,       $cookiefilelocation);
         curl_setopt($s, CURLOPT_COOKIEFILE,      $cookiefilelocation);
 
         $result = (object) array();
         $result->url              = $url;
-        $result->contents         = curl_exec($s);
+        $raw   = curl_exec($s);
+        $header_size = curl_getinfo($s, CURLINFO_HEADER_SIZE);
+        $headers = substr($raw, 0, $header_size);
+        $header = strtok($headers, "\n");
+        $result->httpmsg          = explode(" ", $header, 3)[2];
+        $result->contents         = substr($raw, $header_size);
         $data = $result->contents;
 
         // See http://stackoverflow.com/questions/9351694/setting-php-default-encoding-to-utf-8

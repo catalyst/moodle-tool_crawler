@@ -17,6 +17,7 @@
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
+require_login();
 require_capability('moodle/site:config', context_system::instance());
 admin_externalpage_setup('local_linkchecker_robot_status');
 
@@ -39,9 +40,16 @@ $crawlend       = $robot->get_last_crawlend();
 $crawltick      = $robot->get_last_crawltick();
 $boterror       = $robot->is_bot_valid();
 $queuesize      = $robot->get_queue_size();
-$processed      = $robot->get_processed();
+$recent         = $robot->get_processed();
 $oldqueuesize   = $robot->get_old_queue_size();
 
+$broken = $DB->get_field_sql("SELECT COUNT(*)
+                                 FROM {linkchecker_url}
+                                WHERE httpcode != ?", array('200') );
+
+$oversize = $DB->get_field_sql("SELECT COUNT(*)
+                                 FROM {linkchecker_url}
+                                WHERE filesize > ?",  array('150000') );
 ?>
 
 <table>
@@ -49,25 +57,17 @@ $oldqueuesize   = $robot->get_old_queue_size();
 <tr><td>Current crawl started at        <td><?php echo $crawlstart ? userdate( $crawlstart) : 'Never run'      ?>
 <tr><td>Last crawl ended at             <td><?php echo $crawlend   ? userdate( $crawlend)   : 'Never finished' ?>
 <tr><td>Last crawl process              <td><?php echo $crawltick  ? userdate( $crawltick)  : '-'              ?>
-<tr><td>How many URL's in the queue     <td><?php echo $queuesize    ?>
-<tr><td>How many URL's processed so far <td><?php echo $processed    ?>
 <tr><td>Last queue size                 <td><?php echo $oldqueuesize ?>
+<tr><td><?php echo get_string('queued',   'local_linkchecker_robot' ); ?><td><a href="report.php?report=queued"  ><?php echo $queuesize ?></a>
+<tr><td><?php echo get_string('recent',   'local_linkchecker_robot' ); ?><td><a href="report.php?report=recent"  ><?php echo $recent    ?></a>
+<tr><td><?php echo get_string('broken',   'local_linkchecker_robot' ); ?><td><a href="report.php?report=broken"  ><?php echo $broken    ?></a>
+<tr><td><?php echo get_string('oversize', 'local_linkchecker_robot' ); ?><td><a href="report.php?report=oversize"><?php echo $oversize  ?></a>
 </table>
-
-
-<h3>Summary</h3>
-
-<p>Broken URL's:
-<?php echo $DB->get_field_sql("SELECT COUNT(*)
-                                 FROM {linkchecker_url}
-                                WHERE httpcode != ?", array('200') ); ?>
- <a href="report.php?report=broken">See all</a>
 
 <!--
 <p>crawl as
 <p> link to course level reports
 <p> link to global reports
-<p>broken urls:
 <p>Slow urls
 <p>high linked urls
 -->

@@ -30,6 +30,35 @@ require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once($CFG->libdir.'/clilib.php');
 require_once($CFG->dirroot .'/local/linkchecker_robot/lib.php');
 
+list($options, $unrecognized) = cli_get_params(array(
+    'help'      => false,
+    'url'   => null,
+),
+array(
+    'h' => 'help',
+    'u' => 'url',
+));
+
+if ($unrecognized) {
+    $unrecognized = implode("\n  ", $unrecognized);
+    cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
+}
+
+$help =
+"Scrape the url as the robot would see it, but do not process/queue it.
+
+Options:
+-h, --help      Print out this help
+-u, --url       Url to scrape
+
+Example:
+\$sudo -u www-data php scrape-as.php --url=http://ford.com/
+";
+
+if ($options['help']) {
+    echo $help;
+    die();
+}
 
 $robot = new \local_linkchecker_robot\robot\crawler();
 
@@ -39,13 +68,18 @@ if ($error){
     exit;
 }
 
-$url = 'http://he.moodle.cqu.local/course/view.php?id=2';
+if (!$options['url']) {
+    echo $help;
+    die();
+}
+
+$url    = $options['url'];
 
 $node = $robot->scrape($url);
 
 $dump = $node->contents;
-$node->contents = '';
+unset($node->contents);
+print $dump;
 print_r($node);
-#print $dump;
 
 

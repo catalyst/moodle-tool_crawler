@@ -36,6 +36,10 @@ if ($hassiteconfig) {
                                            get_string('status', 'local_linkchecker_robot'),
                                            $CFG->wwwroot . '/local/linkchecker_robot/index.php') );
 
+    $ADMIN->add('local_linkchecker_cat', new admin_externalpage('local_linkchecker_robot_queued',
+                                           get_string('queued', 'local_linkchecker_robot'),
+                                           $CFG->wwwroot . '/local/linkchecker_robot/report.php?report=queued') );
+
     $ADMIN->add('local_linkchecker_cat', new admin_externalpage('local_linkchecker_robot_recent',
                                            get_string('recent', 'local_linkchecker_robot'),
                                            $CFG->wwwroot . '/local/linkchecker_robot/report.php?report=recent') );
@@ -123,7 +127,7 @@ grading
         $settings->add(new admin_setting_configtext('local_linkchecker_robot/maxtime',
                                                     new lang_string('maxtime',           'local_linkchecker_robot'),
                                                     new lang_string('maxtimedesc',       'local_linkchecker_robot'),
-                                                    '10' ));
+                                                    '60' ));
 
         $settings->add(new admin_setting_configtext('local_linkchecker_robot/maxcrontime',
                                                     new lang_string('maxcrontime',       'local_linkchecker_robot'),
