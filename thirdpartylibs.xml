@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<libraries>
+  <library>
+    <location>simple_html_dom</location>
+    <name>simple html dom</name>
+    <license>MIT</license>
+    <version></version>
+    <licenseversion></licenseversion>
+  </library>
+</libraries>
+
