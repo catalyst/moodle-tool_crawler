@@ -1,9 +1,5 @@
-Task timing setup
-----------------
 
-
-https://moodle.cqu.edu.au/local/linkchecker_robot/report.php?report=oversize
-
+move simple html dom to thirdparty dir and add xml stuff OR look for lib already in moodle?
 
 keep old links for always, 1 week, 1 month, never
 
@@ -11,20 +7,13 @@ keep old links for always, 1 week, 1 month, never
 
 config for 'big' file size limit
 
-mark a url to be rescraped next, delete all it's links and touch it's needscrape timestamp
-
 make a cron / config for when we clean up old links and urls, default to a week ago
-
-make all the reports work at course level, filter properly, crumb trails
 
 add the big links to the block
 
 be able to filter drill down to a course from admin report
 
 fix bug MOODLE-786
-
-* the robot
- - find links, create if needed the next pages, create if needed the links, touch the timestamp
 
  - and which isn't 'ignored' do we care?
 

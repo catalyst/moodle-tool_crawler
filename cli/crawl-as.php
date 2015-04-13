@@ -1,5 +1,5 @@
 <?php
-/* This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 
 /**
  *  link checker robot local cli
@@ -74,7 +73,7 @@ if ($options['help']) {
 $robot = new \local_linkchecker_robot\robot\crawler();
 
 $error = $robot->is_bot_valid();
-if ($error){
+if ($error) {
     print "Error: $error";
     exit;
 }
@@ -91,5 +90,4 @@ $result = $robot->crawl($node);
 $node2  = $DB->get_record('linkchecker_url', array('url' => $node->url) );
 
 print_r($node2);
-
 

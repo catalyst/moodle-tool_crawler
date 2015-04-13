@@ -34,9 +34,7 @@ function local_linkchecker_robot_crawl() {
 
     $robot = new \local_linkchecker_robot\robot\crawler();
 
-    // Check if valid, otherwise bail quickly
-
-
+    // Check if valid, otherwise bail quickly.
 
     // If we need to start a new crawl, push the seed url into the crawl queue.
     if (!$crawlstart || $crawlstart <= $crawlend) {
@@ -44,7 +42,6 @@ function local_linkchecker_robot_crawl() {
         $start = time();
         set_config('crawlstart', $start, 'local_linkchecker_robot');
         $robot->mark_for_crawl($CFG->wwwroot.'/', $config->seedurl);
-        // print "Added seed url {$config->seedurl} to queue " . userdate($start) . "\n";
 
     }
 
@@ -89,8 +86,7 @@ function local_linkchecker_robot_summary($courseid, $url) {
     $result['large']  = array();
     $result['nearby'] = array();
 
-
-    // Breakdown counts of status codes by 200, 300, 400, 500
+    // Breakdown counts of status codes by 200, 300, 400, 500.
     $result['broken']   = $DB->get_records_sql("
          SELECT substr(b.httpcode,0,2) code,
                 count(substr(b.httpcode,0,2))
@@ -102,13 +98,20 @@ function local_linkchecker_robot_summary($courseid, $url) {
        GROUP BY substr(b.httpcode,0,2)
     ", array('course' => $courseid) );
 
-    $e = (object) array('count'=>0);
-    if (!array_key_exists('2', $result['broken'])) { $result['broken']['2'] = $e; }
-    if (!array_key_exists('3', $result['broken'])) { $result['broken']['3'] = $e; }
-    if (!array_key_exists('4', $result['broken'])) { $result['broken']['4'] = $e; }
-    if (!array_key_exists('5', $result['broken'])) { $result['broken']['5'] = $e; }
+    $e = (object) array('count' => 0);
+    if (!array_key_exists('2', $result['broken'])) {
+        $result['broken']['2'] = $e;
+    }
+    if (!array_key_exists('3', $result['broken'])) {
+        $result['broken']['3'] = $e;
+    }
+    if (!array_key_exists('4', $result['broken'])) {
+        $result['broken']['4'] = $e;
+    }
+    if (!array_key_exists('5', $result['broken'])) {
+        $result['broken']['5'] = $e;
+    }
 
-#e($result);
     return $result;
 }
 

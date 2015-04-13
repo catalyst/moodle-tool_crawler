@@ -26,7 +26,7 @@
 namespace local_linkchecker_robot\robot;
 
 require_once($CFG->dirroot.'/local/linkchecker_robot/lib.php');
-require_once($CFG->dirroot.'/local/linkchecker_robot/simple_html_dom.php');
+require_once($CFG->dirroot.'/local/linkchecker_robot/simple_html_dom/simple_html_dom.php');
 require_once($CFG->dirroot.'/user/lib.php');
 
 class crawler {
@@ -113,7 +113,7 @@ class crawler {
         }
 
         /* queries and anchors */
-        if ($rel[0]=='#' || $rel[0]=='?') {
+        if ($rel[0] == '#' || $rel[0] == '?') {
             return $base.$rel;
         }
 
@@ -125,25 +125,57 @@ class crawler {
         $path = preg_replace('#/[^/]*$#', '', $path);
 
         /* destroy path if relative url points to root */
-        if ($rel[0] == '/') $path = '';
+        if ($rel[0] == '/') {
+            $path = '';
+        }
 
         /* dirty absolute URL */
         $abs = "$host$path/$rel";
 
         /* replace '//' or '/./' or '/foo/../' with '/' */
         $re = array('#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#');
-        for($n=1; $n>0; $abs=preg_replace($re, '/', $abs, -1, $n)) {}
+        for ($n = 1; $n > 0; $abs = preg_replace($re, '/', $abs, -1, $n)) {
+        }
 
         /* absolute URL is ready! */
         return $scheme.'://'.$abs;
     }
 
 
+    /*
+     *
+     */
+    public function reset_for_recrawl($nodeid) {
+
+        global $DB;
+
+        if ($to = $DB->get_record('linkchecker_url', array('id' => $nodeid) )) {
+
+            $time = $this->get_crawlstart();
+
+            // Mark all nodes that link to this as needing a recrawl.
+            $DB->execute("UPDATE {linkchecker_url} u
+                             SET needscrawl = ?,
+                                 lastcrawled = null
+                            FROM {linkchecker_edge} e
+                           WHERE e.a = u.id
+                             AND e.b = ?", array($time, $nodeid) );
+
+            // Delete all edges that point to this node.
+            $DB->execute("DELETE
+                            FROM {linkchecker_edge} e
+                           WHERE e.b = ?", array($nodeid) );
+
+            // Delete the 'to' node as it may be completely wrong.
+            $DB->delete_records('linkchecker_url', array('id' => $nodeid) );
+
+        }
+    }
 
     /*
      * Adds a url to the queue for crawling
      * and returns the node record
-     * if the url is invalid returns false
+     * if the url is invalid returns false.
      */
     public function mark_for_crawl($baseurl, $url) {
 
@@ -362,8 +394,8 @@ class crawler {
 
         $node->title = $html->find('title', 0)->plaintext;
 
-        // Everything after this is only for internal moodle pages
-        if ($external){
+        // Everything after this is only for internal moodle pages.
+        if ($external) {
             return $node;
         }
 
@@ -484,47 +516,52 @@ class crawler {
         $result = (object) array();
         $result->url              = $url;
         $raw   = curl_exec($s);
-        $header_size = curl_getinfo($s, CURLINFO_HEADER_SIZE);
-        $headers = substr($raw, 0, $header_size);
+        $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
+        $headers = substr($raw, 0, $headersize);
         $header = strtok($headers, "\n");
         $result->httpmsg          = explode(" ", $header, 3)[2];
-        $result->contents         = substr($raw, $header_size);
+        $result->contents         = substr($raw, $headersize);
         $data = $result->contents;
 
-        // See http://stackoverflow.com/questions/9351694/setting-php-default-encoding-to-utf-8
+        // See http://stackoverflow.com/questions/9351694/setting-php-default-encoding-to-utf-8 for more.
         unset($charset);
-        $content_type = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
+        $contenttype = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
 
         /* 1: HTTP Content-Type: header */
-        preg_match( '@([\w/+]+)(;\s*charset=(\S+))?@i', $content_type, $matches );
-        if ( isset( $matches[3] ) )
+        preg_match( '@([\w/+]+)(;\s*charset=(\S+))?@i', $contenttype, $matches );
+        if ( isset( $matches[3] ) ) {
             $charset = $matches[3];
+        }
 
         /* 2: <meta> element in the page */
         if (!isset($charset)) {
             preg_match( '@<meta\s+http-equiv="Content-Type"\s+content="([\w/]+)(;\s*charset=([^\s"]+))?@i', $data, $matches );
-            if ( isset( $matches[3] ) )
+            if ( isset( $matches[3] ) ) {
                 $charset = $matches[3];
+            }
         }
 
         /* 3: <xml> element in the page */
         if (!isset($charset)) {
             preg_match( '@<\?xml.+encoding="([^\s"]+)@si', $data, $matches );
-            if ( isset( $matches[1] ) )
+            if ( isset( $matches[1] ) ) {
                 $charset = $matches[1];
+            }
         }
 
         /* 4: PHP's heuristic detection */
         if (!isset($charset)) {
             $encoding = mb_detect_encoding($data);
-            if ($encoding)
+            if ($encoding) {
                 $charset = $encoding;
+            }
         }
 
         /* 5: Default for HTML */
         if (!isset($charset)) {
-            if (strstr($content_type, "text/html") === 0)
+            if (strstr($contenttype, "text/html") === 0) {
                 $charset = "ISO 8859-1";
+            }
         }
 
         /* Convert it if it is anything but UTF-8 */

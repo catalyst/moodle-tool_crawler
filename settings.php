@@ -1,5 +1,5 @@
 <?php
-/* This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  *  link checker robot local plugin settings
  *
@@ -27,9 +26,8 @@ defined('MOODLE_INTERNAL') || die;
 
 if ($hassiteconfig) {
 
-    // Site admin reports
-
-    $cat =  new admin_category('local_linkchecker_cat', 'Link checker');
+    // Site admin reports.
+    $cat = new admin_category('local_linkchecker_cat', 'Link checker');
     $ADMIN->add('reports', $cat);
 
     $ADMIN->add('local_linkchecker_cat', new admin_externalpage('local_linkchecker_robot_status',
@@ -53,9 +51,9 @@ if ($hassiteconfig) {
                                            $CFG->wwwroot . '/local/linkchecker_robot/report.php?report=oversize') );
 
 
-    // Local plugin settings
-
+    // Local plugin settings.
     $settings = new admin_settingpage('local_linkchecker_robot', get_string('pluginname', 'local_linkchecker_robot'));
+
     // Add the admin page to the menu tree if it ain't exist.
     if (!$ADMIN->locate('localplugins')) {
         $ADMIN->add('root', new admin_category('localplugins', 'Local Plugins'));
@@ -63,9 +61,6 @@ if ($hassiteconfig) {
 
     $ADMIN->add('localplugins', $settings);
     if (!during_initial_install()) {
-
-        // link to report
-        // link to site tools, eg crawl as
 
         $settings->add(new admin_setting_heading('linkchecker',
                                                     '',

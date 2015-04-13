@@ -1,5 +1,5 @@
 <?php
-/* This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 
 /**
  *  link checker robot local cli
@@ -32,14 +31,7 @@ require_once($CFG->dirroot .'/local/linkchecker_robot/lib.php');
 
 global $DB;
 
-// reset the crawl start date
-$DB->delete_records('config_plugins',  array('plugin'=>'local_linkchecker_robot','name' =>'crawlstart') );
-
-// delete all url's from the DB
+$DB->delete_records('config_plugins',  array('plugin' => 'local_linkchecker_robot', 'name' => 'crawlstart') );
 $DB->delete_records('linkchecker_url');
-// delete all links from the DB
 $DB->delete_records('linkchecker_edge');
-
-// kill robot cookies?
-
 

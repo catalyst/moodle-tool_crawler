@@ -1,5 +1,5 @@
 <?php
-/* This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -26,9 +26,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015040801;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2013110500;        // Requires this Moodle version
-$plugin->component = 'local_linkchecker_robot'; // To check on upgrade, that module sits in correct place
+$plugin->version   = 2015040802;        // The current plugin version (Date: YYYYMMDDXX)
+$plugin->requires  = 2013110500;        // Requires this Moodle version.
+$plugin->component = 'local_linkchecker_robot'; // To check on upgrade, that module sits in correct place.
 $plugin->dependencies = array(
     'auth_basic' => ANY_VERSION,
 );
