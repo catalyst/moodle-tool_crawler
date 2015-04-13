@@ -99,6 +99,9 @@ function local_linkchecker_robot_summary($courseid, $url) {
     ", array('course' => $courseid) );
 
     $e = (object) array('count' => 0);
+    if (!array_key_exists('0', $result['broken'])) {
+        $result['broken']['0'] = $e;
+    }
     if (!array_key_exists('2', $result['broken'])) {
         $result['broken']['2'] = $e;
     }
