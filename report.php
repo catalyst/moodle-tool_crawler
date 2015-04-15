@@ -120,6 +120,7 @@ if ($report == 'broken') {
                                           b.url target,
                                           b.httpcode,
                                           b.httpmsg,
+                                          b.lastcrawled,
                                           b.id AS toid,
                                           l.id linkid,
                                           l.text,
@@ -134,7 +135,7 @@ if ($report == 'broken') {
     $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
-    $table->head = array('', 'Response', 'Broken URL', 'From page', 'Course');
+    $table->head = array('', 'Last&nbsp;crawled&nbsp;time', 'Response', 'Broken URL', 'From page', 'Course');
     $table->data = array();
     foreach ($data as $row) {
         $text = trim($row->text);
@@ -143,6 +144,7 @@ if ($report == 'broken') {
         }
         $table->data[] = array(
             html_writer::link(new moodle_url($baseurl, array('retryid' => $row->toid )), 'Retry'),
+            userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
             http_code($row),
             html_writer::link($row->target, $text) .
             '<br><small>' . $row->target . '</small>',
@@ -249,6 +251,7 @@ if ($report == 'broken') {
     $data  = $DB->get_records_sql("SELECT concat(b.id, '-', a.id, '-', l.id) id,
                                           b.url target,
                                           b.filesize,
+                                          b.lastcrawled,
                                           l.text,
                                           a.title,
                                           a.url,
@@ -259,7 +262,7 @@ if ($report == 'broken') {
     $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
-    $table->head = array('Size', 'Slow URL', 'From page', 'Course');
+    $table->head = array('Last&nbsp;crawled&nbsp;time', 'Size', 'Slow URL', 'From page', 'Course');
     $table->data = array();
     foreach ($data as $row) {
         $size = $row->filesize * 1;
@@ -268,6 +271,7 @@ if ($report == 'broken') {
             $text = 'Missing';
         }
         $table->data[] = array(
+            userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
             $size > 1000000 ? (round(100 * $size / 1000000 ) * .01 . 'MB') :
             ($size > 1000 ? (  round(10 * $size / 1000     ) * .1  . 'KB') : $size . 'B'),
             html_writer::link($row->target, $text) .    '<br><small>' . $row->target . '</small>',
