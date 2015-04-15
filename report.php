@@ -38,6 +38,7 @@ $baseurl = new moodle_url('/local/linkchecker_robot/report.php', array(
     'course' => $courseid
 ));
 
+$config = get_config('local_linkchecker_robot');
 
 function http_code($row) {
     $msg = isset($row->httpmsg) ? $row->httpmsg : '?';
@@ -222,7 +223,10 @@ if ($report == 'broken') {
                                           b.title,
                                           b.mimetype,
                                           b.courseid,
-                                          c.shortname"       . $sql . " ORDER BY b.lastcrawled DESC", $opts, $start, $perpage);
+                                          c.shortname
+                                          $sql
+                                 ORDER BY b.lastcrawled DESC
+                                          ", $opts, $start, $perpage);
     $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
 
     $mdlw = strlen($CFG->wwwroot);
@@ -265,22 +269,29 @@ if ($report == 'broken') {
          WHERE b.filesize > ?
                $sqlfilter
             ";
-    $opts = array('150000');
+    $bigfilesize = $config->bigfilesize;
+    $opts = array($bigfilesize * 1000000);
     $data  = $DB->get_records_sql("SELECT concat(b.id, '-', a.id, '-', l.id) id,
                                           b.url target,
                                           b.filesize,
                                           b.lastcrawled,
+                                          b.mimetype,
                                           l.text,
                                           a.title,
                                           a.url,
                                           a.courseid,
-                                          c.shortname"       . $sql . " ORDER BY b.filesize DESC", $opts, $start, $perpage);
+                                          c.shortname
+                                          $sql
+                                 ORDER BY b.filesize DESC,
+                                          l.text,
+                                          a.id
+                                          ", $opts, $start, $perpage);
     $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
 
     $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
-    $table->head = array('Last&nbsp;crawled&nbsp;time', 'Size', 'Slow URL', 'From page');
+    $table->head = array('Last&nbsp;crawled&nbsp;time', 'Size', 'Slow URL', 'Mime type', 'From page');
     if (!$courseid) {
         array_push($table->head, 'Course');
     }
@@ -296,6 +307,7 @@ if ($report == 'broken') {
             $size > 1000000 ? (round(100 * $size / 1000000 ) * .01 . 'MB') :
             ($size > 1000 ? (  round(10 * $size / 1000     ) * .1  . 'KB') : $size . 'B'),
             html_writer::link($row->target, $text) .    '<br><small>' . $row->target . '</small>',
+            $row->mimetype,
             html_writer::link($row->url, $row->title) . '<br><small>' . $row->url    . '</small>',
         );
         if (!$courseid) {

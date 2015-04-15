@@ -1,19 +1,26 @@
 
-move simple html dom to thirdparty dir and add xml stuff OR look for lib already in moodle?
+* add the big links to the block
+
+* BUG: showing last response code but first response message
+
+* Bug 404 see other
+
+* Add big files traffic light
+
+* add index for filesize and errorcode to speed up reports
 
 keep old links for always, 1 week, 1 month, never
 
 * make a crawl stats table, when started, how many ticks, how many urls queued, how many links, how many broken urls, when finished
 
-config for 'big' file size limit
+* new report for links to another course, or links to another moodle
+
+* when no broken links link to recently link report
 
 make a cron / config for when we clean up old links and urls, default to a week ago
 
-add the big links to the block
 
 be able to filter drill down to a course from admin report
-
-fix bug MOODLE-786
 
  - and which isn't 'ignored' do we care?
 
@@ -29,7 +36,4 @@ fix bug MOODLE-786
 
 * cross course links (mostly help? maybe the umbrella courses)
 * most popular pages linked to
-
-* do we also need a block to show some quick stats?
- - broken links, grouped by course pages
 

@@ -35,7 +35,7 @@ $string['recent_header'] = '';
 $string['broken'] = 'Broken links';
 $string['broken_header'] = '<p>Duplicate URLs will only be searched once.</p>';
 $string['oversize'] = 'Big / slow links';
-$string['oversize_header'] = '';
+$string['oversize_header'] = '<p>Big files with multiple incoming links to them will be duplicated.</p>';
 $string['queued'] = 'Queued URL\'s';
 $string['queued_header'] = '<p>The title and course are only known if the URL has been seen on a previous crawl.</p>';
 
@@ -61,5 +61,7 @@ $string['maxtime'] = 'Max execution time';
 $string['maxtimedesc'] = 'The timeout for each crawl request';
 $string['maxcrontime'] = 'Cron run limit';
 $string['maxcrontimedesc'] = 'The crawler will keep crawling until this limit is hit on each cron tick. In seconds';
+$string['bigfilesize'] = 'Size of Big files';
+$string['bigfilesizedesc'] = 'How big a file needs to be to get flagged as oversize. In MB';
 
 

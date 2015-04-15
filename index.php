@@ -47,9 +47,12 @@ $broken = $DB->get_field_sql("SELECT COUNT(*)
                                  FROM {linkchecker_url}
                                 WHERE httpcode != ?", array('200') );
 
+
+$bigfilesize = $config->bigfilesize;
+$opts = array($bigfilesize * 1000000);
 $oversize = $DB->get_field_sql("SELECT COUNT(*)
                                  FROM {linkchecker_url}
-                                WHERE filesize > ?",  array('150000') );
+                                WHERE filesize > ?",  $opts );
 ?>
 
 <table>

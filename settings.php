@@ -129,6 +129,11 @@ grading
                                                     new lang_string('maxcrontimedesc',   'local_linkchecker_robot'),
                                                     '60' ));
 
+        $settings->add(new admin_setting_configtext('local_linkchecker_robot/bigfilesize',
+                                                    new lang_string('bigfilesize',       'local_linkchecker_robot'),
+                                                    new lang_string('bigfilesizedesc',   'local_linkchecker_robot'),
+                                                    '1' ));
+
     }
 }
 
