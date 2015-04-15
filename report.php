@@ -135,14 +135,17 @@ if ($report == 'broken') {
     $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
-    $table->head = array('', 'Last&nbsp;crawled&nbsp;time', 'Response', 'Broken URL', 'From page', 'Course');
+    $table->head = array('', 'Last&nbsp;crawled&nbsp;time', 'Response', 'Broken URL', 'From page');
+    if (!$courseid) {
+        array_push($table->head, 'Course');
+    }
     $table->data = array();
     foreach ($data as $row) {
         $text = trim($row->text);
         if (!$text || $text == "") {
             $text = 'Missing';
         }
-        $table->data[] = array(
+        $data = array(
             html_writer::link(new moodle_url($baseurl, array('retryid' => $row->toid )), 'Retry'),
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
             http_code($row),
@@ -150,8 +153,11 @@ if ($report == 'broken') {
             '<br><small>' . $row->target . '</small>',
             html_writer::link($row->url, $row->title) .
             '<br><small>' . substr($row->url, $mdlw) . '</small>',
-            html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname),
         );
+        if (!$courseid) {
+            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
+        }
+        $table->data[] = $data;
     }
 
 } else if ($report == 'queued') {
@@ -177,19 +183,25 @@ if ($report == 'broken') {
     $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
-    $table->head = array('When queued', 'URL', 'In course');
+    $table->head = array('When queued', 'URL');
+    if (!$courseid) {
+        array_push($table->head, 'In course');
+    }
     $table->data = array();
     foreach ($data as $row) {
         $text = trim($row->title);
         if (!$text || $text == "") {
             $text = 'Not yet known';
         }
-        $table->data[] = array(
+        $data = array(
             userdate($row->needscrawl, '%h %e,&nbsp;%H:%M:%S'),
             html_writer::link($row->target, $text) .
-            '<br><small>' . $row->target . '</small>',
-            html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname),
+            '<br><small>' . $row->target . '</small>'
         );
+        if (!$courseid) {
+            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
+        }
+        $table->data[] = $data;
     }
 
 } else if ($report == 'recent') {
@@ -216,7 +228,10 @@ if ($report == 'broken') {
     $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
-    $table->head = array('Last&nbsp;crawled&nbsp;time', 'Response', 'Size', 'URL', 'Mime type', 'In course');
+    $table->head = array('Last&nbsp;crawled&nbsp;time', 'Response', 'Size', 'URL', 'Mime type');
+    if (!$courseid) {
+        array_push($table->head, 'In course');
+    }
     $table->data = array();
     foreach ($data as $row) {
         $text = trim($row->title);
@@ -225,7 +240,7 @@ if ($report == 'broken') {
         }
         $code = http_code($row);
         $size = $row->filesize * 1;
-        $table->data[] = array(
+        $data = array(
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
             $code,
             $size > 1000000 ? (round(100 * $size / 1000000 ) * .01 . 'MB') :
@@ -233,8 +248,11 @@ if ($report == 'broken') {
             html_writer::link($row->target, $text) .
             '<br><small>' . $row->target . '</small>',
             $row->mimetype,
-            html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname),
         );
+        if (!$courseid) {
+            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
+        }
+        $table->data[] = $data;
     }
 
 } else if ($report == 'oversize') {
@@ -262,7 +280,10 @@ if ($report == 'broken') {
     $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
-    $table->head = array('Last&nbsp;crawled&nbsp;time', 'Size', 'Slow URL', 'From page', 'Course');
+    $table->head = array('Last&nbsp;crawled&nbsp;time', 'Size', 'Slow URL', 'From page');
+    if (!$courseid) {
+        array_push($table->head, 'Course');
+    }
     $table->data = array();
     foreach ($data as $row) {
         $size = $row->filesize * 1;
@@ -270,14 +291,17 @@ if ($report == 'broken') {
         if (!$text || $text == "") {
             $text = 'Missing';
         }
-        $table->data[] = array(
+        $data = array(
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
             $size > 1000000 ? (round(100 * $size / 1000000 ) * .01 . 'MB') :
             ($size > 1000 ? (  round(10 * $size / 1000     ) * .1  . 'KB') : $size . 'B'),
             html_writer::link($row->target, $text) .    '<br><small>' . $row->target . '</small>',
             html_writer::link($row->url, $row->title) . '<br><small>' . $row->url    . '</small>',
-            html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname),
         );
+        if (!$courseid) {
+            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
+        }
+        $table->data[] = $data;
     }
 
 }
