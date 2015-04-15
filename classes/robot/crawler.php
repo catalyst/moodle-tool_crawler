@@ -447,13 +447,13 @@ class crawler {
             $classes = explode(" ", $body->class);
             foreach ($classes as $cl) {
                 if (substr($cl, 0, 7) == 'course-') {
-                    $node->courseid = substr($cl, 7);
+                    $node->courseid = intval(substr($cl, 7));
                 }
                 if (substr($cl, 0, 8) == 'context-') {
-                    $node->contextid = substr($cl, 8);
+                    $node->contextid = intval(substr($cl, 8));
                 }
                 if (substr($cl, 0, 5) == 'cmid-') {
-                    $node->cmid = substr($cl, 5);
+                    $node->cmid = intval(substr($cl, 5));
                 }
             }
         }
