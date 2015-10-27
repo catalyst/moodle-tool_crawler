@@ -42,5 +42,21 @@ function xmldb_local_linkchecker_robot_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2015040801, 'local', 'linkchecker_robot');
     }
 
+    if ($oldversion < 2015040802) {
+        // Define field preventsubmissionnotingroup to be added to assign.
+        $table = new xmldb_table('linkchecker_url');
+
+	    $index = new xmldb_index('needscrawl',
+	                                  XMLDB_INDEX_NOTUNIQUE,
+	                                  array('needscrawl'));
+         // Conditionally launch add index.
+         if (!$dbman->index_exists($table, $index)) {
+             $dbman->add_index($table, $index);
+         }
+		
+        // Linkchecker_robot savepoint reached.
+        upgrade_plugin_savepoint(true, 2015040801, 'local', 'linkchecker_robot');
+    }
+
     return true;
 }
