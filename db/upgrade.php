@@ -42,5 +42,20 @@ function xmldb_local_linkchecker_robot_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2015040801, 'local', 'linkchecker_robot');
     }
 
+    if ($oldversion < 2015041502) {
+
+        // Define table linkchecker_url to be created.
+        $table = new xmldb_table('linkchecker_url');
+
+        // Adding indexes to table linkchecker_url.
+        $index = new xmldb_index('needscrawl', XMLDB_INDEX_NOTUNIQUE, array('needscrawl'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Linkchecker_robot savepoint reached.
+        upgrade_plugin_savepoint(true, 2015041502, 'local', 'linkchecker_robot');
+    }
+    
     return true;
 }
