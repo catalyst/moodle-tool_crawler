@@ -55,7 +55,7 @@ function xmldb_local_linkchecker_robot_upgrade($oldversion) {
          }
 		
         // Linkchecker_robot savepoint reached.
-        upgrade_plugin_savepoint(true, 2015040801, 'local', 'linkchecker_robot');
+        upgrade_plugin_savepoint(true, 2015040802, 'local', 'linkchecker_robot');
     }
 
     return true;
