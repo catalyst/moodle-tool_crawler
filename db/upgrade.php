@@ -56,6 +56,24 @@ function xmldb_local_linkchecker_robot_upgrade($oldversion) {
         // Linkchecker_robot savepoint reached.
         upgrade_plugin_savepoint(true, 2015041502, 'local', 'linkchecker_robot');
     }
+
+
+    if ($oldversion < 2015041503) {
+
+        // Define index needscrawl_id (not unique) to be added to linkchecker_url.
+        $table = new xmldb_table('linkchecker_url');
+        $index = new xmldb_index('needscrawl_id', XMLDB_INDEX_NOTUNIQUE, array('needscrawl', 'id'));
+
+        // Conditionally launch add index needscrawl_id.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Linkchecker_robot savepoint reached.
+        upgrade_plugin_savepoint(true, 2015041503, 'local', 'linkchecker_robot');
+    }
+
+
     
     return true;
 }
