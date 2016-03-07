@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/linkchecker_robot/db" VERSION="20151102" COMMENT="XMLDB file for Moodle local/linkchecker_robot"
+<XMLDB PATH="local/linkchecker_robot/db" VERSION="20160307" COMMENT="XMLDB file for Moodle local/linkchecker_robot"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -31,6 +31,8 @@
       <INDEXES>
         <INDEX NAME="needscrawl" UNIQUE="false" FIELDS="needscrawl"/>
         <INDEX NAME="needscrawl_id" UNIQUE="false" FIELDS="needscrawl, id"/>
+        <INDEX NAME="url" UNIQUE="false" FIELDS="url"/>
+        <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="linkchecker_edge" COMMENT="Links between urls">

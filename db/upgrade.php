@@ -73,7 +73,22 @@ function xmldb_local_linkchecker_robot_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2015041503, 'local', 'linkchecker_robot');
     }
 
+    if ($oldversion < 2015041504) {
 
-    
+        $table = new xmldb_table('linkchecker_url');
+
+        $index = new xmldb_index('url', XMLDB_INDEX_NOTUNIQUE, array('url'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        $index = new xmldb_index('courseid', XMLDB_INDEX_NOTUNIQUE, array('courseid'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        upgrade_plugin_savepoint(true, 2015041504, 'local', 'linkchecker_robot');
+    }
+
     return true;
 }
