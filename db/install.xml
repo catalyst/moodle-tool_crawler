@@ -31,7 +31,6 @@
       <INDEXES>
         <INDEX NAME="needscrawl" UNIQUE="false" FIELDS="needscrawl"/>
         <INDEX NAME="needscrawl_id" UNIQUE="false" FIELDS="needscrawl, id"/>
-        <INDEX NAME="url" UNIQUE="false" FIELDS="url"/>
         <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid"/>
       </INDEXES>
     </TABLE>

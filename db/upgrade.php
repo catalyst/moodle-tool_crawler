@@ -77,11 +77,6 @@ function xmldb_local_linkchecker_robot_upgrade($oldversion) {
 
         $table = new xmldb_table('linkchecker_url');
 
-        $index = new xmldb_index('url', XMLDB_INDEX_NOTUNIQUE, array('url'));
-        if (!$dbman->index_exists($table, $index)) {
-            $dbman->add_index($table, $index);
-        }
-
         $index = new xmldb_index('courseid', XMLDB_INDEX_NOTUNIQUE, array('courseid'));
         if (!$dbman->index_exists($table, $index)) {
             $dbman->add_index($table, $index);
