@@ -36,7 +36,7 @@ The defaults settings should be enough to get the robot itself to work but
 ensure you change the robot users password. After configuring the robot
 ensure that the robot user exists, there is a helper page here:
 
-```/local/linkchecker_robot/index.php```
+/local/linkchecker_robot/index.php
 
 You can also test it from the CLI using curl, see this example:
 
@@ -44,17 +44,17 @@ https://github.com/brendanheywood/moodle-auth_basic#curl-example
 
 Once this works test running the robot task from the CLI:
 
-```php admin/tool/task/cli/schedule_task.php  --execute='\local_linkchecker_robot\task\crawl_task'```
+php admin/tool/task/cli/schedule_task.php  --execute='\local_linkchecker_robot\task\crawl_task'
 
 If this worked then it's a matter of sitting back and waiting for the
 robot to do it's thing. It works incrementally spreading the load over many
 cron cycles, you can watch it's progress in
 
-```/local/linkchecker_robot/report.php?report=queued```
+/local/linkchecker_robot/report.php?report=queued
 
 and
 
-```/local/linkchecker_robot/report.php?report=recent```
+/local/linkchecker_robot/report.php?report=recent
 
 # Reporting
 
