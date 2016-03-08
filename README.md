@@ -16,6 +16,10 @@ all the the site pages you wish to crawl.
 
 # Install
 
+Easiest is to install using git as a submodule:
+
+git submodule add git@github.com:central-queensland-uni/moodle-local_linkchecker_robot.git local/linkchecker_robot
+
 Install it the same as any other moodle plugin, and remember to also install moodle
 auth-basic plugin as well.
 
