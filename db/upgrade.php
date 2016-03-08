@@ -57,7 +57,6 @@ function xmldb_local_linkchecker_robot_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2015041502, 'local', 'linkchecker_robot');
     }
 
-
     if ($oldversion < 2015041503) {
 
         // Define index needscrawl_id (not unique) to be added to linkchecker_url.
@@ -73,7 +72,5 @@ function xmldb_local_linkchecker_robot_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2015041503, 'local', 'linkchecker_robot');
     }
 
-
-    
     return true;
 }

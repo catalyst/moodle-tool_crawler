@@ -61,10 +61,14 @@ $oversize = $DB->get_field_sql("SELECT COUNT(*)
 <tr><td>Last crawl ended at             <td><?php echo $crawlend   ? userdate( $crawlend)   : 'Never finished' ?>
 <tr><td>Last crawl process              <td><?php echo $crawltick  ? userdate( $crawltick)  : '-'              ?>
 <tr><td>Last queue size                 <td><?php echo $oldqueuesize ?>
-<tr><td><?php echo get_string('queued',   'local_linkchecker_robot' ); ?><td><a href="report.php?report=queued"  ><?php echo $queuesize ?></a>
-<tr><td><?php echo get_string('recent',   'local_linkchecker_robot' ); ?><td><a href="report.php?report=recent"  ><?php echo $recent    ?></a>
-<tr><td><?php echo get_string('broken',   'local_linkchecker_robot' ); ?><td><a href="report.php?report=broken"  ><?php echo $broken    ?></a>
-<tr><td><?php echo get_string('oversize', 'local_linkchecker_robot' ); ?><td><a href="report.php?report=oversize"><?php echo $oversize  ?></a>
+<tr><td><?php echo get_string('queued',   'local_linkchecker_robot' ); ?>
+    <td><a href="report.php?report=queued"  ><?php echo $queuesize ?></a>
+<tr><td><?php echo get_string('recent',   'local_linkchecker_robot' ); ?>
+    <td><a href="report.php?report=recent"  ><?php echo $recent    ?></a>
+<tr><td><?php echo get_string('broken',   'local_linkchecker_robot' ); ?>
+    <td><a href="report.php?report=broken"  ><?php echo $broken    ?></a>
+<tr><td><?php echo get_string('oversize', 'local_linkchecker_robot' ); ?>
+    <td><a href="report.php?report=oversize"><?php echo $oversize  ?></a>
 </table>
 
 <!--

@@ -44,8 +44,7 @@ if ($unrecognized) {
     cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
 }
 
-$help =
-"Scrape the url as the robot would see it, but do not process/queue it.
+$help = "Scrape the url as the robot would see it, but do not process/queue it.
 
 Options:
 -h, --help      Print out this help

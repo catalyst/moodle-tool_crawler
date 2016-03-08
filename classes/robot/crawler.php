@@ -117,27 +117,24 @@ class crawler {
             return $base.$rel;
         }
 
-        /* parse base URL and convert to local variables:
-           $scheme, $host, $path */
-        extract(parse_url($base));
+        $parts = parse_url($base);
+        $scheme = $parts['scheme'];
+        $path = $parts['path'];
+        $host = $parts['host'];
 
-        /* remove non-directory element from path */
+        // Remove non-directory element from path.
         $path = preg_replace('#/[^/]*$#', '', $path);
 
-        /* destroy path if relative url points to root */
-        if ($rel[0] == '/') {
-            $path = '';
-        }
-
-        /* dirty absolute URL */
+        // Dirty absolute URL.
         $abs = "$host$path/$rel";
 
-        /* replace '//' or '/./' or '/foo/../' with '/' */
+        // Replace '//' or '/./' or '/foo/../' with '/' */.
         $re = array('#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#');
         for ($n = 1; $n > 0; $abs = preg_replace($re, '/', $abs, -1, $n)) {
+            $noop = 1;
         }
 
-        /* absolute URL is ready! */
+        // Absolute URL is ready!
         return $scheme.'://'.$abs;
     }
 
@@ -342,7 +339,7 @@ class crawler {
             if ($result->mimetype == 'text/html') {
                 $this->parse_html($result, $result->external);
             } else {
-
+                $todo = 1;
                 // TODO Possibly we can infer the course purely from the url
                 // maybe the plugin serving urls?
             }
@@ -557,7 +554,7 @@ class crawler {
             }
         }
 
-        /* 5: Default for HTML */
+        // 5: Default for HTML.
         if (!isset($charset)) {
             if (strstr($contenttype, "text/html") === 0) {
                 $charset = "ISO 8859-1";

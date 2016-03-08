@@ -93,9 +93,11 @@ if ($courseid) {
     foreach ($reports as $rpt) {
         echo ' | ';
         if ($report == $rpt) {
-            echo '<b>' . html_writer::link(new moodle_url('report.php', array('report' => $rpt )) , get_string($rpt, 'local_linkchecker_robot')) . '</b>';
+            echo '<b>' . html_writer::link(new moodle_url('report.php', array('report' => $rpt )),
+                get_string($rpt, 'local_linkchecker_robot')) . '</b>';
         } else {
-            echo html_writer::link(new moodle_url('report.php', array('report' => $rpt )), get_string($rpt, 'local_linkchecker_robot'));
+            echo html_writer::link(new moodle_url('report.php', array('report' => $rpt )),
+                get_string($rpt, 'local_linkchecker_robot'));
         }
     }
 }
