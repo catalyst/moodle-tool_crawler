@@ -12,7 +12,8 @@ follows links. By using this architecture it will only find broken links that
 actually matter to students. Because it comes in from outside it needs to
 authenticate and has a dependancy on the moodle-auth_basic plugin. It is
 recommended that you setup a dedicated 'robot' user who has readonly access to
-all the the site pages you wish to crawl.
+all the the site pages you wish to crawl. You should give the robot similar
+capabilites that real students will have.
 
 # Install
 
@@ -35,3 +36,14 @@ https://github.com/brendanheywood/moodle-auth_basic
 and slow links. They are available under:
 
 Administration > Reports > Link checker
+
+# Issues andFeedback
+
+Please raise any issues in github:
+
+https://github.com/central-queensland-uni/moodle-local_linkchecker_robot/issues
+
+If you need anything urgently and would like to sponsor it's implemenation please
+email me: Brendan Heywood brendan@catalyst-au.net
+
+
