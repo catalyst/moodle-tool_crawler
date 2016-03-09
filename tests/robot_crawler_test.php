@@ -17,13 +17,20 @@
 /**
  *  Unit tests for link crawler robot
  *
- * @package    local
- * @subpackage linkchecker_robot
+ * @package    local_linkchecker_robot
+ * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
 
+/**
+ *  Unit tests for link crawler robot
+ *
+ * @package    local_linkchecker_robot
+ * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class local_linkchecker_robot_test extends advanced_testcase {
 
     protected function setUp() {

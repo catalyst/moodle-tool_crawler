@@ -15,13 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Upgrade script
+ *
  * @package    local_linkchecker_robot
- * @author     Brendan Heywood <brendan@catalyst-au.net>
+ * @copyright  Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Upgrade script
+ *
+ * @param integer $oldversion a version no
+ */
 function xmldb_local_linkchecker_robot_upgrade($oldversion) {
     global $DB;
 

@@ -19,7 +19,7 @@
  * local_linkchecker_robot
  *
  * @package    local_linkchecker_robot
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -27,16 +27,27 @@ namespace local_linkchecker_robot\task;
 
 require_once("$CFG->dirroot/local/linkchecker_robot/lib.php");
 
+/**
+ * crawl_task
+ *
+ * @package    local_linkchecker_robot
+ * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class crawl_task extends \core\task\scheduled_task {
 
+    /**
+     * Get task name
+     */
     public function get_name() {
         return get_string('pluginname', 'local_linkchecker_robot');
     }
 
+    /**
+     * Execute task
+     */
     public function execute() {
-
         local_linkchecker_robot_crawl();
-
     }
 }
 

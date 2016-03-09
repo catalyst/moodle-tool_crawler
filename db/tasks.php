@@ -18,7 +18,7 @@
  * local_linkchecker_robot
  *
  * @package    local_linkchecker_robot
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 $tasks = array(

@@ -14,25 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * local_linkchecker_robot
  *
  * @package    local_linkchecker_robot
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace local_linkchecker_robot\robot;
 
 require_once($CFG->dirroot.'/local/linkchecker_robot/lib.php');
-require_once($CFG->dirroot.'/local/linkchecker_robot/simple_html_dom/simple_html_dom.php');
+require_once($CFG->dirroot.'/local/linkchecker_robot/extlib/simple_html_dom.php');
 require_once($CFG->dirroot.'/user/lib.php');
 
+/**
+ * local_linkchecker_robot
+ *
+ * @package    local_linkchecker_robot
+ * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class crawler {
 
+    /**
+     * @var the config object
+     */
     protected $config;
 
+    /**
+     * Robot constructor
+     */
     public function __construct() {
 
         $this->config = get_config('local_linkchecker_robot');
@@ -41,10 +53,10 @@ class crawler {
         }
     }
 
-
-    /*
-     * checks that the bot user exists and password works etc
-     * returns true, or a error string
+    /**
+     * Checks that the bot user exists and password works etc
+     *
+     * @return mixed true or a error string
      */
     public function is_bot_valid() {
 
@@ -74,7 +86,7 @@ class crawler {
 
     }
 
-    /*
+    /**
      * Auto create the moodle user that the robot logs in as
      */
     public function auto_create_bot() {
@@ -106,6 +118,13 @@ class crawler {
         }
     }
 
+    /**
+     * Convert a relative url to an absolute url
+     *
+     * @param string $base url
+     * @param string $rel relative url
+     * @return string absolute url
+     */
     public function absolute_url($base, $rel) {
         /* return if already absolute URL */
         if (parse_url($rel, PHP_URL_SCHEME) != '') {
@@ -139,8 +158,10 @@ class crawler {
     }
 
 
-    /*
+    /**
+     * Reset a node to be recrawled
      *
+     * @param integer $nodeid node id
      */
     public function reset_for_recrawl($nodeid) {
 
@@ -169,10 +190,12 @@ class crawler {
         }
     }
 
-    /*
+    /**
      * Adds a url to the queue for crawling
-     * and returns the node record
-     * if the url is invalid returns false.
+     *
+     * @param string $baseurl
+     * @param string $url relative url
+     * @return the node record or if the url is invalid returns false.
      */
     public function mark_for_crawl($baseurl, $url) {
 
@@ -234,29 +257,37 @@ class crawler {
         return $node;
     }
 
-    /*
+    /**
      * When did the current crawl start?
+     *
+     * @return timestamp of crawl start
      */
     public function get_crawlstart() {
         return property_exists($this->config, 'crawlstart') ? $this->config->crawlstart : 0;
     }
 
-    /*
+    /**
      * When did the last crawl finish?
+     *
+     * @return timestamp of crawl end
      */
     public function get_last_crawlend() {
         return property_exists($this->config, 'crawlend') ? $this->config->crawlend : 0;
     }
 
-    /*
+    /**
      * When did the crawler last process anything?
+     *
+     * @return timestamp of last crawl process
      */
     public function get_last_crawltick() {
         return property_exists($this->config, 'crawltick') ? $this->config->crawltick : 0;
     }
 
-    /*
+    /**
      * Many urls are in the queue now (more will probably be added)
+     *
+     * @return size of queue
      */
     public function get_queue_size() {
         global $DB;
@@ -269,8 +300,10 @@ class crawler {
         return $queuesize;
     }
 
-    /*
+    /**
      * How many urls have been processed off the queue
+     *
+     * @return size of processes list
      */
     public function get_processed() {
         global $DB;
@@ -282,8 +315,10 @@ class crawler {
                                        );
     }
 
-    /*
-     * How many urls have been processed off the queue
+    /**
+     * How many urls have been processed off the previous queue
+     *
+     * @return size of old processes list
      */
     public function get_old_queue_size() {
         global $DB;
@@ -295,10 +330,10 @@ class crawler {
                                        );
     }
 
-    /*
+    /**
      * Pops an item off the queue and processes it
-     * returns true if it did anything
-     * returns false if the queue is empty
+     *
+     * @return true if it did anything, false if the queue is empty
      */
     public function process_queue() {
 
@@ -322,10 +357,13 @@ class crawler {
 
     }
 
-    /*
-     * takes a queue item and crawls it
-     * crawls a single url and then passes it off to a mime type handler
+    /**
+     * Takes a queue item and crawls it
+     *
+     * It crawls a single url and then passes it off to a mime type handler
      * to pull out the links to other urls
+     *
+     * @param object $node a node
      */
     public function crawl($node) {
 
@@ -368,10 +406,14 @@ class crawler {
     }
 
 
-    /*
+    /**
      * Given a recently crawled node, extract links to other pages
      *
-     * Should only be run on internal moodle pages
+     * Should only be run on internal moodle pages, ie never follow
+     * links on external pages. We don't want to scrape the whole web!
+     *
+     * @param object $node a url node
+     * @param boolean $external is the url ourside moodle
      */
     private function parse_html($node, $external) {
 
@@ -459,9 +501,13 @@ class crawler {
     }
 
 
-    /*
-     * upserts a link between two nodes in the url graph
-     * if the url is invalid returns false
+    /**
+     * Upserts a link between two nodes in the url graph
+     *
+     * @param string $from from url
+     * @param string $url current url
+     * @param string $text the link text label
+     * @return the new url node or false
      */
     private function link_from_node_to_url($from, $url, $text) {
 
@@ -488,9 +534,13 @@ class crawler {
         return $link;
     }
 
-    /*
+    /**
      * Scrapes a fully qualified url and returns details about it
+     *
      * The format returns is ready to directly insert into the DB queue
+     *
+     * @param string $url current url
+     * @return the result object
      */
     public function scrape($url) {
 

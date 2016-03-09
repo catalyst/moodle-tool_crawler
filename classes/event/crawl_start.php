@@ -18,6 +18,7 @@
  * Crawl start event
  *
  * @package    local_linkchecker_robot
+ * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * The crawl start event class.
  *
+ * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class crawl_start extends \core\event\base {

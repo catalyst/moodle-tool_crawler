@@ -14,6 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Admin report GUI
+ *
+ * @package    local_linkchecker_robot
+ * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
@@ -40,6 +47,12 @@ $baseurl = new moodle_url('/local/linkchecker_robot/report.php', array(
 
 $config = get_config('local_linkchecker_robot');
 
+/**
+ * Get a html code chunk
+ *
+ * @param integer $row row
+ * @return html chunk
+ */
 function http_code($row) {
     $msg = isset($row->httpmsg) ? $row->httpmsg : '?';
     $code = $row->httpcode;
