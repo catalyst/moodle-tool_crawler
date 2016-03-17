@@ -14,15 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * local_linkchecker_robot
  *
  * @package    local_linkchecker_robot
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/**
+ * Perform one cron 'tick' of crawl processing
+ *
+ * Has limits of both how many urls to crawl
+ * and a soft time limit on total crawl time.
+ */
 function local_linkchecker_robot_crawl() {
 
     global $DB, $CFG;
@@ -70,13 +75,12 @@ function local_linkchecker_robot_crawl() {
 
 }
 
-
-/*
- * Given a course and $PAGE?
- * return a summary count of broken links in this course, by error code level
- * return a summary count of large urls in this course
- * return a list of broken links on this page in particular
+/**
+ * Get summary stats about a url
  *
+ * @param integer $courseid a course aid
+ * @param string $url a page url
+ * @return an array of summary data
  */
 function local_linkchecker_robot_summary($courseid, $url) {
 

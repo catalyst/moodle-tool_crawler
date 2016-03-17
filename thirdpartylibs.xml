@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <libraries>
   <library>
-    <location>simple_html_dom</location>
-    <name>simple html dom</name>
+    <location>extlib/simple_html_dom.php</location>
+    <name>Simple HTML DOM</name>
     <license>MIT</license>
-    <version></version>
-    <licenseversion></licenseversion>
+    <version>1.5</version>
+    <licenseversion>1</licenseversion>
   </library>
 </libraries>
 

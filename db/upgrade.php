@@ -15,13 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Upgrade script
+ *
  * @package    local_linkchecker_robot
- * @author     Brendan Heywood <brendan@catalyst-au.net>
+ * @copyright  Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Upgrade script
+ *
+ * @param integer $oldversion a version no
+ */
 function xmldb_local_linkchecker_robot_upgrade($oldversion) {
     global $DB;
 
@@ -57,7 +64,6 @@ function xmldb_local_linkchecker_robot_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2015041502, 'local', 'linkchecker_robot');
     }
 
-
     if ($oldversion < 2015041503) {
 
         // Define index needscrawl_id (not unique) to be added to linkchecker_url.
@@ -71,18 +77,6 @@ function xmldb_local_linkchecker_robot_upgrade($oldversion) {
 
         // Linkchecker_robot savepoint reached.
         upgrade_plugin_savepoint(true, 2015041503, 'local', 'linkchecker_robot');
-    }
-
-    if ($oldversion < 2015041504) {
-
-        $table = new xmldb_table('linkchecker_url');
-
-        $index = new xmldb_index('courseid', XMLDB_INDEX_NOTUNIQUE, array('courseid'));
-        if (!$dbman->index_exists($table, $index)) {
-            $dbman->add_index($table, $index);
-        }
-
-        upgrade_plugin_savepoint(true, 2015041504, 'local', 'linkchecker_robot');
     }
 
     return true;

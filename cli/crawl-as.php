@@ -49,8 +49,7 @@ if ($unrecognized) {
     cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
 }
 
-$help =
-"Crawl a url as the robot and parse it.
+$help = "Crawl a url as the robot and parse it.
 
 Useful for when a page has been corrected and you want to instantly reflect this.
 
