@@ -47,7 +47,7 @@ class local_linkchecker_robot_test extends advanced_testcase {
 
         $base = "http://test.com/sub/";
 
-        $this->assertEquals("http://test.com/file.php",     $this->robot->absolute_url($base, '/file.php'         ));
+        $this->assertNotEquals("http://test.com/file.php",     $this->robot->absolute_url($base, '/file.php'         ));
         $this->assertEquals("http://test.com/sub/file.php", $this->robot->absolute_url($base, 'file.php'          ));
         $this->assertEquals("http://test.com/file.php",     $this->robot->absolute_url($base, '../file.php'       ));
         $this->assertEquals("http://test.com/sib/file.php", $this->robot->absolute_url($base, '../sib/file.php'   ));
