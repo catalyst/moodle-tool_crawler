@@ -6,44 +6,65 @@ files.
 
 # How does it work?
 
-It is a local plugin with a moodle cron task, but it reaches into your moodle
-via curl effectively from outside moodle, and scrapes each page, parses it and
-follows links. By using this architecture it will only find broken links that
-actually matter to students. Because it comes in from outside it needs to
-authenticate and has a dependency on the [moodle-auth_basic](https://github.com/CatalystIT-AU/moodle-auth_basic"). It is
-recommended that you setup a dedicated 'robot' user who has readonly access to
-all the site pages you wish to crawl. You should give the robot similar read
- capabilities that real students will have but no write capabilities.
+It is a local plugin with a moodle cron task. It logs into your moodle
+via curl effectively from outside moodle. The cronjob scrapes each page,
+parses it and follows links. By using this architecture it will only find
+broken links that actually matter to students.
 
-# Install
+Since the plugin cronjob comes in from outside it needs to authenticate in Moodle.
 
-Install dependency plugin [moodle-auth_basic](https://github.com/CatalystIT-AU/moodle-auth_basic") as a git submodule:
+# Installing Requirements
+
+The plugin has a dependency on the [moodle-auth_basic](https://moodle.org/plugins/auth_basic).
+To install the dependency plugin as a git submodule:
 ```
 git submodule add https://github.com/CatalystIT-AU/moodle-auth_basic.git auth/basic
 ```
+
+# Installing plugins source code
+
 Install plugin moodle-local_linkchecker_robot as a git submodule:
 ```
 git submodule add https://github.com/central-queensland-uni/moodle-local_linkchecker_robot.git local/linkchecker_robot
 ```
-Install it the same as any other moodle plugin.
-
-https://docs.moodle.org/30/en/Installing_add-ons
-
-https://moodle.org/plugins/auth_basic
-
-https://github.com/CatalystIT-AU/moodle-auth_basic.git
-
 # Configure
 
-The default settings should be enough to get the robot itself to work but
-ensure you change the robot users password. After configuring the robot
-ensure that the robot user exists, there is a helper page here:
+FYI: [installing Moodle plugins](https://docs.moodle.org/30/en/Installing_add-ons)
 
-/local/linkchecker_robot/index.php
+## Step 1
 
-You can also test it from the CLI using curl, see this example:
+Login to Moodle. You will be forwarded to URL http://your_moodle_website.com/admin/index.php with Plugins check.
+There you should see plugins "Basic authentication" and "Link checker robot".
 
-https://github.com/CatalystIT-AU/moodle-auth_basic.git#curl-example
+Click button "Upgrade Moodle database now" which should initiate plugins installation.
+
+Now you should see page "Upgrading to new version" with plugins installation statuses and button "Continue".
+
+After clicking "Continue" you will get to the page "New settings - Link checker robot".
+While you may leave other settings default, you might want to setup a custom bot username
+and make sure to change bot password.
+
+**It is recommended that bot user should be kept with readonly access to all the site pages you wish to crawl.
+You can give the robot similar read capabilities that real students have.
+Never give your bot user write capabilities.**
+
+After verifying all settings click "Save changes".
+
+Now navigate to URL http://your_moodle_website.com/local/linkchecker_robot/index.php".
+It will show some stats about the Link checker Robot.
+
+Click "autocreate" button against "Bot user". This actually creates the user which you have
+configured previously on page "New settings - Link checker robot".
+
+You can ensure that bot user was created from page:
+Home / ► Site administration / ► Users / ► Accounts / ► Browse list of users
+Click "Link checker Robot".
+
+# Testing
+
+You can test it from the CLI using curl, see this example:
+
+https://github.com/CatalystIT-AU/moodle-auth_basic#curl-example
 
 Once this works test running the robot task from the CLI:
 
@@ -58,6 +79,12 @@ cron cycles, you can watch it's progress in
 and
 
 /local/linkchecker_robot/report.php?report=recent
+
+# Travis CI integration
+
+This plugin is configured to be tested in Travis CI.
+
+More docs will follow.
 
 # Reporting
 
