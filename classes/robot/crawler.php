@@ -77,6 +77,7 @@ class crawler {
             return get_string('botcantgettestpage');
         }
         if ($result->redirect) {
+            return get_string('bottestpageredirected', 'local_linkchecker_robot') . $result->redirect;
             return get_string('bottestpageredirected', 'local_linkchecker_robot') . " " . $result->redirect;
         }
 
