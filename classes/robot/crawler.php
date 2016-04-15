@@ -107,7 +107,7 @@ class crawler {
             $botuser->lastname   = 'Robot';
             $botuser->auth       = 'basic';
             $botuser->confirmed  = 1;
-            $botuser->email      = 'bot@bots.com';
+            $botuser->email      = 'robot@moodle.invalid';
             $botuser->city       = 'Botville';
             $botuser->country    = 'AU';
             $botuser->mnethostid = $CFG->mnet_localhost_id;
