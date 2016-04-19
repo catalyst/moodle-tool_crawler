@@ -90,7 +90,9 @@ if ($hassiteconfig) {
         $settings->add(new admin_setting_configtextarea('local_linkchecker_robot/excludeexturl',
                                                     new lang_string('excludeexturl',     'local_linkchecker_robot'),
                                                     new lang_string('excludeexturldesc', 'local_linkchecker_robot'),
-                                                    'http://moodle.org/' ));
+                                                    'http://moodle.org/
+http://validator.w3.org/
+http://www.contentquality.com/' ));
 
         $settings->add(new admin_setting_configtextarea('local_linkchecker_robot/excludemdlurl',
                                                     new lang_string('excludemdlurl',     'local_linkchecker_robot'),
