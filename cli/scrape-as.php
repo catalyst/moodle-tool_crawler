@@ -79,7 +79,6 @@ $node = $robot->scrape($url);
 $dump = $node->contents;
 unset($node->contents);
 print $dump;
-print_r($node);
 var_dump($node);
 
 

@@ -13,8 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-
 /**
  * Defines the lang strings of linkchecker_robot local plugin
  *
@@ -23,25 +21,19 @@
  * @copyright  Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
-
 $string['pluginname'] = 'Link checker robot';
-
 $string['settings'] = 'Settings';
 $string['status'] = 'Robot status';
 $string['recent'] = 'Recently crawled URL\'s';
 $string['recent_header'] = '';
-$string['broken'] = 'Broken links';
 $string['broken_header'] = '<p>Duplicate URLs will only be searched once.</p>';
 $string['oversize'] = 'Big / slow links';
 $string['oversize_header'] = '<p>Big files with multiple incoming links to them will be duplicated.</p>';
 $string['queued'] = 'Queued URL\'s';
 $string['queued_header'] = '<p>The title and course are only known if the URL has been seen on a previous crawl.</p>';
-
 $string['event:crawlstart'] = 'Link check crawl started';
 $string['event:crawlstartdesc'] = 'Link check crawl started {$a}';
-
 $string['checker_help'] = '<a href="{$a->url}">Robot status page</a>';
 $string['seedurl'] = 'Seed URL';
 $string['seedurldesc'] = 'Where the crawler will start';
@@ -63,5 +55,37 @@ $string['maxcrontime'] = 'Cron run limit';
 $string['maxcrontimedesc'] = 'The crawler will keep crawling until this limit is hit on each cron tick. In seconds';
 $string['bigfilesize'] = 'Size of Big files';
 $string['bigfilesizedesc'] = 'How big a file needs to be to get flagged as oversize. In MB';
-
-
+$string['botuser'] = 'Bot user';
+$string['curcrawlstart'] = 'Current crawl started at';
+$string['lastcrawlend'] = 'Last crawl ended at';
+$string['lastcrawlproc'] = 'Last crawl process';
+$string['lastqueuesize'] = 'Last queue size';
+$string['configmissing'] = 'Config missing';
+$string['botusermissing'] = 'Bot user missing';
+$string['botcantgettestpage'] = 'Bot could not request test page';
+$string['bottestpageredirected'] = 'Bot test page was redirected to';
+$string['hellorobot'] = 'Hello robot:';
+$string['bottestpagenotreturned'] = 'Bot test page wasn\'t returned';
+$string['robotstatus'] = 'Robot status';
+$string['autocreate'] = 'Auto create';
+$string['good'] = 'Good';
+$string['neverrun'] = 'Never run';
+$string['neverfinished'] = 'Never finished';
+$string['whenqueued'] = 'When queued';
+$string['incourse'] = 'In course';
+$string['notyetknown'] = 'Not yet known';
+$string['lastcrawledtime'] = 'Last crawled time';
+$string['response'] = 'Response';
+$string['size'] = 'Size';
+$string['url'] = 'URL';
+$string['mimetype'] = 'Mime type';
+$string['brokenlinksandurls'] = 'Broken links / Unique broken URLs';
+$string['frompage'] = 'From page';
+$string['course'] = 'Course';
+$string['missing'] = 'Missing';
+$string['retry'] = 'Retry';
+$string['unknown'] = 'Unknown';
+$string['slowurl'] = 'Slow URL';
+$string['found'] = 'Found';
+$string['localplugins'] = 'Local Plugins';
+$string['numberurlsfound'] = 'Found {$a->reports_number} {$a->repoprt_type}  URLs';

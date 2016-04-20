@@ -42,7 +42,6 @@ class local_linkchecker_robot_test extends advanced_testcase {
     }
 
     public function test_absolute_urls() {
-        global $DB, $CFG;
         $this->resetAfterTest(true);
 
         $base = "http://test.com/sub/";

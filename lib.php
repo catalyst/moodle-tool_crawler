@@ -82,7 +82,7 @@ function local_linkchecker_robot_crawl() {
  * @param string $url a page url
  * @return an array of summary data
  */
-function local_linkchecker_robot_summary($courseid, $url) {
+function local_linkchecker_robot_summary($courseid) {
 
     global $DB;
 

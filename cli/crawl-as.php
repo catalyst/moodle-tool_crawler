@@ -88,5 +88,5 @@ $res    = $robot->scrape($url);
 $result = $robot->crawl($node);
 $node2  = $DB->get_record('linkchecker_url', array('url' => $node->url) );
 
-print_r($node2);
+var_dump($node2);
 

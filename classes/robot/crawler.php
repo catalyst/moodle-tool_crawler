@@ -66,7 +66,7 @@ class crawler {
         if (!$botusername) {
             return 'CONFIG MISSING';
         }
-        if (!$botuser = $DB->get_record('user', array('username' => $botusername) )) {
+        if ( !$DB->get_record('user', array('username' => $botusername)) ) {
             return 'BOT USER MISSING <a href="?action=makebot">Auto create</a>';
         }
 
@@ -149,9 +149,9 @@ class crawler {
 
         // Replace '//' or '/./' or '/foo/../' with '/' */.
         $re = array('#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#');
-        for ($n = 1; $n > 0; $abs = preg_replace($re, '/', $abs, -1, $n)) {
-            $noop = 1;
-        }
+        do {
+            $abs = preg_replace($re, '/', $abs, -1, $n);
+        } while ($n > 0);
 
         // Absolute URL is ready!
         return $scheme.'://'.$abs;
@@ -167,7 +167,7 @@ class crawler {
 
         global $DB;
 
-        if ($to = $DB->get_record('linkchecker_url', array('id' => $nodeid) )) {
+        if ($DB->get_record('linkchecker_url', array('id' => $nodeid))) {
 
             $time = $this->get_crawlstart();
 
@@ -367,7 +367,7 @@ class crawler {
      */
     public function crawl($node) {
 
-        global $DB, $CFG;
+        global $DB;
 
         $result = $this->scrape($node->url);
         $result = (object) array_merge((array) $node, (array) $result);
@@ -376,12 +376,9 @@ class crawler {
 
             if ($result->mimetype == 'text/html') {
                 $this->parse_html($result, $result->external);
-            } else {
-                $todo = 1;
-                // TODO Possibly we can infer the course purely from the url
-                // maybe the plugin serving urls?
             }
-
+            // Else TODO Possibly we can infer the course purely from the url
+            // Maybe the plugin serving urls?
         }
 
         $detectutf8 = function ($string) {

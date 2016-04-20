@@ -123,14 +123,12 @@ if ($retryid) {
 
 if ($report == 'broken') {
 
-    $sql = "
-          FROM {linkchecker_url}  b
-     LEFT JOIN {linkchecker_edge} l ON l.b = b.id
-     LEFT JOIN {linkchecker_url}  a ON l.a = a.id
-     LEFT JOIN {course} c ON c.id = a.courseid
-         WHERE b.httpcode != ?
-               $sqlfilter
-    ";
+    $sql = " FROM {linkchecker_url}  b
+       LEFT JOIN {linkchecker_edge} l ON l.b = b.id
+       LEFT JOIN {linkchecker_url}  a ON l.a = a.id
+       LEFT JOIN {course} c ON c.id = a.courseid
+           WHERE b.httpcode != ? $sqlfilter";
+
     $opts = array('200');
     $data  = $DB->get_records_sql("SELECT concat(b.id, '-', l.id, '-', a.id) AS id,
                                           b.url target,
@@ -145,24 +143,35 @@ if ($report == 'broken') {
                                           a.courseid,
                                           c.shortname $sql
                                  ORDER BY httpcode DESC,
-                                          c.shortname ASC", $opts, $start, $perpage);
+                                          c.shortname ASC",
+                                          $opts,
+                                          $start,
+                                          $perpage);
+
     $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
 
     $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
-    $table->head = array('', 'Last&nbsp;crawled&nbsp;time', 'Response', 'Broken URL', 'From page');
+    $table->head = array(
+        '',
+        get_string('lastcrawledtime', 'local_linkchecker_robot'),
+        get_string('response', 'local_linkchecker_robot'),
+        get_string('brokenurl', 'local_linkchecker_robot'),
+        get_string('frompage', 'local_linkchecker_robot')
+    );
     if (!$courseid) {
-        array_push($table->head, 'Course');
+        array_push($table->head, get_string('course', 'local_linkchecker_robot'));
     }
     $table->data = array();
     foreach ($data as $row) {
         $text = trim($row->text);
         if (!$text || $text == "") {
-            $text = 'Missing';
+            $text = get_string('missing', 'local_linkchecker_robot');
         }
         $data = array(
-            html_writer::link(new moodle_url($baseurl, array('retryid' => $row->toid )), 'Retry'),
+            html_writer::link(new moodle_url($baseurl,
+                array('retryid' => $row->toid )), get_string('retry', 'local_linkchecker_robot')),
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
             http_code($row),
             html_writer::link($row->target, $text) .
@@ -178,12 +187,11 @@ if ($report == 'broken') {
 
 } else if ($report == 'queued') {
 
-    $sql = "
-          FROM {linkchecker_url}  a
-     LEFT JOIN {course} c ON c.id = a.courseid
-         WHERE (a.lastcrawled IS NULL OR a.lastcrawled < needscrawl)
-        $sqlfilter
-            ";
+    $sql = " FROM {linkchecker_url} a
+       LEFT JOIN {course} c ON c.id = a.courseid
+           WHERE (a.lastcrawled IS NULL OR a.lastcrawled < needscrawl)
+                 $sqlfilter";
+
     $opts = array();
     $data  = $DB->get_records_sql("SELECT a.id,
                                           a.url target,
@@ -193,21 +201,30 @@ if ($report == 'broken') {
                                           a.courseid,
                                           c.shortname $sql
                                  ORDER BY a.needscrawl ASC,
-                                          a.id ASC", $opts, $start, $perpage);
+                                          a.id ASC",
+                                          $opts,
+                                          $start,
+                                          $perpage);
+
     $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
 
     $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
-    $table->head = array('When queued', 'URL');
+
+    $table->head = array(
+        get_string('whenqueued', 'local_linkchecker_robot'),
+        get_string('url', 'local_linkchecker_robot')
+    );
+
     if (!$courseid) {
-        array_push($table->head, 'In course');
+        array_push($table->head, get_string('incourse', 'local_linkchecker_robot'));
     }
     $table->data = array();
     foreach ($data as $row) {
         $text = trim($row->title);
         if (!$text || $text == "") {
-            $text = 'Not yet known';
+            $text = get_string('notyetknown', 'local_linkchecker_robot');
         }
         $data = array(
             userdate($row->needscrawl, '%h %e,&nbsp;%H:%M:%S'),
@@ -222,12 +239,11 @@ if ($report == 'broken') {
 
 } else if ($report == 'recent') {
 
-    $sql = "
-          FROM {linkchecker_url}  b
-     LEFT JOIN {course} c ON c.id = b.courseid
-         WHERE b.lastcrawled IS NOT NULL
-               $sqlfilter
-            ";
+    $sql = " FROM {linkchecker_url}  b
+       LEFT JOIN {course} c ON c.id = b.courseid
+           WHERE b.lastcrawled IS NOT NULL
+                 $sqlfilter";
+
     $opts = array();
     $data  = $DB->get_records_sql("SELECT b.id,
                                           b.url target,
@@ -240,30 +256,38 @@ if ($report == 'broken') {
                                           b.courseid,
                                           c.shortname
                                           $sql
-                                 ORDER BY b.lastcrawled DESC
-                                          ", $opts, $start, $perpage);
+                                 ORDER BY b.lastcrawled DESC",
+                                          $opts,
+                                          $start,
+                                          $perpage);
+
     $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
 
     $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
-    $table->head = array('Last&nbsp;crawled&nbsp;time', 'Response', 'Size', 'URL', 'Mime type');
+    $table->head = array(
+        get_string('lastcrawledtime', 'local_linkchecker_robot'),
+        get_string('response', 'local_linkchecker_robot'),
+        get_string('size', 'local_linkchecker_robot'),
+        get_string('url', 'local_linkchecker_robot'),
+        get_string('mimetype', 'local_linkchecker_robot'),
+    );
     if (!$courseid) {
-        array_push($table->head, 'In course');
+        array_push($table->head, get_string('incourse', 'local_linkchecker_robot'));
     }
     $table->data = array();
     foreach ($data as $row) {
         $text = trim($row->title);
         if (!$text || $text == "") {
-            $text = 'UNKNOWN';
+            $text = get_string('unknown', 'local_linkchecker_robot');
         }
         $code = http_code($row);
         $size = $row->filesize * 1;
         $data = array(
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
             $code,
-            $size > 1000000 ? (round(100 * $size / 1000000 ) * .01 . 'MB') :
-            ($size > 1000 ? (  round(10 * $size / 1000     ) * .1  . 'KB') : $size . 'B'),
+            display_size($size),
             html_writer::link($row->target, $text) .
             '<br><small>' . $row->target . '</small>',
             $row->mimetype,
@@ -276,14 +300,13 @@ if ($report == 'broken') {
 
 } else if ($report == 'oversize') {
 
-    $sql = "
-          FROM {linkchecker_url}  b
-     LEFT JOIN {linkchecker_edge} l ON l.b = b.id
-     LEFT JOIN {linkchecker_url}  a ON l.a = a.id
-     LEFT JOIN {course} c ON c.id = a.courseid
-         WHERE b.filesize > ?
-               $sqlfilter
-            ";
+    $sql = " FROM {linkchecker_url} b
+       LEFT JOIN {linkchecker_edge} l ON l.b = b.id
+       LEFT JOIN {linkchecker_url}  a ON l.a = a.id
+       LEFT JOIN {course} c ON c.id = a.courseid
+           WHERE b.filesize > ?
+                 $sqlfilter";
+
     $bigfilesize = $config->bigfilesize;
     $opts = array($bigfilesize * 1000000);
     $data  = $DB->get_records_sql("SELECT concat(b.id, '-', a.id, '-', l.id) id,
@@ -299,28 +322,39 @@ if ($report == 'broken') {
                                           $sql
                                  ORDER BY b.filesize DESC,
                                           l.text,
-                                          a.id
-                                          ", $opts, $start, $perpage);
+                                          a.id",
+                                          $opts,
+                                          $start,
+                                          $perpage);
+
     $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
 
     $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
-    $table->head = array('Last&nbsp;crawled&nbsp;time', 'Size', 'Slow URL', 'Mime type', 'From page');
+
+    $table->head = array(
+        get_string('lastcrawledtime', 'local_linkchecker_robot'),
+        get_string('size', 'local_linkchecker_robot'),
+        get_string('slowurl', 'local_linkchecker_robot'),
+        get_string('mimetype', 'local_linkchecker_robot'),
+        get_string('frompage', 'local_linkchecker_robot'),
+    );
+
     if (!$courseid) {
-        array_push($table->head, 'Course');
+        array_push($table->head, get_string('course', 'local_linkchecker_robot'));
     }
+
     $table->data = array();
     foreach ($data as $row) {
         $size = $row->filesize * 1;
         $text = trim($row->text);
         if (!$text || $text == "") {
-            $text = 'Missing';
+            $text = get_string('missing', 'local_linkchecker_robot');
         }
         $data = array(
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
-            $size > 1000000 ? (round(100 * $size / 1000000 ) * .01 . 'MB') :
-            ($size > 1000 ? (  round(10 * $size / 1000     ) * .1  . 'KB') : $size . 'B'),
+            display_size($size),
             html_writer::link($row->target, $text) .    '<br><small>' . $row->target . '</small>',
             $row->mimetype,
             html_writer::link($row->url, $row->title) . '<br><small>' . $row->url    . '</small>',
@@ -333,7 +367,8 @@ if ($report == 'broken') {
 
 }
 
-echo $OUTPUT->heading('Found ' . $count . ' ' . get_string($report, 'local_linkchecker_robot'));
+echo $OUTPUT->heading(get_string('found', 'local_linkchecker_robot') . ' ' . $count . ' ' .
+    get_string($report, 'local_linkchecker_robot'));
 echo get_string($report . '_header', 'local_linkchecker_robot');
 echo html_writer::table($table);
 echo $OUTPUT->paging_bar($count, $page, $perpage, $baseurl);
