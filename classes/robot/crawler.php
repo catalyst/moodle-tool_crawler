@@ -64,26 +64,26 @@ class crawler {
 
         $botusername  = $this->config->botusername;
         if (!$botusername) {
-            return 'CONFIG MISSING';
+            return get_string('configmissing', 'local_linkchecker_robot');
         }
         if ( !$DB->get_record('user', array('username' => $botusername)) ) {
-            return 'BOT USER MISSING <a href="?action=makebot">Auto create</a>';
+            return get_string('botusermissing', 'local_linkchecker_robot') .
+                ' <a href="?action=makebot">' . get_string('autocreate', 'local_linkchecker_robot') . '</a>';
         }
 
         // Do a test crawl over the network.
         $result = $this->scrape($CFG->wwwroot.'/local/linkchecker_robot/tests/test1.php');
         if ($result->httpcode != '200') {
-            return 'BOT could not request test page';
+            return get_string('botcantgettestpage');
         }
         if ($result->redirect) {
-            return "BOT test page was  redirected to {$result->redirect}";
+            return get_string('bottestpageredirected', 'local_linkchecker_robot') . " " . $result->redirect;
         }
 
-        $hello = strpos($result->contents, "Hello robot: '{$this->config->botusername}'");
+        $hello = strpos($result->contents, get_string('hellorobot', 'local_linkchecker_robot') . " '{$this->config->botusername}'");
         if (!$hello) {
-            return "BOT test page wasn't returned";
+            return get_string('bottestpagenotreturned', 'local_linkchecker_robot');
         }
-
     }
 
     /**

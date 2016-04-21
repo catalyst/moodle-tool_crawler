@@ -157,7 +157,7 @@ if ($report == 'broken') {
         '',
         get_string('lastcrawledtime', 'local_linkchecker_robot'),
         get_string('response', 'local_linkchecker_robot'),
-        get_string('brokenurl', 'local_linkchecker_robot'),
+        get_string('broken', 'local_linkchecker_robot'),
         get_string('frompage', 'local_linkchecker_robot')
     );
     if (!$courseid) {
@@ -170,8 +170,8 @@ if ($report == 'broken') {
             $text = get_string('missing', 'local_linkchecker_robot');
         }
         $data = array(
-            html_writer::link(new moodle_url($baseurl,
-                array('retryid' => $row->toid )), get_string('retry', 'local_linkchecker_robot')),
+            html_writer::link(new moodle_url($baseurl, array('retryid' => $row->toid )),
+                get_string('retry', 'local_linkchecker_robot')),
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
             http_code($row),
             html_writer::link($row->target, $text) .
@@ -367,8 +367,12 @@ if ($report == 'broken') {
 
 }
 
-echo $OUTPUT->heading(get_string('found', 'local_linkchecker_robot') . ' ' . $count . ' ' .
-    get_string($report, 'local_linkchecker_robot'));
+echo $OUTPUT->heading(get_string('numberurlsfound', 'local_linkchecker_robot',
+    array(
+        'reports_number' => $count,
+        'repoprt_type' => $report
+    )
+));
 echo get_string($report . '_header', 'local_linkchecker_robot');
 echo html_writer::table($table);
 echo $OUTPUT->paging_bar($count, $page, $perpage, $baseurl);

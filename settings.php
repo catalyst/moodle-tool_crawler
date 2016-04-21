@@ -43,7 +43,7 @@ if ($hassiteconfig) {
                                            $CFG->wwwroot . '/local/linkchecker_robot/report.php?report=recent') );
 
     $ADMIN->add('local_linkchecker_cat', new admin_externalpage('local_linkchecker_robot_broken',
-                                           get_string('brokenlinksandurls', 'local_linkchecker_robot'),
+                                           get_string('broken', 'local_linkchecker_robot'),
                                            $CFG->wwwroot . '/local/linkchecker_robot/report.php?report=broken') );
 
     $ADMIN->add('local_linkchecker_cat', new admin_externalpage('local_linkchecker_robot_oversize',
@@ -56,7 +56,7 @@ if ($hassiteconfig) {
 
     // Add the admin page to the menu tree if it ain't exist.
     if (!$ADMIN->locate('localplugins')) {
-        $ADMIN->add('root', new admin_category('localplugins', 'Local Plugins'));
+        $ADMIN->add('root', new admin_category('localplugins', get_string('localplugins', 'local_linkchecker_robot')));
     }
 
     $ADMIN->add('localplugins', $settings);

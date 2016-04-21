@@ -29,7 +29,6 @@ require_capability('moodle/site:config', context_system::instance());
 admin_externalpage_setup('local_linkchecker_robot_status');
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('status', 'local_linkchecker_robot'));
 
 $action         = optional_param('action', '', PARAM_ALPHANUMEXT);
 $config         = get_config('local_linkchecker_robot');
@@ -60,56 +59,50 @@ $opts = array($bigfilesize * 1000000);
 $oversize = $DB->get_field_sql("SELECT COUNT(*)
                                  FROM {linkchecker_url}
                                 WHERE filesize > ?",  $opts );
-?>
 
-<table>
-    <tr>
-        <td><?php echo get_string('botuser', 'local_linkchecker_robot'); ?></td>
-        <td><?php echo $boterror ? $boterror : 'Good'; ?></td>
-    </tr>
-    <tr>
-        <td><?php echo get_string('curcrawlstart', 'local_linkchecker_robot'); ?></td>
-        <td><?php echo $crawlstart ? userdate( $crawlstart) : 'Never run'; ?></td>
-    </tr>
-    <tr>
-        <td><?php echo get_string('lastcrawlend', 'local_linkchecker_robot'); ?></td>
-        <td><?php echo $crawlend ? userdate( $crawlend) : 'Never finished'; ?></td>
-    </tr>
-    <tr>
-        <td>
-            <?php echo get_string('lastcrawlproc', 'local_linkchecker_robot'); ?></td>
-        <td><?php echo $crawltick ? userdate( $crawltick) : '-'; ?></td>
-    </tr>
-    <tr>
-        <td><?php echo get_string('lastqueuesize', 'local_linkchecker_robot'); ?></td>
-        <td><?php echo $oldqueuesize ?></td>
-    </tr>
-    <tr>
-        <td><?php echo get_string('queued', 'local_linkchecker_robot'); ?></td>
-        <td><a href="report.php?report=queued"><?php echo $queuesize; ?></a></td>
-    </tr>
-    <tr>
-        <td><?php echo get_string('recent', 'local_linkchecker_robot'); ?></td>
-        <td><a href="report.php?report=recent"><?php echo $recent; ?></a></td>
-    </tr>
-    <tr>
-        <td><?php echo get_string('broken', 'local_linkchecker_robot'); ?></td>
-        <td><a href="report.php?report=broken"><?php echo $broken; ?></a></td>
-    </tr>
-    <tr>
-        <td><?php echo get_string('oversize', 'local_linkchecker_robot'); ?></td>
-        <td><a href="report.php?report=oversize"><?php echo $oversize; ?></a></td>
-    </tr>
-</table>
+$table = new html_table();
+$table->head = array(get_string('robotstatus', 'local_linkchecker_robot'));
+$table->headspan = array(2, 1);
+$table->data = array(
+    array(
+        get_string('botuser', 'local_linkchecker_robot'),
+        $boterror ? $boterror : get_string('good', 'local_linkchecker_robot')
+    ),
+    array(
+        get_string('curcrawlstart', 'local_linkchecker_robot'),
+        $crawlstart ? userdate( $crawlstart) : get_string('neverrun', 'local_linkchecker_robot')
+    ),
+    array(
+        get_string('lastcrawlend', 'local_linkchecker_robot'),
+        $crawlend ? userdate( $crawlend) : get_string('neverfinished', 'local_linkchecker_robot')
+    ),
+    array(
+        get_string('lastcrawlproc', 'local_linkchecker_robot'),
+        $crawltick ? userdate( $crawltick) : '-'
+    ),
+    array(
+        get_string('lastqueuesize', 'local_linkchecker_robot'),
+        $oldqueuesize
+    ),
+    array(
+        get_string('queued', 'local_linkchecker_robot'),
+        "<a href=\"report.php?report=queued\">$queuesize</a>"
+    ),
+    array(
+        get_string('recent', 'local_linkchecker_robot'),
+        "<a href=\"report.php?report=recent\">$recent</a>"
+    ),
+    array(
+        get_string('broken', 'local_linkchecker_robot'),
+        "<a href=\"report.php?report=broken\">$broken</a>"
+    ),
+    array(
+        get_string('oversize', 'local_linkchecker_robot'),
+        "<a href=\"report.php?report=oversize\">$oversize</a>"
+    )
+);
 
-<!--
-<p>crawl as
-<p> link to course level reports
-<p> link to global reports
-<p>Slow urls
-<p>high linked urls
--->
+echo "<br />";
+echo html_writer::table($table);
 
-<?php
 echo $OUTPUT->footer();
-

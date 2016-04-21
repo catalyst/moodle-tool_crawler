@@ -13,6 +13,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+
 /**
  * Defines the lang strings of linkchecker_robot local plugin
  *
@@ -79,7 +81,7 @@ $string['response'] = 'Response';
 $string['size'] = 'Size';
 $string['url'] = 'URL';
 $string['mimetype'] = 'Mime type';
-$string['brokenlinksandurls'] = 'Broken links / Unique broken URLs';
+$string['broken'] = 'Broken URL';
 $string['frompage'] = 'From page';
 $string['course'] = 'Course';
 $string['missing'] = 'Missing';
@@ -89,3 +91,6 @@ $string['slowurl'] = 'Slow URL';
 $string['found'] = 'Found';
 $string['localplugins'] = 'Local Plugins';
 $string['numberurlsfound'] = 'Found {$a->reports_number} {$a->repoprt_type}  URLs';
+$string['robotstatus'] = 'Robot status';
+$string['autocreate'] = 'Auto create';
+
