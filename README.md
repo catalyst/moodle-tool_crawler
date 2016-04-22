@@ -1,3 +1,7 @@
+<a href="https://travis-ci.org/central-queensland-uni/moodle-local_linkchecker_robot">
+<img src="https://api.travis-ci.org/central-queensland-uni/moodle-local_linkchecker_robot.svg?branch=master">
+</a>
+
 # What is this?
 
 This is a link checking robot, that crawls your moodle site following links
@@ -21,7 +25,7 @@ To install the dependency plugin as a git submodule:
 git submodule add https://github.com/CatalystIT-AU/moodle-auth_basic.git auth/basic
 ```
 
-# Installing plugins source code
+# Installing plugin source code
 
 Install plugin moodle-local_linkchecker_robot as a git submodule:
 ```
@@ -29,16 +33,19 @@ git submodule add https://github.com/central-queensland-uni/moodle-local_linkche
 ```
 # Configure
 
-FYI: [installing Moodle plugins](https://docs.moodle.org/30/en/Installing_add-ons)
+When installing the plugins please keep in mind the official Moodle recommendations: [installing Moodle plugins](https://docs.moodle.org/30/en/Installing_add-ons)
 
 ## Step 1
 
-Login to Moodle. You will be forwarded to URL http://your_moodle_website.com/admin/index.php with Plugins check.
+Login to Moodle after you have downloaded the plugin code with git. You will be forwarded to URL http://your_moodle_website.com/admin/index.php with Plugins check.
 There you should see plugins "Basic authentication" and "Link checker robot".
 
 Click button "Upgrade Moodle database now" which should initiate plugins installation.
 
 Now you should see page "Upgrading to new version" with plugins installation statuses and button "Continue".
+
+**Note! Plugin auth_basic is disabled by default after installation.
+You will need to enable it manually from Home ► Site administration ► Plugins ► Authentication ► Manage authentication**
 
 After clicking "Continue" you will get to the page "New settings - Link checker robot".
 While you may leave other settings default, you might want to setup a custom bot username
@@ -50,26 +57,36 @@ Never give your bot user write capabilities.**
 
 After verifying all settings click "Save changes".
 
-Now navigate to URL http://your_moodle_website.com/local/linkchecker_robot/index.php".
-It will show some stats about the Link checker Robot.
+## Step 2
 
-Click "autocreate" button against "Bot user". This actually creates the user which you have
+Enable auth_basic plugin (if you haven't done that earlier) from Home ► Site administration ► Plugins ► Authentication ► Manage authentication
+
+Now navigate to URL http://your_moodle_website.com/local/linkchecker_robot/index.php". It will show some stats about the Link checker Robot.
+
+Click "Auto create" button against "Bot user". This actually creates the user which username and password you have
 configured previously on page "New settings - Link checker robot".
 
-You can ensure that bot user was created from page:
-Home / ► Site administration / ► Users / ► Accounts / ► Browse list of users
-Click "Link checker Robot".
+Once bot user is created "Bot user" line in status report should be showing "Good".
 
 # Testing
 
-You can test it from the CLI using curl, see this example:
+##Test basic authentication with curl
 
-https://github.com/CatalystIT-AU/moodle-auth_basic#curl-example
+Example in bash:
+```
+curl -c /tmp/cookies -v -L --user moodlebot:moodlebot http://your_moodle_website.com/course/view.php?id=3
+```
+This command should log you in with specified credentials via Basic HTTP Auth. It will dump headers, requests and responses and among the output you should be able to see the line "You are logged in as ".
 
-Once this works test running the robot task from the CLI:
+Once Basic HTTP auth works test running the robot task from the CLI:
 
+```
 php admin/tool/task/cli/schedule_task.php  --execute='\local_linkchecker_robot\task\crawl_task'
-
+Scheduled task: Link checker robot
+... used 2997 dbqueries
+... used 59.828736066818 seconds
+Task completed.
+```
 If this worked then it's a matter of sitting back and waiting for the
 robot to do it's thing. It works incrementally spreading the load over many
 cron cycles, you can watch it's progress in
@@ -80,16 +97,9 @@ and
 
 /local/linkchecker_robot/report.php?report=recent
 
-# Travis CI integration
-
-This plugin is configured to be tested in Travis CI.
-
-More docs will follow.
-
 # Reporting
 
-4 new admin reports are available for showing the current crawl status, broken links
-and slow links. They are available under:
+4 new admin reports are available for showing the current crawl status, broken links and URLs and slow links. They are available under:
 
 Administration > Reports > Link checker
 
@@ -100,6 +110,5 @@ Please raise any issues in github:
 https://github.com/central-queensland-uni/moodle-local_linkchecker_robot/issues
 
 If you need anything urgently and would like to sponsor it's implemenation please
-email me: Brendan Heywood brendan@catalyst-au.net
-
+email me: [Brendan Heywood](mailto:brendan@catalyst-au.net).
 
