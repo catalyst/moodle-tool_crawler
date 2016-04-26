@@ -93,7 +93,7 @@ and slow links. They are available under:
 
 Administration > Reports > Link checker
 
-# Issues andFeedback
+# Issues and Feedback
 
 Please raise any issues in github:
 
