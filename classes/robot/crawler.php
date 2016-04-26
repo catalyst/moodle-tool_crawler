@@ -77,8 +77,8 @@ class crawler {
             return get_string('botcantgettestpage');
         }
         if ($result->redirect) {
-            return get_string('bottestpageredirected', 'local_linkchecker_robot') . $result->redirect;
-            return get_string('bottestpageredirected', 'local_linkchecker_robot') . " " . $result->redirect;
+            return get_string('bottestpageredirected', 'local_linkchecker_robot',
+                array('resredirect' => $result->redirect));
         }
 
         $hello = strpos($result->contents, get_string('hellorobot', 'local_linkchecker_robot') . " '{$this->config->botusername}'");
