@@ -49,10 +49,16 @@ $queuesize      = $robot->get_queue_size();
 $recent         = $robot->get_processed();
 $oldqueuesize   = $robot->get_old_queue_size();
 
-$broken = $DB->get_field_sql("SELECT COUNT(*)
+$numurlsbroken = $DB->get_field_sql("SELECT COUNT(*)
                                  FROM {linkchecker_url}
                                 WHERE httpcode != ?", array('200') );
 
+$sqlnumpages = "SELECT COUNT (*)
+                  FROM mdl_linkchecker_url b
+                  JOIN mdl_linkchecker_edge l ON l.b = b.id
+                 WHERE b.httpcode != '200'";
+
+$numpageswithurlsbroken = $DB->get_field_sql($sqlnumpages);
 
 $bigfilesize = $config->bigfilesize;
 $opts = array($bigfilesize * 1000000);
@@ -94,7 +100,7 @@ $table->data = array(
     ),
     array(
         get_string('broken', 'local_linkchecker_robot'),
-        "<a href=\"report.php?report=broken\">$broken</a>"
+        "<a href=\"report.php?report=broken\">$numpageswithurlsbroken / $numurlsbroken</a>"
     ),
     array(
         get_string('oversize', 'local_linkchecker_robot'),
