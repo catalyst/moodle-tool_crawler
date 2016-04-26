@@ -25,7 +25,6 @@
  */
 defined('MOODLE_INTERNAL') || die();
 $string['autocreate'] = 'Auto create';
-$string['autocreate'] = 'Auto create';
 $string['bigfilesize'] = 'Size of Big files';
 $string['bigfilesizedesc'] = 'How big a file needs to be to get flagged as oversize. In MB';
 $string['botcantgettestpage'] = 'Bot could not request test page';
@@ -80,7 +79,6 @@ $string['recent'] = 'Recently crawled URL\'s';
 $string['recent_header'] = '';
 $string['response'] = 'Response';
 $string['retry'] = 'Retry';
-$string['robotstatus'] = 'Robot status';
 $string['robotstatus'] = 'Robot status';
 $string['seedurl'] = 'Seed URL';
 $string['seedurldesc'] = 'Where the crawler will start';
