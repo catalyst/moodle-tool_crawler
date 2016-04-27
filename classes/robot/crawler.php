@@ -548,7 +548,9 @@ class crawler {
         $s = curl_init();
         curl_setopt($s, CURLOPT_URL,             $url);
         curl_setopt($s, CURLOPT_TIMEOUT,         $this->config->maxtime);
-        curl_setopt($s, CURLOPT_USERPWD,         $this->config->botusername.':'.$this->config->botpassword);
+        if ( $this->should_be_authenticated($url) ) {
+            curl_setopt($s, CURLOPT_USERPWD,         $this->config->botusername.':'.$this->config->botpassword);
+        }
         curl_setopt($s, CURLOPT_USERAGENT,       $this->config->useragent . '/' . $this->config->version . ' ('.$CFG->wwwroot.')' );
         curl_setopt($s, CURLOPT_MAXREDIRS,       5);
         curl_setopt($s, CURLOPT_RETURNTRANSFER,  true);
@@ -634,6 +636,21 @@ class crawler {
         return $result;
     }
 
+    /**
+     * Checks whether robot should authenticate or not.
+     * Bot should authenticate if URL it is crawling over is local URL
+     * And bot should not authenticate when crawling over external URLs.
+     *
+     * @param string $url
+     * @return boolean
+     */
+    public function should_be_authenticated($url) {
+        global $CFG;
+        if ( strpos($url, $CFG->wwwroot.'/') === 0 || $url === $CFG->wwwroot ) {
+            return true;
+        }
+        return false;
+    }
 }
 
 
