@@ -35,3 +35,5 @@ $DB->delete_records('config_plugins',  array('plugin' => 'local_linkchecker_robo
 $DB->delete_records('linkchecker_url');
 $DB->delete_records('linkchecker_edge');
 
+@unlink($CFG->dataroot . '/linkchecker_cookies.txt');
+
