@@ -79,7 +79,7 @@ function local_linkchecker_robot_crawl() {
  * Get summary stats about a url
  *
  * @param integer $courseid a course aid
- * @param string $url a page url
+ *
  * @return an array of summary data
  */
 function local_linkchecker_robot_summary($courseid) {
