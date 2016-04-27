@@ -41,18 +41,67 @@ class local_linkchecker_robot_test extends advanced_testcase {
 
     }
 
-    public function test_absolute_urls() {
-        $this->resetAfterTest(true);
-
-        $base = "http://test.com/sub/";
-
-        $this->assertNotEquals("http://test.com/file.php",     $this->robot->absolute_url($base, '/file.php'         ));
-        $this->assertEquals("http://test.com/sub/file.php", $this->robot->absolute_url($base, 'file.php'          ));
-        $this->assertEquals("http://test.com/file.php",     $this->robot->absolute_url($base, '../file.php'       ));
-        $this->assertEquals("http://test.com/sib/file.php", $this->robot->absolute_url($base, '../sib/file.php'   ));
-        $this->assertEquals("mailto:me@test.com",           $this->robot->absolute_url($base, 'mailto:me@test.com'));
-
+    /**
+     * @return array of test cases
+     *
+     * Combinations of base and relative parts of URL
+     */
+    public function provider() {
+        return array(
+            array(
+                'base' => 'http://test.com/sub/',
+                'links' => array(
+                    'mailto:me@test.com' => 'mailto:me@test.com',
+                    '/file.php' => 'http://test.com/sub/file.php',
+                    'file.php' => 'http://test.com/sub/file.php',
+                    '../sub2/file.php' => 'http://test.com/sub2/file.php',
+                    'http://elsewhere.com/path/' => 'http://elsewhere.com/path/'
+                )
+            ),
+            array(
+                'base' => 'http://test.com/sub1/sub2/',
+                'links' => array(
+                    'mailto:me@test.com' => 'mailto:me@test.com',
+                    '../../file.php' => 'http://test.com/file.php',
+                    'file.php' => 'http://test.com/sub1/sub2/file.php',
+                    '../sub3/file.php' => 'http://test.com/sub1/sub3/file.php',
+                    'http://elsewhere.com/path/' => 'http://elsewhere.com/path/'
+                )
+            ),
+            array(
+                'base' => 'http://test.com/sub1/sub2/$%^/../../../',
+                'links' => array(
+                    'mailto:me@test.com' => 'mailto:me@test.com',
+                    '/file.php' => 'http://test.com/file.php',
+                    '/sub3/sub4//$%^/../../../file.php' => 'http://test.com/file.php',
+                    'http://elsewhere.com/path/' => 'http://elsewhere.com/path/'
+                    )
+            ),
+            array(
+                'base' => 'http://test.com/sub1/sub2/file1.php',
+                'links' => array(
+                    'mailto:me@test.com' => 'mailto:me@test.com',
+                    'file2.php' => 'http://test.com/sub1/sub2/file2.php',
+                    '../file2.php' => 'http://test.com/sub1/file2.php',
+                    'sub3/file2.php' => 'http://test.com/sub1/sub2/sub3/file2.php'
+                )
+            )
+        );
     }
 
+    /**
+     * @dataProvider provider
+     *
+     * Executing test cases returned by function provider()
+     *
+     * @param string $base Base part of URL
+     * @param array $links Combinations of relative paths of URL and expected result
+     */
+    public function test_absolute_urls($base, $links) {
+        foreach ($links as $key => $value) {
+            $this->assertEquals($value, $this->robot->absolute_url($base, $key));
+        }
+    }
 }
+
 
