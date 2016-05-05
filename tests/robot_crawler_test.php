@@ -136,6 +136,14 @@ class local_linkchecker_robot_test extends advanced_testcase {
         $this->assertEquals((bool)$expected, $this->robot->should_be_authenticated($testurl));
         $this->resetAfterTest(true);
     }
+
+    /**
+     * Tests existence of new plugin parameter 'retentionperiod'
+     */
+    public function test_param_retention_exists() {
+        $param = get_config('local_linkchecker_robot', 'retentionperiod');
+        $this->assertNotEmpty($param);
+    }
 }
 
 

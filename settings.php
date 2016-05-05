@@ -136,6 +136,20 @@ grading
                                                     new lang_string('bigfilesizedesc',   'local_linkchecker_robot'),
                                                     '1' ));
 
+        $options = array(
+            86400 => new lang_string('secondstotime86400'),
+            604800 => new lang_string('secondstotime604800'),
+            2620800 => new lang_string('nummonths', 'moodle', 1),
+            5241600 => new lang_string('nummonths', 'moodle', 2),
+            7862400 => new lang_string('nummonths', 'moodle', 3),
+            15724800 => new lang_string('nummonths', 'moodle', 6),
+            0 => new lang_string('never')
+        );
+        $settings->add(new admin_setting_configselect('local_linkchecker_robot/retentionperiod',
+                                                    new lang_string('retentionperiod',        'local_linkchecker_robot'),
+                                                    new lang_string('retentionperioddesc',    'local_linkchecker_robot'),
+                                                    2620800,
+                                                    $options));
     }
 }
 
