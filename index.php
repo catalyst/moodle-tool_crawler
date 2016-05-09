@@ -31,9 +31,9 @@ admin_externalpage_setup('local_linkchecker_robot_status');
 echo $OUTPUT->header();
 
 $action         = optional_param('action', '', PARAM_ALPHANUMEXT);
-$config         = get_config('local_linkchecker_robot');
 
 $robot = new \local_linkchecker_robot\robot\crawler();
+$config = $robot::get_config();
 
 if ($action == 'makebot') {
 
@@ -41,9 +41,9 @@ if ($action == 'makebot') {
 
 }
 
-$crawlstart     = $robot->get_crawlstart();
-$crawlend       = $robot->get_last_crawlend();
-$crawltick      = $robot->get_last_crawltick();
+$crawlstart     = $config->crawlstart;
+$crawlend       = $config->crawlend;
+$crawltick      = $config->crawltick;
 $boterror       = $robot->is_bot_valid();
 $queuesize      = $robot->get_queue_size();
 $recent         = $robot->get_processed();

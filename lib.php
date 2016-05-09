@@ -30,14 +30,12 @@
  */
 function local_linkchecker_robot_crawl() {
 
-    global $DB, $CFG;
-
-    $config = get_config('local_linkchecker_robot');
-
-    $crawlstart = $DB->get_field('config_plugins', 'value', array('plugin' => 'local_linkchecker_robot', 'name' => 'crawlstart') );
-    $crawlend   = $DB->get_field('config_plugins', 'value', array('plugin' => 'local_linkchecker_robot', 'name' => 'crawlend'  ) );
+    global $CFG;
 
     $robot = new \local_linkchecker_robot\robot\crawler();
+    $config = $robot::get_config();
+    $crawlstart = $config->crawlstart;
+    $crawlend   = $config->crawlend;
 
     // Check if valid, otherwise bail quickly.
 
