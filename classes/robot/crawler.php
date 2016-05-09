@@ -38,19 +38,20 @@ require_once($CFG->dirroot.'/user/lib.php');
 class crawler {
 
     /**
-     * @var the config object
+     * Returns configuration object if it has been initialised.
+     * If it is not initialises then it creates and returns it.
+     *
+     * @return mixed hash-like object or default array $defaults if no config found.
      */
-    protected $config;
-
-    /**
-     * Robot constructor
-     */
-    public function __construct() {
-
-        $this->config = get_config('local_linkchecker_robot');
-        if (!property_exists ($this->config, 'crawlstart') ) {
-            $this->config->crawlstart = 0;
-        }
+    public static function get_config() {
+        $defaults = array(
+            'crawlstart' => 0,
+            'crawlend' => 0,
+            'crawltick' => 0,
+            'retentionperiod' => 86400 // 1 week.
+        );
+        $config = (object) array_merge( $defaults, (array) get_config('local_linkchecker_robot') );
+        return $config;
     }
 
     /**
@@ -62,7 +63,7 @@ class crawler {
 
         global $DB, $CFG;
 
-        $botusername  = $this->config->botusername;
+        $botusername  = self::get_config()->botusername;
         if (!$botusername) {
             return get_string('configmissing', 'local_linkchecker_robot');
         }
@@ -81,7 +82,8 @@ class crawler {
                 array('resredirect' => $result->redirect));
         }
 
-        $hello = strpos($result->contents, get_string('hellorobot', 'local_linkchecker_robot') . " '{$this->config->botusername}'");
+        $hello = strpos($result->contents, get_string('hellorobot', 'local_linkchecker_robot',
+                array('botusername' => self::get_config()->botusername)));
         if (!$hello) {
             return get_string('bottestpagenotreturned', 'local_linkchecker_robot');
         }
@@ -96,14 +98,14 @@ class crawler {
 
         // TODO roles?
 
-        $botusername  = $this->config->botusername;
+        $botusername  = self::get_config()->botusername;
         $botuser = $DB->get_record('user', array('username' => $botusername) );
         if ($botuser) {
             return $botuser;
         } else {
             $botuser = (object) array();
             $botuser->username   = $botusername;
-            $botuser->password   = hash_internal_user_password($this->config->botpassword);
+            $botuser->password   = hash_internal_user_password(self::get_config()->botpassword);
             $botuser->firstname  = 'Link checker';
             $botuser->lastname   = 'Robot';
             $botuser->auth       = 'basic';
@@ -170,7 +172,7 @@ class crawler {
 
         if ($DB->get_record('linkchecker_url', array('id' => $nodeid))) {
 
-            $time = $this->get_crawlstart();
+            $time = self::get_config()->crawlstart;
 
             // Mark all nodes that link to this as needing a recrawl.
             $DB->execute("UPDATE {linkchecker_url} u
@@ -217,9 +219,9 @@ class crawler {
         $mdlw = strlen($CFG->wwwroot);
         $bad = 0;
         if (substr ($url, 0, $mdlw) === $CFG->wwwroot) {
-            $excludes = str_replace("\r", '', $this->config->excludemdlurl);
+            $excludes = str_replace("\r", '', self::get_config()->excludemdlurl);
         } else {
-            $excludes = str_replace("\r", '', $this->config->excludeexturl);
+            $excludes = str_replace("\r", '', self::get_config()->excludeexturl);
         }
         $excludes = explode("\n", $excludes);
         if (count($excludes) > 0 && $excludes[0]) {
@@ -259,33 +261,6 @@ class crawler {
     }
 
     /**
-     * When did the current crawl start?
-     *
-     * @return timestamp of crawl start
-     */
-    public function get_crawlstart() {
-        return property_exists($this->config, 'crawlstart') ? $this->config->crawlstart : 0;
-    }
-
-    /**
-     * When did the last crawl finish?
-     *
-     * @return timestamp of crawl end
-     */
-    public function get_last_crawlend() {
-        return property_exists($this->config, 'crawlend') ? $this->config->crawlend : 0;
-    }
-
-    /**
-     * When did the crawler last process anything?
-     *
-     * @return timestamp of last crawl process
-     */
-    public function get_last_crawltick() {
-        return property_exists($this->config, 'crawltick') ? $this->config->crawltick : 0;
-    }
-
-    /**
      * Many urls are in the queue now (more will probably be added)
      *
      * @return size of queue
@@ -312,7 +287,7 @@ class crawler {
         return $DB->get_field_sql("SELECT COUNT(*)
                                            FROM {linkchecker_url}
                                           WHERE lastcrawled >= :start",
-                                    array('start' => $this->config->crawlstart)
+                                    array('start' => self::get_config()->crawlstart)
                                        );
     }
 
@@ -327,7 +302,7 @@ class crawler {
         return $DB->get_field_sql("SELECT COUNT(*)
                                            FROM {linkchecker_url}
                                           WHERE lastcrawled < :start",
-                                    array('start' => $this->config->crawlstart)
+                                    array('start' => self::get_config()->crawlstart)
                                        );
     }
 
@@ -437,7 +412,7 @@ class crawler {
         }
 
         // Remove any chunks of DOM that we know to be safe and don't want to follow.
-        $excludes = explode("\n", $this->config->excludemdldom);
+        $excludes = explode("\n", self::get_config()->excludemdldom);
         foreach ($excludes as $exclude) {
             foreach ($html->find($exclude) as $e) {
                 $e->outertext = '';
@@ -461,9 +436,9 @@ class crawler {
             $mdlw = strlen($CFG->wwwroot);
             $bad = 0;
             if (substr ($href, 0, $mdlw) === $CFG->wwwroot) {
-                $excludes = str_replace("\r", '', $this->config->excludemdlurl);
+                $excludes = str_replace("\r", '', self::get_config()->excludemdlurl);
             } else {
-                $excludes = str_replace("\r", '', $this->config->excludeexturl);
+                $excludes = str_replace("\r", '', self::get_config()->excludeexturl);
             }
             $excludes = explode("\n", $excludes);
             if (count($excludes) > 0 && $excludes[0]) {
@@ -547,11 +522,12 @@ class crawler {
 
         $s = curl_init();
         curl_setopt($s, CURLOPT_URL,             $url);
-        curl_setopt($s, CURLOPT_TIMEOUT,         $this->config->maxtime);
+        curl_setopt($s, CURLOPT_TIMEOUT,         self::get_config()->maxtime);
         if ( $this->should_be_authenticated($url) ) {
-            curl_setopt($s, CURLOPT_USERPWD,         $this->config->botusername.':'.$this->config->botpassword);
+            curl_setopt($s, CURLOPT_USERPWD,         self::get_config()->botusername.':'.self::get_config()->botpassword);
         }
-        curl_setopt($s, CURLOPT_USERAGENT,       $this->config->useragent . '/' . $this->config->version . ' ('.$CFG->wwwroot.')' );
+        curl_setopt($s, CURLOPT_USERAGENT,
+            self::get_config()->useragent . '/' . self::get_config()->version . ' ('.$CFG->wwwroot.')' );
         curl_setopt($s, CURLOPT_MAXREDIRS,       5);
         curl_setopt($s, CURLOPT_RETURNTRANSFER,  true);
         curl_setopt($s, CURLOPT_FOLLOWLOCATION,  true);
