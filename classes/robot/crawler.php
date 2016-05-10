@@ -251,9 +251,7 @@ class crawler {
             $node->external   = strpos($url, $CFG->wwwroot) === 0 ? 0 : 1;
             $node->needscrawl = time();
             $node->id = $DB->insert_record('linkchecker_url', $node);
-
-        } else {
-
+        } else if ( $node->needscrawl < self::get_config()->crawlstart ) {
             $node->needscrawl = time();
             $DB->update_record('linkchecker_url', $node);
         }
