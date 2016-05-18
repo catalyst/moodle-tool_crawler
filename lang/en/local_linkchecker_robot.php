@@ -44,6 +44,9 @@ $string['course'] = 'Course';
 $string['curcrawlstart'] = 'Current crawl started at';
 $string['event:crawlstart'] = 'Link check crawl started';
 $string['event:crawlstartdesc'] = 'Link check crawl started {$a}';
+$string['eventrobotcleanupcompleted'] = 'Linkchecker robot cleanup completed';
+$string['eventrobotcleanupcompleteddesc'] = 'Linkchecker robot finished clearing old URLs from crawling history. Number of removed records: {$a->numrecsdeleted}';
+$string['eventrobotcleanupstarted'] = 'Linkchecker robot cleanup started';
 $string['excludeexturl'] = 'Exclude external URL\'s';
 $string['excludeexturldesc'] = 'One url regex per line, each is matched against the full url';
 $string['excludemdldom'] = 'Exclude moodle DOM\'s';
@@ -78,7 +81,10 @@ $string['queued_header'] = '<p>The title and course are only known if the URL ha
 $string['recent'] = 'Recently crawled URL\'s';
 $string['recent_header'] = '';
 $string['response'] = 'Response';
+$string['retentionperiod'] = 'Retention period for bad URLs';
+$string['retentionperioddesc'] = 'How many days to keep bad URLs in db.';
 $string['retry'] = 'Retry';
+$string['robotcleanup'] = 'Robot cleanup';
 $string['robotstatus'] = 'Robot status';
 $string['seedurl'] = 'Seed URL';
 $string['seedurldesc'] = 'Where the crawler will start';
@@ -91,4 +97,5 @@ $string['url'] = 'URL';
 $string['useragent'] = 'Bot user agent string';
 $string['useragentdesc'] = 'The User agent string it use in the http headers + the version of this plugin';
 $string['whenqueued'] = 'When queued';
+
 

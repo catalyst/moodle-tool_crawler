@@ -30,6 +30,15 @@ $tasks = array(
         'day'       => '*',
         'dayofweek' => '*',
         'month'     => '*'
+    ),
+    array(
+        'classname' => 'local_linkchecker_robot\task\robot_cleanup',
+        'blocking' => 0,
+        'minute' => '30',
+        'hour' => '2',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*'
     )
 );
 
