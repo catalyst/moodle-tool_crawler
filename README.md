@@ -45,7 +45,10 @@ Click button "Upgrade Moodle database now" which should initiate plugins install
 Now you should see page "Upgrading to new version" with plugins installation statuses and button "Continue".
 
 **Note! Plugin auth_basic is disabled by default after installation.
-You will need to enable it manually from Home ► Site administration ► Plugins ► Authentication ► Manage authentication**
+You will need to enable it manually from 
+
+
+Home ► Site administration ► Plugins ► Authentication ► Manage authentication**
 
 After clicking "Continue" you will get to the page "New settings - Link checker robot".
 While you may leave other settings default, you might want to setup a custom bot username
@@ -59,7 +62,10 @@ After verifying all settings click "Save changes".
 
 ## Step 2
 
-Enable auth_basic plugin (if you haven't done that earlier) from Home ► Site administration ► Plugins ► Authentication ► Manage authentication
+Enable auth_basic plugin (if you haven't done that earlier) from 
+
+
+Home ► Site administration ► Plugins ► Authentication ► Manage authentication
 
 Now navigate to URL http://your_moodle_website.com/local/linkchecker_robot/index.php". It will show some stats about the Link checker Robot.
 
@@ -141,6 +147,7 @@ and
 # Reporting
 
 4 new admin reports are available for showing the current crawl status, broken links and URLs and slow links. They are available under:
+
 
 Administration > Reports > Link checker
 
