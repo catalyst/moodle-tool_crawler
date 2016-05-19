@@ -68,6 +68,47 @@ configured previously on page "New settings - Link checker robot".
 
 Once bot user is created "Bot user" line in status report should be showing "Good".
 
+## Disabling crawling of specific course categories
+
+This is achieved by configuring proper security roles in Moodle and assigning 
+these roles to the robot user on desired categories.
+
+Import role "Robot" from local/linkchecker_robot/roles/robot.xml on 
+
+
+Site administration ► Users ► Permissions ► Define roles ► Add a new role
+
+Add this role to the "Link checker robot" user on
+
+
+Site administration ► Users ► Permissions ► Assign system roles.
+
+Import role "Robot nofollow" from file 
+local/linkchecker_robot/roles/robotnofollow.xml on 
+
+
+Site administration ► Users ► Permissions ► Define roles ► Add a new role.
+
+To disable crawling of, say "Category ABC", go to 
+
+
+Site administration ► Courses ► Manage courses and categories ► Category ABC
+ 
+then click on "Assign roles" in the left navigation menu. 
+Click on role "Robot nofollow", click on user "Link checker Robot" 
+under "Potential users" and add him to "Existing users".
+
+The above configuration applies role "Robot" on the whole moodle site 
+and lets crawler to access general content. And "Role nofollow" prohibits 
+crawler from accessing the specific category.
+
+In the same way it is possible to restrict crawler from accessing other 
+moodle contexts such as courses, activities and blocks.
+ 
+The same effect could be achieved even without role "Robot nofollow" by 
+assigning role "Robot" on the contexts you want to be crawled. But 
+using the combination of two roles gives more flexibility.
+
 # Testing
 
 ##Test basic authentication with curl
