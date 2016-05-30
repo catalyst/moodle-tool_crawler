@@ -23,6 +23,7 @@
  */
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
+require_once('locallib.php');
 
 require_login();
 
@@ -46,20 +47,6 @@ $baseurl = new moodle_url('/local/linkchecker_robot/report.php', array(
 ));
 
 $config = get_config('local_linkchecker_robot');
-
-/**
- * Get a html code chunk
- *
- * @param integer $row row
- * @return html chunk
- */
-function http_code($row) {
-    $msg = isset($row->httpmsg) ? $row->httpmsg : '?';
-    $code = $row->httpcode;
-    $cc = substr($code, 0, 1);
-    $code = "$msg<br><small class='link-$cc"."xx'>$code</small>";
-    return $code;
-}
 
 if ($courseid) {
     // If course then this is an a course editor report.
@@ -143,11 +130,9 @@ if ($report == 'broken') {
             html_writer::link(new moodle_url($baseurl, array('retryid' => $row->toid )),
                 get_string('retry', 'local_linkchecker_robot')),
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
-            http_code($row),
-            html_writer::link($row->target, $text) .
-            '<br><small>' . $row->target . '</small>',
-            html_writer::link($row->url, $row->title) .
-            '<br><small>' . substr($row->url, $mdlw) . '</small>',
+            local_linkchecker_robot_http_code($row),
+            local_linkchecker_robot_link($row->target, $text),
+            local_linkchecker_robot_link($row->url, $row->title)
         );
         if (!$courseid) {
             array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
@@ -198,8 +183,7 @@ if ($report == 'broken') {
         }
         $data = array(
             userdate($row->needscrawl, '%h %e,&nbsp;%H:%M:%S'),
-            html_writer::link($row->target, $text) .
-            '<br><small>' . $row->target . '</small>'
+            local_linkchecker_robot_link($row->target, $text)
         );
         if (!$courseid) {
             array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
@@ -252,14 +236,13 @@ if ($report == 'broken') {
         if (!$text || $text == "") {
             $text = get_string('unknown', 'local_linkchecker_robot');
         }
-        $code = http_code($row);
+        $code = local_linkchecker_robot_http_code($row);
         $size = $row->filesize * 1;
         $data = array(
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
             $code,
             display_size($size),
-            html_writer::link($row->target, $text) .
-            '<br><small>' . $row->target . '</small>',
+            local_linkchecker_robot_link($row->target, $text),
             $row->mimetype,
         );
         if (!$courseid) {
@@ -325,9 +308,9 @@ if ($report == 'broken') {
         $data = array(
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
             display_size($size),
-            html_writer::link($row->target, $text) .    '<br><small>' . $row->target . '</small>',
+            local_linkchecker_robot_link($row->target, $text),
             $row->mimetype,
-            html_writer::link($row->url, $row->title) . '<br><small>' . $row->url    . '</small>',
+            local_linkchecker_robot_link($row->url, $row->title)
         );
         if (!$courseid) {
             array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
