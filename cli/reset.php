@@ -31,7 +31,9 @@ require_once($CFG->dirroot .'/local/linkchecker_robot/lib.php');
 
 global $DB;
 
-$DB->delete_records('config_plugins',  array('plugin' => 'local_linkchecker_robot', 'name' => 'crawlstart') );
+unset_config('crawlstart', 'local_linkchecker_robot');
+unset_config('crawlend', 'local_linkchecker_robot');
+unset_config('crawltick', 'local_linkchecker_robot');
 $DB->delete_records('linkchecker_url');
 $DB->delete_records('linkchecker_edge');
 
