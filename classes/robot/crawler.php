@@ -129,12 +129,12 @@ class crawler {
      * @return string absolute url
      */
     public function absolute_url($base, $rel) {
-        /* return if already absolute URL */
+        // Return if already absolute URL.
         if (parse_url($rel, PHP_URL_SCHEME) != '') {
             return $rel;
         }
 
-        /* queries and anchors */
+        // Handle links which are only queries or anchors.
         if ($rel[0] == '#' || $rel[0] == '?') {
             return $base.$rel;
         }
