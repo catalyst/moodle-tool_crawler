@@ -38,7 +38,6 @@ $string['botusername'] = 'Bot username';
 $string['botusernamedesc'] = 'The username of the moodle user to crawl as';
 $string['broken'] = 'Broken links / URLs';
 $string['broken_header'] = '<p>Duplicate URLs will only be searched once.</p>';
-$string['checker_help'] = '<a href="{$a->url}">Robot status page</a>';
 $string['configmissing'] = 'Config missing';
 $string['course'] = 'Course';
 $string['curcrawlstart'] = 'Current crawl started at';

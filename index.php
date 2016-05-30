@@ -108,7 +108,8 @@ $table->data = array(
     )
 );
 
-echo "<br />";
+include('tabs.php');
+echo $tabs;
 echo html_writer::table($table);
 
 echo $OUTPUT->footer();

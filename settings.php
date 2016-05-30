@@ -62,10 +62,11 @@ if ($hassiteconfig) {
     $ADMIN->add('localplugins', $settings);
     if (!during_initial_install()) {
 
+        include('tabs.php');
         $settings->add(new admin_setting_heading('linkchecker',
                                                     '',
-                                                    new lang_string('checker_help',      'local_linkchecker_robot',
-                                                    array('url' => new moodle_url('/local/linkchecker_robot/index.php')) )));
+                                                    $tabs
+                                                    ));
 
         $settings->add(new admin_setting_configtext('local_linkchecker_robot/seedurl',
                                                     new lang_string('seedurl',           'local_linkchecker_robot'),

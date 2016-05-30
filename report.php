@@ -83,38 +83,8 @@ if ($courseid) {
 }
 echo $OUTPUT->header();
 
-$reports = array('queued', 'recent', 'broken', 'oversize');
-echo '<p>';
-if ($courseid) {
-    foreach ($reports as $rpt) {
-        if ($rpt != 'queued') {
-            echo ' | ';
-        }
-        if ($report == $rpt) {
-            echo '<b>' . html_writer::link(new moodle_url('report.php', array('report' => $rpt, 'course' => $courseid )),
-                get_string($rpt, 'local_linkchecker_robot')) . '</b>';
-        } else {
-            echo html_writer::link(new moodle_url('report.php', array('report' => $rpt, 'course' => $courseid )),
-                get_string($rpt, 'local_linkchecker_robot'));
-        }
-    }
-} else {
-    echo html_writer::link("/admin/settings.php?section=local_linkchecker_robot",
-        get_string('settings', 'local_linkchecker_robot'));
-    echo ' | ';
-    echo html_writer::link("index.php", get_string('status', 'local_linkchecker_robot'));
-    foreach ($reports as $rpt) {
-        echo ' | ';
-        if ($report == $rpt) {
-            echo '<b>' . html_writer::link(new moodle_url('report.php', array('report' => $rpt )),
-                get_string($rpt, 'local_linkchecker_robot')) . '</b>';
-        } else {
-            echo html_writer::link(new moodle_url('report.php', array('report' => $rpt )),
-                get_string($rpt, 'local_linkchecker_robot'));
-        }
-    }
-}
-echo '</p>';
+include('tabs.php');
+echo $tabs;
 
 if ($retryid) {
     $robot = new \local_linkchecker_robot\robot\crawler();
