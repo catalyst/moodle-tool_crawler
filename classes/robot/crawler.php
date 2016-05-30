@@ -241,6 +241,9 @@ class crawler {
             return false;
         }
 
+        // We ignore differences in hash anchors.
+        $url = strtok($url, "#");
+
         $node = $DB->get_record('linkchecker_url', array('url' => $url) );
 
         if (!$node) {
@@ -426,6 +429,8 @@ class crawler {
                 continue;
             }
             $seen[$href] = 1;
+
+            // We ignore links which are internal to this page.
             if (substr ($href, 0, 1) === '#') {
                 continue;
             }
