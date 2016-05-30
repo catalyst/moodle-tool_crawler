@@ -25,7 +25,7 @@
 $reports = array('queued', 'recent', 'broken', 'oversize');
 
 $tabs = '<p>';
-if (isset($courseid)) {
+if (isset($courseid) && $courseid) {
     foreach ($reports as $rpt) {
         if ($rpt != 'queued') {
             $tabs .= ' | ';
