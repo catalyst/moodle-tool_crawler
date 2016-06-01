@@ -30,7 +30,7 @@
  */
 function local_linkchecker_robot_crawl() {
 
-    global $CFG;
+    global $CFG, $DB;
 
     $robot = new \local_linkchecker_robot\robot\crawler();
     $config = $robot::get_config();
@@ -46,6 +46,17 @@ function local_linkchecker_robot_crawl() {
         set_config('crawlstart', $start, 'local_linkchecker_robot');
         $robot->mark_for_crawl($CFG->wwwroot.'/', $config->seedurl);
 
+        // Create a new history record.
+        $history = new stdClass();
+        $history->startcrawl = $start;
+        $history->urls = 0;
+        $history->links = 0;
+        $history->broken = 0;
+        $history->oversize = 0;
+        $history->cronticks = 0;
+        $history->id = $DB->insert_record('linkchecker_history', $history);
+    } else {
+        $history = $DB->get_record('linkchecker_history', array('startcrawl' => $crawlstart));
     }
 
     // While we are not exceeding the maxcron time, and the queue is not empty
@@ -68,9 +79,16 @@ function local_linkchecker_robot_crawl() {
     if ($hastime) {
         // Time left over, which means the queue is empty!
         // Mark the crawl as ended.
+        $history->endcrawl = time();
         set_config('crawlend', time(), 'local_linkchecker_robot');
     }
+    $history->urls = $robot->get_processed();
+    $history->links = $robot->get_num_links();
+    $history->broken = $robot->get_num_broken_urls();
+    $history->oversize = $robot->get_num_oversize();
+    $history->cronticks++;
 
+    $DB->update_record('linkchecker_history', $history);
 }
 
 /**

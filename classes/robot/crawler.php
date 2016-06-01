@@ -269,12 +269,11 @@ class crawler {
     public function get_queue_size() {
         global $DB;
 
-        $queuesize = $DB->get_field_sql("SELECT COUNT(*)
-                                           FROM {linkchecker_url}
-                                          WHERE lastcrawled IS NULL
-                                             OR lastcrawled < needscrawl"
-                                       );
-        return $queuesize;
+        return $DB->get_field_sql("
+                SELECT COUNT(*)
+                  FROM {linkchecker_url}
+                 WHERE lastcrawled IS NULL
+                    OR lastcrawled < needscrawl");
     }
 
     /**
@@ -285,11 +284,71 @@ class crawler {
     public function get_processed() {
         global $DB;
 
-        return $DB->get_field_sql("SELECT COUNT(*)
-                                           FROM {linkchecker_url}
-                                          WHERE lastcrawled >= :start",
-                                    array('start' => self::get_config()->crawlstart)
-                                       );
+        return $DB->get_field_sql("
+                SELECT COUNT(*)
+                  FROM {linkchecker_url}
+                 WHERE lastcrawled >= ?",
+                array(self::get_config()->crawlstart));
+    }
+
+    /**
+     * How many links have been processed off the queue
+     *
+     * @return size of processes list
+     */
+    public function get_num_links() {
+        global $DB;
+
+        return $DB->get_field_sql("
+                SELECT COUNT(*)
+                  FROM {linkchecker_edge}
+                 WHERE lastmod >= ?",
+                array(self::get_config()->crawlstart));
+    }
+
+    /**
+     * How many urls have are broken
+     *
+     * @return number
+     */
+    public function get_num_broken_urls() {
+        global $DB;
+
+        // What about 20x?
+        return $DB->get_field_sql("
+                SELECT COUNT(*)
+                  FROM {linkchecker_url}
+                 WHERE httpcode != '200'");
+    }
+
+    /**
+     * How many urls have broken outgoing links
+     *
+     * @return number
+     */
+    public function get_pages_withbroken_links() {
+        global $DB;
+
+        // What about 20x?
+        return $DB->get_field_sql("
+                SELECT COUNT (*)
+                  FROM mdl_linkchecker_url b
+                  JOIN mdl_linkchecker_edge l ON l.b = b.id
+                 WHERE b.httpcode != '200'");
+    }
+
+    /**
+     * How many urls are oversize
+     *
+     * @return number
+     */
+    public function get_num_oversize() {
+        global $DB;
+
+        return $DB->get_field_sql("
+                SELECT COUNT(*)
+                  FROM {linkchecker_url}
+                 WHERE filesize > ?", array(self::get_config()->bigfilesize * 1000000));
     }
 
     /**
@@ -300,11 +359,12 @@ class crawler {
     public function get_old_queue_size() {
         global $DB;
 
-        return $DB->get_field_sql("SELECT COUNT(*)
-                                           FROM {linkchecker_url}
-                                          WHERE lastcrawled < :start",
-                                    array('start' => self::get_config()->crawlstart)
-                                       );
+        // TODO this logic is wrong and will pick up multiple previous sessions.
+        return $DB->get_field_sql("
+                SELECT COUNT(*)
+                  FROM {linkchecker_url}
+                 WHERE lastcrawled < ?",
+               array(self::get_config()->crawlstart));
     }
 
     /**

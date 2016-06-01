@@ -47,24 +47,12 @@ $crawltick      = $config->crawltick;
 $boterror       = $robot->is_bot_valid();
 $queuesize      = $robot->get_queue_size();
 $recent         = $robot->get_processed();
+$numlinks       = $robot->get_num_links();
 $oldqueuesize   = $robot->get_old_queue_size();
+$numurlsbroken  = $robot->get_num_broken_urls();
+$numpageswithurlsbroken = $robot->get_pages_withbroken_links();
+$oversize       = $robot->get_num_oversize();
 
-$numurlsbroken = $DB->get_field_sql("SELECT COUNT(*)
-                                 FROM {linkchecker_url}
-                                WHERE httpcode != ?", array('200') );
-
-$sqlnumpages = "SELECT COUNT (*)
-                  FROM mdl_linkchecker_url b
-                  JOIN mdl_linkchecker_edge l ON l.b = b.id
-                 WHERE b.httpcode != '200'";
-
-$numpageswithurlsbroken = $DB->get_field_sql($sqlnumpages);
-
-$bigfilesize = $config->bigfilesize;
-$opts = array($bigfilesize * 1000000);
-$oversize = $DB->get_field_sql("SELECT COUNT(*)
-                                 FROM {linkchecker_url}
-                                WHERE filesize > ?",  $opts );
 
 $table = new html_table();
 $table->head = array(get_string('robotstatus', 'local_linkchecker_robot'));
@@ -91,6 +79,10 @@ $table->data = array(
         $oldqueuesize
     ),
     array(
+        get_string('numlinks', 'local_linkchecker_robot'),
+        $numlinks
+    ),
+    array(
         get_string('queued', 'local_linkchecker_robot'),
         "<a href=\"report.php?report=queued\">$queuesize</a>"
     ),
@@ -110,6 +102,39 @@ $table->data = array(
 
 require('tabs.php');
 echo $tabs;
+echo html_writer::table($table);
+
+$table = new html_table();
+$table->head = array(
+    get_string('crawlstart', 'local_linkchecker_robot'),
+    get_string('crawlend', 'local_linkchecker_robot'),
+    get_string('duration', 'local_linkchecker_robot'),
+    get_string('cronticks', 'local_linkchecker_robot'),
+    get_string('numurls', 'local_linkchecker_robot'),
+    get_string('numlinks', 'local_linkchecker_robot'),
+    get_string('broken', 'local_linkchecker_robot'),
+    get_string('oversize', 'local_linkchecker_robot'),
+);
+$table->data = array();
+$history = $DB->get_records('linkchecker_history', array(), 'startcrawl DESC', '*', 0, 5);
+foreach ($history as $record) {
+    $duration = '-';
+    if ($record->endcrawl) {
+        $delta = $record->endcrawl - $record->startcrawl;
+        $duration = sprintf('%02d:%02d:%02d', $delta / 60 / 60, $delta / 60 % 60, $delta % 60);
+    }
+    $table->data[] = array(
+        userdate($record->startcrawl, '%h %e,&nbsp;%H:%M:%S'),
+        $record->endcrawl ? userdate($record->endcrawl, '%h %e,&nbsp;%H:%M:%S') : '-',
+        $duration,
+        $record->cronticks,
+        $record->urls,
+        $record->links,
+        $record->broken,
+        $record->oversize,
+    );
+}
+
 echo html_writer::table($table);
 
 echo $OUTPUT->footer();

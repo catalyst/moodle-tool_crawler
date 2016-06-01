@@ -91,5 +91,32 @@ function xmldb_local_linkchecker_robot_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2015041504, 'local', 'linkchecker_robot');
     }
 
+    if ($oldversion < 2015053002) {
+
+        // Define table linkchecker_history to be created.
+        $table = new xmldb_table('linkchecker_history');
+
+        // Adding fields to table linkchecker_history.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('startcrawl', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('endcrawl', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('cronticks', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('urls', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('links', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('broken', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('oversize', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+
+        // Adding keys to table linkchecker_history.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for linkchecker_history.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Linkchecker_robot savepoint reached.
+        upgrade_plugin_savepoint(true, 2015053002, 'local', 'linkchecker_robot');
+    }
+
     return true;
 }
