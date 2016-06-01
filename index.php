@@ -61,7 +61,7 @@ if ($queuesize == 0) {
     $progress = $recent / ($recent + $oldqueuesize);
 }
 
-// if old queue is zero the use current queue
+// If old queue is zero the use current queue.
 $duration = time() - $crawlstart;
 $eta = floor($duration / $progress + $crawlstart);
 
@@ -140,7 +140,7 @@ foreach ($history as $record) {
         $delta = $record->endcrawl - $record->startcrawl;
     } else {
         $delta = time() - $record->startcrawl;
-    } 
+    }
     $duration = sprintf('%02d:%02d:%02d', $delta / 60 / 60, $delta / 60 % 60, $delta % 60);
     $table->data[] = array(
         userdate($record->startcrawl, '%h %e,&nbsp;%H:%M:%S'),

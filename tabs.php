@@ -49,7 +49,8 @@ if (isset($courseid) && $courseid) {
 
     $wrap = 'span';
     $tabs .= html_writer::start_tag($wrap);
-    $tabs .= html_writer::link(new moodle_url("/local/linkchecker_robot/index.php"), get_string('status', 'local_linkchecker_robot'));
+    $tabs .= html_writer::link(new moodle_url("/local/linkchecker_robot/index.php"),
+            get_string('status', 'local_linkchecker_robot'));
     $tabs .= html_writer::end_tag($wrap);
 
     foreach ($reports as $rpt) {
