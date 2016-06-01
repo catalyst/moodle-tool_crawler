@@ -108,7 +108,7 @@ $table->data = array(
     )
 );
 
-include('tabs.php');
+require('tabs.php');
 echo $tabs;
 echo html_writer::table($table);
 

@@ -48,15 +48,6 @@ class local_linkchecker_robot_test extends advanced_testcase {
      */
     public function provider() {
         return array(
-            // Issue 30
-            // array(
-            //     'base' => 'http://test.com',
-            //     'links' => array(
-            //         '/file.php' => 'http://test.com/file.php',
-            //         '#hash' => 'http://test.com/#hash',
-            //         'http://foo.com' => 'http://foo.com/',
-            //     )
-            // ),
             array(
                 'base' => 'http://test.com/sub/',
                 'links' => array(

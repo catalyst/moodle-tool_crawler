@@ -62,7 +62,7 @@ if ($hassiteconfig) {
     $ADMIN->add('localplugins', $settings);
     if (!during_initial_install()) {
 
-        include('tabs.php');
+        require('tabs.php');
         $settings->add(new admin_setting_heading('linkchecker',
                                                     '',
                                                     $tabs

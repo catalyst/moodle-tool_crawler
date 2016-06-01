@@ -70,7 +70,7 @@ if ($courseid) {
 }
 echo $OUTPUT->header();
 
-include('tabs.php');
+require('tabs.php');
 echo $tabs;
 
 if ($retryid) {
