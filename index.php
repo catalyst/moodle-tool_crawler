@@ -53,6 +53,17 @@ $numurlsbroken  = $robot->get_num_broken_urls();
 $numpageswithurlsbroken = $robot->get_pages_withbroken_links();
 $oversize       = $robot->get_num_oversize();
 
+if ($queuesize == 0) {
+    $progress = 1;
+} else if ($oldqueuesize == 0) {
+    $progress = $recent / ($recent + $queuesize);
+} else {
+    $progress = $recent / ($recent + $oldqueuesize);
+}
+
+// if old queue is zero the use current queue
+$duration = time() - $crawlstart;
+$eta = floor($duration / $progress + $crawlstart);
 
 $table = new html_table();
 $table->head = array(get_string('robotstatus', 'local_linkchecker_robot'));
@@ -61,6 +72,13 @@ $table->data = array(
     array(
         get_string('botuser', 'local_linkchecker_robot'),
         $boterror ? $boterror : get_string('good', 'local_linkchecker_robot')
+    ),
+    array(
+        get_string('progress', 'local_linkchecker_robot'),
+        get_string('progresseta', 'local_linkchecker_robot', array(
+            'percent' => sprintf('%.2f%%', $progress * 100),
+            'eta' => userdate($eta),
+        )),
     ),
     array(
         get_string('curcrawlstart', 'local_linkchecker_robot'),
@@ -97,7 +115,7 @@ $table->data = array(
     array(
         get_string('oversize', 'local_linkchecker_robot'),
         "<a href=\"report.php?report=oversize\">$oversize</a>"
-    )
+    ),
 );
 
 require('tabs.php');
@@ -118,11 +136,12 @@ $table->head = array(
 $table->data = array();
 $history = $DB->get_records('linkchecker_history', array(), 'startcrawl DESC', '*', 0, 5);
 foreach ($history as $record) {
-    $duration = '-';
     if ($record->endcrawl) {
         $delta = $record->endcrawl - $record->startcrawl;
-        $duration = sprintf('%02d:%02d:%02d', $delta / 60 / 60, $delta / 60 % 60, $delta % 60);
-    }
+    } else {
+        $delta = time() - $record->startcrawl;
+    } 
+    $duration = sprintf('%02d:%02d:%02d', $delta / 60 / 60, $delta / 60 % 60, $delta % 60);
     $table->data[] = array(
         userdate($record->startcrawl, '%h %e,&nbsp;%H:%M:%S'),
         $record->endcrawl ? userdate($record->endcrawl, '%h %e,&nbsp;%H:%M:%S') : '-',
