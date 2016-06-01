@@ -65,13 +65,17 @@ if ($queuesize == 0) {
 $duration = time() - $crawlstart;
 $eta = floor($duration / $progress + $crawlstart);
 
+$robot = $DB->get_record('user', array('username' => $config->botusername));
+
 $table = new html_table();
 $table->head = array(get_string('robotstatus', 'local_linkchecker_robot'));
 $table->headspan = array(2, 1);
 $table->data = array(
     array(
         get_string('botuser', 'local_linkchecker_robot'),
-        $boterror ? $boterror : get_string('good', 'local_linkchecker_robot')
+        $boterror ? $boterror : get_string('good', 'local_linkchecker_robot') . ' | ' .
+        html_writer::link(new moodle_url('/admin/roles/usersroles.php',
+                array('userid' => $robot->id, 'courseid' => 1)), get_string('roles')),
     ),
     array(
         get_string('progress', 'local_linkchecker_robot'),
