@@ -73,8 +73,11 @@ $table->headspan = array(2, 1);
 $table->data = array(
     array(
         get_string('botuser', 'local_linkchecker_robot'),
-        $boterror ? $boterror : get_string('good', 'local_linkchecker_robot') . ' | ' .
-        html_writer::link(new moodle_url('/admin/roles/usersroles.php',
+        $robot->username
+        . ' | ' . ($boterror ? $boterror : get_string('good', 'local_linkchecker_robot'))
+        . ' | ' . html_writer::link(new moodle_url('/user/editadvanced.php',
+                array('id' => $robot->id, 'courseid' => 1)), get_string('useraccount'))
+        . ' | ' . html_writer::link(new moodle_url('/admin/roles/usersroles.php',
                 array('userid' => $robot->id, 'courseid' => 1)), get_string('roles')),
     ),
     array(
