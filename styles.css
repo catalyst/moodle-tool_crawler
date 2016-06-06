@@ -12,3 +12,8 @@
     background: purple;
     color: white;
 }
+
+.generaltable .rightalign {
+    text-align: right;
+}
+

@@ -101,27 +101,28 @@ $table->data = array(
     ),
     array(
         get_string('lastqueuesize', 'local_linkchecker_robot'),
-        $oldqueuesize
+        number_format($oldqueuesize)
     ),
     array(
         get_string('numlinks', 'local_linkchecker_robot'),
-        $numlinks
+        number_format($numlinks)
     ),
     array(
         get_string('queued', 'local_linkchecker_robot'),
-        "<a href=\"report.php?report=queued\">$queuesize</a>"
+        "<a href=\"report.php?report=queued\">" . number_format($queuesize) . "</a>"
     ),
     array(
         get_string('recent', 'local_linkchecker_robot'),
-        "<a href=\"report.php?report=recent\">$recent</a>"
+        "<a href=\"report.php?report=recent\">" . number_format($recent) . "</a>"
     ),
     array(
         get_string('broken', 'local_linkchecker_robot'),
-        "<a href=\"report.php?report=broken\">$numpageswithurlsbroken / $numurlsbroken</a>"
+        "<a href=\"report.php?report=broken\">" . number_format($numpageswithurlsbroken)
+                . " / " . number_format($numurlsbroken) . "</a>"
     ),
     array(
         get_string('oversize', 'local_linkchecker_robot'),
-        "<a href=\"report.php?report=oversize\">$oversize</a>"
+        "<a href=\"report.php?report=oversize\">" . number_format($oversize) . "</a>"
     ),
 );
 
@@ -141,6 +142,7 @@ $table->head = array(
     get_string('oversize', 'local_linkchecker_robot'),
 );
 $table->data = array();
+$table->colclasses = array('', '', '', 'rightalign', 'rightalign', 'rightalign', 'rightalign', 'rightalign');
 $history = $DB->get_records('linkchecker_history', array(), 'startcrawl DESC', '*', 0, 5);
 foreach ($history as $record) {
     if ($record->endcrawl) {
@@ -153,11 +155,11 @@ foreach ($history as $record) {
         userdate($record->startcrawl, '%h %e,&nbsp;%H:%M:%S'),
         $record->endcrawl ? userdate($record->endcrawl, '%h %e,&nbsp;%H:%M:%S') : '-',
         $duration,
-        $record->cronticks,
-        $record->urls,
-        $record->links,
-        $record->broken,
-        $record->oversize,
+        number_format($record->cronticks),
+        number_format($record->urls),
+        number_format($record->links),
+        number_format($record->broken),
+        number_format($record->oversize),
     );
 }
 
