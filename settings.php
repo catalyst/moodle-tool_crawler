@@ -122,6 +122,11 @@ grading
 .block.block_navigation
 .block.block_cqu_assessment" ));
 
+        $settings->add(new admin_setting_configtextarea('local_linkchecker_robot/excludecourses',
+                                                    new lang_string('excludecourses',       'local_linkchecker_robot'),
+                                                    new lang_string('excludecoursesdesc',   'local_linkchecker_robot'),
+                                                    "" ));
+
         $settings->add(new admin_setting_configtext('local_linkchecker_robot/maxtime',
                                                     new lang_string('maxtime',           'local_linkchecker_robot'),
                                                     new lang_string('maxtimedesc',       'local_linkchecker_robot'),

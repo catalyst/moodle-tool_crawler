@@ -244,6 +244,43 @@ class crawler {
         // We ignore differences in hash anchors.
         $url = strtok($url, "#");
 
+        // Some special logic, if it looks like a course url or module url
+        // then avoid scraping the URL at all.
+        $shortname = '';
+        if (preg_match('/\/course\/view.php\?id=(\d+)/', $url , $matches) ) {
+            $course = $DB->get_record('course', array('id' => $matches[1]));
+            if ($course) {
+                $shortname = $course->shortname;
+            }
+        }
+        if (preg_match('/\/mod\/(\w+)\/(index|view).php\?id=(\d+)/', $url , $matches) ) {
+            $cm = $DB->get_record_sql("
+                    SELECT cm.*,
+                           c.shortname
+                      FROM {course_modules} cm
+                      JOIN {course} c ON cm.course = c.id
+                     WHERE cm.id = ?", array($matches[3]));
+            if ($cm) {
+                $shortname = $cm->shortname;
+            }
+        }
+        if ($shortname) {
+            $bad = 0;
+            $excludes = str_replace("\r", '', self::get_config()->excludecourses);
+            $excludes = explode("\n", $excludes);
+            if (count($excludes) > 0 && $excludes[0]) {
+                foreach ($excludes as $exclude) {
+                    if (strpos($shortname, $exclude) !== false ) {
+                        $bad = 1;
+                        break;
+                    }
+                }
+            }
+            if ($bad) {
+                return false;
+            }
+        }
+
         $node = $DB->get_record('linkchecker_url', array('url' => $url) );
 
         if (!$node) {
