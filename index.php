@@ -58,7 +58,7 @@ if ($queuesize == 0) {
 } else if ($oldqueuesize == 0) {
     $progress = $recent / ($recent + $queuesize);
 } else {
-    $progress = $recent / ($recent + $oldqueuesize);
+    $progress = $recent / ($recent + max($oldqueuesize, $queuesize));
 }
 
 // If old queue is zero the use current queue.
