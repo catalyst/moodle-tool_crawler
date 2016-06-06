@@ -247,7 +247,13 @@ class crawler {
         // Some special logic, if it looks like a course url or module url
         // then avoid scraping the URL at all.
         $shortname = '';
-        if (preg_match('/\/course\/view.php\?id=(\d+)/', $url , $matches) ) {
+        if (preg_match('/\/course\/(info|view).php\?id=(\d+)/', $url , $matches) ) {
+            $course = $DB->get_record('course', array('id' => $matches[2]));
+            if ($course) {
+                $shortname = $course->shortname;
+            }
+        }
+        if (preg_match('/\/enrol\/index.php\?id=(\d+)/', $url , $matches) ) {
             $course = $DB->get_record('course', array('id' => $matches[1]));
             if ($course) {
                 $shortname = $course->shortname;
