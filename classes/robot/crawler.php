@@ -144,11 +144,16 @@ class crawler {
         $path = $parts['path'];
         $host = $parts['host'];
 
-        // Remove non-directory element from path.
-        $path = preg_replace('#/[^/]*$#', '', $path);
+        if ($rel[0] == '/') {
+            $abs = $host . $rel;
+        } else {
 
-        // Dirty absolute URL.
-        $abs = "$host$path/$rel";
+            // Remove non-directory element from path.
+            $path = preg_replace('#/[^/]*$#', '', $path);
+
+            // Dirty absolute URL.
+            $abs = "$host$path/$rel";
+        }
 
         // Replace '//' or '/./' or '/foo/../' with '/' */.
         $re = array('#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#');

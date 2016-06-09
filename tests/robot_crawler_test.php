@@ -46,13 +46,13 @@ class local_linkchecker_robot_test extends advanced_testcase {
      *
      * Combinations of base and relative parts of URL
      */
-    public function provider() {
+    public function absolute_urls_provider() {
         return array(
             array(
                 'base' => 'http://test.com/sub/',
                 'links' => array(
                     'mailto:me@test.com' => 'mailto:me@test.com',
-                    '/file.php' => 'http://test.com/sub/file.php',
+                    '/file.php' => 'http://test.com/file.php',
                     'file.php' => 'http://test.com/sub/file.php',
                     '../sub2/file.php' => 'http://test.com/sub2/file.php',
                     'http://elsewhere.com/path/' => 'http://elsewhere.com/path/'
@@ -85,30 +85,19 @@ class local_linkchecker_robot_test extends advanced_testcase {
                     '../file2.php' => 'http://test.com/sub1/file2.php',
                     'sub3/file2.php' => 'http://test.com/sub1/sub2/sub3/file2.php'
                 )
-            )
+            ),
+            array(
+                'base' => 'http://test.com/sub1/foo.php?id=12',
+                'links' => array(
+                    '/sub2/bar.php?id=34' => 'http://test.com/sub2/bar.php?id=34',
+
+                ),
+            ),
         );
     }
 
     /**
-     * @return array of test cases
-     *
-     * Local and external URLs and their tricky combinations
-     */
-    public function urls_provider() {
-        return array(
-            array(false, 'http://my_moodle.com', 'http://evil.com/blah/http://my_moodle.com'),
-            array(false, 'http://my_moodle.com', 'http://my_moodle.com.actually.im.evil.com'),
-            array(true, 'http://my_moodle.com', 'http://my_moodle.com'),
-            array(true, 'http://my_moodle.com', 'http://my_moodle.com/whatever/file1.php'),
-            array(false, 'http://my_moodle.com/subdir', 'http://evil.com/blah/http://my_moodle.com/subdir'),
-            array(false, 'http://my_moodle.com/subdir', 'http://my_moodle.com/subdir.actually.im.evil.com'),
-            array(true, 'http://my_moodle.com/subdir', 'http://my_moodle.com/subdir'),
-            array(true, 'http://my_moodle.com/subdir', 'http://my_moodle.com/subdir/whatever/file1.php'),
-        );
-    }
-
-    /**
-     * @dataProvider provider
+     * @dataProvider absolute_urls_provider
      *
      * Executing test cases returned by function provider()
      *
@@ -122,7 +111,25 @@ class local_linkchecker_robot_test extends advanced_testcase {
     }
 
     /**
-     * @dataProvider urls_provider
+     * @return array of test cases
+     *
+     * Local and external URLs and their tricky combinations
+     */
+    public function should_auth_provider() {
+        return array(
+            array(false, 'http://my_moodle.com', 'http://evil.com/blah/http://my_moodle.com'),
+            array(false, 'http://my_moodle.com', 'http://my_moodle.com.actually.im.evil.com'),
+            array(true,  'http://my_moodle.com', 'http://my_moodle.com'),
+            array(true,  'http://my_moodle.com', 'http://my_moodle.com/whatever/file1.php'),
+            array(false, 'http://my_moodle.com/subdir', 'http://evil.com/blah/http://my_moodle.com/subdir'),
+            array(false, 'http://my_moodle.com/subdir', 'http://my_moodle.com/subdir.actually.im.evil.com'),
+            array(true,  'http://my_moodle.com/subdir', 'http://my_moodle.com/subdir'),
+            array(true,  'http://my_moodle.com/subdir', 'http://my_moodle.com/subdir/whatever/file1.php'),
+        );
+    }
+
+    /**
+     * @dataProvider should_auth_provider
      *
      * Tests method should_be_authenticated($url) of class \local_linkchecker_robot\robot\crawler()
      *
