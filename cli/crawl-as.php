@@ -85,8 +85,5 @@ if (!$options['url']) {
 $url    = $options['url'];
 $node   = $robot->mark_for_crawl($url, $url);
 $res    = $robot->scrape($url);
-$result = $robot->crawl($node);
-$node2  = $DB->get_record('linkchecker_url', array('url' => $node->url) );
-
-var_dump($node2);
+$result = $robot->crawl($node, true);
 

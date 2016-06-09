@@ -455,17 +455,26 @@ class crawler {
      *
      * @param object $node a node
      */
-    public function crawl($node) {
+    public function crawl($node, $verbose = false) {
 
         global $DB;
 
+        if ($verbose) {
+            echo "Scraping $node->url\n";
+        }
         $result = $this->scrape($node->url);
         $result = (object) array_merge((array) $node, (array) $result);
 
+        if ($verbose) {
+            echo "Response code of $result->httpcode\n";
+        }
         if ($result->httpcode == '200') {
 
             if ($result->mimetype == 'text/html') {
-                $this->parse_html($result, $result->external);
+                if ($verbose) {
+                    echo "Parsing html...\n";
+                }
+                $this->parse_html($result, $result->external, $verbose);
             }
             // Else TODO Possibly we can infer the course purely from the url
             // Maybe the plugin serving urls?
@@ -501,8 +510,9 @@ class crawler {
      *
      * @param object $node a url node
      * @param boolean $external is the url ourside moodle
+     * @param boolean $external print verbose info
      */
-    private function parse_html($node, $external) {
+    private function parse_html($node, $external, $verbose = false) {
 
         global $CFG;
 
@@ -515,13 +525,22 @@ class crawler {
 
         // If couldn't parse html.
         if (!$html) {
+            if ($verbose) {
+                echo "Didn't find any html, stopping.\n";
+            }
             return;
         }
 
         $node->title = $html->find('title', 0)->plaintext;
+        if ($verbose) {
+            echo "Found title of: '$node->title'\n";
+        }
 
         // Everything after this is only for internal moodle pages.
         if ($external) {
+            if ($verbose) {
+                echo "External so stopping here.\n";
+            }
             return $node;
         }
 
@@ -538,15 +557,18 @@ class crawler {
             $href = $e->href;
             $href = str_replace('&amp;', '&', $href);
 
-            if (array_key_exists($href, $seen ) ) {
-                continue;
-            }
-            $seen[$href] = 1;
-
             // We ignore links which are internal to this page.
             if (substr ($href, 0, 1) === '#') {
                 continue;
             }
+
+            // should make absolute here?
+            $href = $this->absolute_url($node->url, $href);
+
+            if (array_key_exists($href, $seen ) ) {
+                continue;
+            }
+            $seen[$href] = 1;
 
             // If this url is external then check the ext whitelist.
             $mdlw = strlen($CFG->wwwroot);
@@ -567,6 +589,9 @@ class crawler {
             }
 
             // TODO find some context of the link, like the nearest id.
+            if ($verbose) {
+                printf ("Found link to: %-20s / %-50s => %-50s\n", format_string($e->innertext), $e->href, $href);
+            }
             $this->link_from_node_to_url($node, $href, $e->innertext);
         }
 
