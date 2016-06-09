@@ -126,6 +126,7 @@ $table->data = array(
     ),
 );
 
+$report = 'index';
 require('tabs.php');
 echo $tabs;
 echo html_writer::table($table);

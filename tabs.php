@@ -47,7 +47,7 @@ if (isset($courseid) && $courseid) {
 
     $tabs .= ' | ';
 
-    $wrap = 'span';
+    $wrap = (isset($report) && $report == 'index') ? 'b' : 'span';
     $tabs .= html_writer::start_tag($wrap);
     $tabs .= html_writer::link(new moodle_url("/local/linkchecker_robot/index.php"),
             get_string('status', 'local_linkchecker_robot'));
