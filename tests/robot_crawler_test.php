@@ -90,7 +90,7 @@ class local_linkchecker_robot_test extends advanced_testcase {
                 'base' => 'http://test.com/sub1/foo.php?id=12',
                 'links' => array(
                     '/sub2/bar.php?id=34' => 'http://test.com/sub2/bar.php?id=34',
-
+                    '/sub2/bar.php?id=34&foo=bar' => 'http://test.com/sub2/bar.php?id=34&foo=bar',
                 ),
             ),
         );

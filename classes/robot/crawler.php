@@ -560,7 +560,7 @@ class crawler {
         $seen = array();
         foreach ($html->find('a[href]') as $e) {
             $href = $e->href;
-            $href = str_replace('&amp;', '&', $href);
+            $href = htmlspecialchars_decode($href);
 
             // We ignore links which are internal to this page.
             if (substr ($href, 0, 1) === '#') {
