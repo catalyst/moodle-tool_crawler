@@ -98,9 +98,7 @@ http://www.contentquality.com/' ));
         $settings->add(new admin_setting_configtextarea('local_linkchecker_robot/excludemdlurl',
                                                     new lang_string('excludemdlurl',     'local_linkchecker_robot'),
                                                     new lang_string('excludemdlurldesc', 'local_linkchecker_robot'),
-                                                    "sesskey=
-time=
-grading
+                                                    "grading
 /admin
 /blog
 /badges
@@ -112,6 +110,13 @@ grading
 /report
 /user
 /tag/" ));
+
+        $settings->add(new admin_setting_configtextarea('local_linkchecker_robot/excludemdlparam',
+                                                    new lang_string('excludemdlparam',     'local_linkchecker_robot'),
+                                                    new lang_string('excludemdlparamdesc', 'local_linkchecker_robot'),
+                                                    "sesskey
+time
+lang" ));
 
         $settings->add(new admin_setting_configtextarea('local_linkchecker_robot/excludemdldom',
                                                     new lang_string('excludemdldom',     'local_linkchecker_robot'),

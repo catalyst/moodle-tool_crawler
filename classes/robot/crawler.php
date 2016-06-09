@@ -244,6 +244,13 @@ class crawler {
         // We ignore differences in hash anchors.
         $url = strtok($url, "#");
 
+        // Now we strip out any unwanted url params.
+        $murl = new \moodle_url($url);
+        $excludes = str_replace("\r", '', self::get_config()->excludemdlparam);
+        $excludes = explode("\n", $excludes);
+        $murl->remove_params($excludes);
+        $url = $murl->out();
+
         // Some special logic, if it looks like a course url or module url
         // then avoid scraping the URL at all.
         $shortname = '';
@@ -415,7 +422,7 @@ class crawler {
      *
      * @return true if it did anything, false if the queue is empty
      */
-    public function process_queue() {
+    public function process_queue($verbose = false) {
 
         global $DB;
 
@@ -429,6 +436,9 @@ class crawler {
 
         $node = array_pop($nodes);
         if ($node) {
+            if ($verbose) {
+                print "Crawling $node->url\n";
+            }
             $this->crawl($node);
             return true;
         }

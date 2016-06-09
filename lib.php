@@ -28,7 +28,7 @@
  * Has limits of both how many urls to crawl
  * and a soft time limit on total crawl time.
  */
-function local_linkchecker_robot_crawl() {
+function local_linkchecker_robot_crawl($verbose = false) {
 
     global $CFG, $DB;
 
@@ -71,7 +71,7 @@ function local_linkchecker_robot_crawl() {
     $hastime = true;
     while ($hasmore && $hastime) {
 
-        $hasmore = $robot->process_queue();
+        $hasmore = $robot->process_queue($verbose);
         $hastime = time() < $cronstop;
         set_config('crawltick', time(), 'local_linkchecker_robot');
     }

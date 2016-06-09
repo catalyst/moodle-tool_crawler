@@ -29,5 +29,5 @@ require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once($CFG->libdir.'/clilib.php');
 require_once($CFG->dirroot .'/local/linkchecker_robot/lib.php');
 
-local_linkchecker_robot_crawl();
+local_linkchecker_robot_crawl(true);
 
