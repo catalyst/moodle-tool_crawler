@@ -593,11 +593,20 @@ class crawler {
                 }
             }
 
-            // TODO find some context of the link, like the nearest id.
+            // Find some context of the link, like the nearest id.
+            $idattr = '';
+            $walk = $e;
+            do {
+                if ($walk->id) {
+                    $idattr =  '#' . $walk->id . ' ' . $idattr;
+                }
+                $walk = $walk->parent;
+            } while ($walk);
+
             if ($verbose) {
                 printf ("Found link to: %-20s / %-50s => %-50s\n", format_string($e->innertext), $e->href, $href);
             }
-            $this->link_from_node_to_url($node, $href, $e->innertext);
+            $this->link_from_node_to_url($node, $href, $e->innertext, $idattr);
         }
 
         // Store some context about where we are.
@@ -628,7 +637,7 @@ class crawler {
      * @param string $text the link text label
      * @return the new url node or false
      */
-    private function link_from_node_to_url($from, $url, $text) {
+    private function link_from_node_to_url($from, $url, $text, $idattr) {
 
         global $DB;
 
@@ -644,10 +653,11 @@ class crawler {
             $link->b       = $to->id;
             $link->lastmod = time();
             $link->text    = $text;
+            $link->idattr  = $idattr;
             $link->id = $DB->insert_record('linkchecker_edge', $link);
         } else {
             $link->lastmod = time();
-            $link->text    = $text;
+            $link->idattr  = $idattr;
             $DB->update_record('linkchecker_edge', $link);
         }
         return $link;

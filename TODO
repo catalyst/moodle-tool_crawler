@@ -1,4 +1,14 @@
 
+
+* Make redirects two separate nodes and track the whole thing
+  - do we worry about circular? no because we already scraped??
+  - report on redirects to redirects as error
+
+* add external pages report
+
+* move to reporting with filters and search somehow??
+
+
 * add the big links to the block
 
 * BUG: showing last response code but first response message

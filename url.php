@@ -51,6 +51,7 @@ echo '<h3>' . get_string('outgoingurls', 'local_linkchecker_robot') . '</h3>';
 $data  = $DB->get_records_sql("
      SELECT concat(l.a, '-', l.b) AS id,
             l.text,
+            l.idattr,
             t.url target,
             t.title,
             t.httpmsg,
@@ -72,6 +73,7 @@ $table = new html_table();
 $table->head = array(
     get_string('lastcrawledtime', 'local_linkchecker_robot'),
     get_string('linktext', 'local_linkchecker_robot'),
+    get_string('idattr', 'local_linkchecker_robot'),
     get_string('response', 'local_linkchecker_robot'),
     get_string('size', 'local_linkchecker_robot'),
     get_string('url', 'local_linkchecker_robot'),
@@ -88,6 +90,7 @@ foreach ($data as $row) {
     $data = array(
         userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
         $row->text,
+        str_replace(' #', '<br>#', $row->idattr),
         $code,
         display_size($size),
         local_linkchecker_robot_link($row->target, $text),
@@ -102,6 +105,7 @@ echo '<h3>' . get_string('incomingurls', 'local_linkchecker_robot') . '</h3>';
 $data  = $DB->get_records_sql("
      SELECT concat(l.a, '-', l.b) AS id,
             l.text,
+            l.idattr,
             f.url target,
             f.title,
             f.httpmsg,
@@ -129,6 +133,7 @@ foreach ($data as $row) {
     $data = array(
         userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
         $row->text,
+        str_replace(' #', '<br>#', $row->idattr),
         $code,
         display_size($size),
         local_linkchecker_robot_link($row->target, $text),

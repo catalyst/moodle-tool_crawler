@@ -64,6 +64,7 @@ $string['found'] = 'Found';
 $string['frompage'] = 'From page';
 $string['good'] = 'Good';
 $string['hellorobot'] = 'Hello robot: \'{$a->botusername}\'';
+$string['idattr'] = 'HTML context';
 $string['incomingurls'] = 'Incoming URL\'s';
 $string['incourse'] = 'In course';
 $string['lastcrawledtime'] = 'Last crawled time';
