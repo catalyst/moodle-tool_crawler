@@ -22,11 +22,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function local_linkchecker_robot_link($url, $label) {
-    return html_writer::link(new moodle_url('url.php', array('url' => $url)), $label) .
+function local_linkchecker_robot_link($url, $label, $redirect = '') {
+    $html = html_writer::link(new moodle_url('url.php', array('url' => $url)), $label) .
             ' ' .
             html_writer::link($url, '↗', array('target' => 'link')) .
             '<br><small>' . $url . '</small>';
+
+    if ($redirect) {
+        $html .= "<br>Redirect: " . html_writer::link($redirect, $redirect);
+    }
+
+    return $html;
 }
 
 /**

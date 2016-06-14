@@ -97,6 +97,7 @@ if ($report == 'broken') {
                                           l.text,
                                           a.url,
                                           a.title,
+                                          a.redirect,
                                           a.courseid,
                                           c.shortname $sql
                                  ORDER BY httpcode DESC,
@@ -131,8 +132,8 @@ if ($report == 'broken') {
                 get_string('retry', 'local_linkchecker_robot')),
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
             local_linkchecker_robot_http_code($row),
-            local_linkchecker_robot_link($row->target, $text),
-            local_linkchecker_robot_link($row->url, $row->title)
+            local_linkchecker_robot_link($row->target, $text, $row->redirect),
+            local_linkchecker_robot_link($row->url, $row->title, $row->redirect)
         );
         if (!$courseid) {
             array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
@@ -151,6 +152,7 @@ if ($report == 'broken') {
     $data  = $DB->get_records_sql("SELECT a.id,
                                           a.url target,
                                           a.title,
+                                          a.redirect,
                                           a.lastcrawled,
                                           a.needscrawl,
                                           a.courseid,
@@ -183,7 +185,7 @@ if ($report == 'broken') {
         }
         $data = array(
             userdate($row->needscrawl, '%h %e,&nbsp;%H:%M:%S'),
-            local_linkchecker_robot_link($row->target, $text)
+            local_linkchecker_robot_link($row->target, $text, $row->redirect)
         );
         if (!$courseid) {
             array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
@@ -206,6 +208,7 @@ if ($report == 'broken') {
                                           b.httpcode,
                                           b.httpmsg,
                                           b.title,
+                                          b.redirect,
                                           b.mimetype,
                                           b.courseid,
                                           c.shortname
@@ -242,7 +245,7 @@ if ($report == 'broken') {
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
             $code,
             display_size($size),
-            local_linkchecker_robot_link($row->target, $text),
+            local_linkchecker_robot_link($row->target, $text, $row->redirect),
             $row->mimetype,
         );
         if (!$courseid) {
@@ -270,6 +273,7 @@ if ($report == 'broken') {
                                           l.text,
                                           a.title,
                                           a.url,
+                                          a.redirect,
                                           a.courseid,
                                           c.shortname
                                           $sql
@@ -308,9 +312,9 @@ if ($report == 'broken') {
         $data = array(
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
             display_size($size),
-            local_linkchecker_robot_link($row->target, $text),
+            local_linkchecker_robot_link($row->target, $text, $row->redirect),
             $row->mimetype,
-            local_linkchecker_robot_link($row->url, $row->title)
+            local_linkchecker_robot_link($row->url, $row->title, $row->redirect)
         );
         if (!$courseid) {
             array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );

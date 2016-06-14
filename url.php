@@ -44,7 +44,7 @@ echo $OUTPUT->heading(get_string('urldetails', 'local_linkchecker_robot'));
 echo '<p>' . get_string('urldetails_help', 'local_linkchecker_robot') . '</p>';
 
 $urlrec = $DB->get_record('linkchecker_url', array('url' => $url));
-echo '<h2>' . local_linkchecker_robot_link($url, $urlrec->title) . '</h2>';
+echo '<h2>' . local_linkchecker_robot_link($url, $urlrec->title, $urlrec->redirect) . '</h2>';
 
 echo '<h3>' . get_string('outgoingurls', 'local_linkchecker_robot') . '</h3>';
 
@@ -54,6 +54,7 @@ $data  = $DB->get_records_sql("
             l.idattr,
             t.url target,
             t.title,
+            t.redirect,
             t.httpmsg,
             t.httpcode,
             t.filesize,
@@ -94,7 +95,7 @@ foreach ($data as $row) {
         str_replace(' #', '<br>#', $row->idattr),
         $code,
         display_size($size),
-        local_linkchecker_robot_link($row->target, $text),
+        local_linkchecker_robot_link($row->target, $text, $row->redirect),
         $row->mimetype,
     );
     $table->data[] = $data;
@@ -109,6 +110,7 @@ $data  = $DB->get_records_sql("
             l.idattr,
             f.url target,
             f.title,
+            f.redirect,
             f.httpmsg,
             f.httpcode,
             f.filesize,
@@ -138,7 +140,7 @@ foreach ($data as $row) {
         str_replace(' #', '<br>#', $row->idattr),
         $code,
         display_size($size),
-        local_linkchecker_robot_link($row->target, $text),
+        local_linkchecker_robot_link($row->target, $text, $row->redirect),
         $row->mimetype,
     );
     $table->data[] = $data;
