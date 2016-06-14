@@ -135,7 +135,7 @@ class crawler {
         }
 
         // Handle links which are only queries or anchors.
-        if ($rel[0] == '#' || $rel[0] == '?') {
+        if ($rel && ($rel[0] == '#' || $rel[0] == '?')) {
             return $base.$rel;
         }
 
@@ -467,6 +467,9 @@ class crawler {
         $result = $this->scrape($node->url);
         $result = (object) array_merge((array) $node, (array) $result);
 
+        if ($result->redirect && $verbose) {
+            echo "=> $result->redirect ";
+        }
         if ($verbose) {
             echo "($result->httpcode) ";
         }
@@ -500,7 +503,7 @@ class crawler {
                 )+%xs', $string);
         };
 
-        if (!$detectutf8($result->title)) {
+        if ($result->title && !$detectutf8($result->title)) {
             $result->title = utf8_decode($result->title);
         }
 
@@ -762,6 +765,10 @@ class crawler {
         $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
         if ($final != $url) {
             $result->redirect = $final;
+            $mdlw = strlen($CFG->wwwroot);
+            if (substr ($final, 0, $mdlw) !== $CFG->wwwroot) {
+                $result->external = 1;
+            }
         } else {
             $result->redirect = '';
         }
