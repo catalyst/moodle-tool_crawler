@@ -105,9 +105,11 @@ http://www.contentquality.com/' ));
 /blocks/quickmail
 /calendar
 /enrol
+/help/
 /login
 /message
 /report
+/rss
 /user
 /tag/" ));
 

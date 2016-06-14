@@ -67,6 +67,7 @@ $data  = $DB->get_records_sql("
        JOIN {linkchecker_url} t ON t.id = l.b
   LEFT JOIN {course} c ON c.id = t.courseid
       WHERE f.url = ?
+   ORDER BY f.lastcrawled DESC
 ", array($url));
 
 $table = new html_table();
@@ -121,6 +122,7 @@ $data  = $DB->get_records_sql("
        JOIN {linkchecker_url} t ON t.id = l.b
   LEFT JOIN {course} c ON c.id = f.courseid
       WHERE t.url = ?
+   ORDER BY f.lastcrawled DESC
 ", array($url));
 $table->data = array();
 foreach ($data as $row) {

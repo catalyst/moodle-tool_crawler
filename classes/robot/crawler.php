@@ -441,10 +441,7 @@ class crawler {
 
         $node = array_pop($nodes);
         if ($node) {
-            if ($verbose) {
-                print "Crawling $node->url\n";
-            }
-            $this->crawl($node);
+            $this->crawl($node, $verbose);
             return true;
         }
 
@@ -465,24 +462,30 @@ class crawler {
         global $DB;
 
         if ($verbose) {
-            echo "Scraping $node->url\n";
+            echo "Crawling $node->url ";
         }
         $result = $this->scrape($node->url);
         $result = (object) array_merge((array) $node, (array) $result);
 
         if ($verbose) {
-            echo "Response code of $result->httpcode\n";
+            echo "($result->httpcode) ";
         }
         if ($result->httpcode == '200') {
 
             if ($result->mimetype == 'text/html') {
                 if ($verbose) {
-                    echo "Parsing html...\n";
+                    echo "html\n";
+                } else {
+                    echo "NOT html\n";
                 }
                 $this->parse_html($result, $result->external, $verbose);
             }
             // Else TODO Possibly we can infer the course purely from the url
             // Maybe the plugin serving urls?
+        } else {
+            if ($verbose) {
+                echo "\n";
+            }
         }
 
         $detectutf8 = function ($string) {
@@ -520,7 +523,6 @@ class crawler {
     private function parse_html($node, $external, $verbose = false) {
 
         global $CFG;
-
         $raw = $node->contents;
 
         // Strip out any data uri's - the parser doesn't like them.
@@ -531,20 +533,20 @@ class crawler {
         // If couldn't parse html.
         if (!$html) {
             if ($verbose) {
-                echo "Didn't find any html, stopping.\n";
+                echo " - Didn't find any html, stopping.\n";
             }
             return;
         }
 
         $node->title = $html->find('title', 0)->plaintext;
         if ($verbose) {
-            echo "Found title of: '$node->title'\n";
+            echo " - Found title of: '$node->title'\n";
         }
 
         // Everything after this is only for internal moodle pages.
         if ($external) {
             if ($verbose) {
-                echo "External so stopping here.\n";
+                echo " - External so stopping here.\n";
             }
             return $node;
         }
@@ -553,7 +555,7 @@ class crawler {
         $excludes = explode("\n", self::get_config()->excludemdldom);
         foreach ($excludes as $exclude) {
             foreach ($html->find($exclude) as $e) {
-                $e->outertext = '';
+                $e->outertext = ' ';
             }
         }
 
@@ -603,8 +605,8 @@ class crawler {
                 $walk = $walk->parent;
             } while ($walk);
 
-            if ($verbose) {
-                printf ("Found link to: %-20s / %-50s => %-50s\n", format_string($e->innertext), $e->href, $href);
+            if ($verbose > 1) {
+                printf (" - Found link to: %-20s / %-50s => %-50s\n", format_string($e->innertext), $e->href, $href);
             }
             $this->link_from_node_to_url($node, $href, $e->innertext, $idattr);
         }
