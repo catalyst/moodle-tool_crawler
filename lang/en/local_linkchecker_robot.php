@@ -106,6 +106,7 @@ $string['settings'] = 'Settings';
 $string['size'] = 'Size';
 $string['slowurl'] = 'Slow URL';
 $string['status'] = 'Robot status';
+$string['useraccount'] = 'User account';
 $string['unknown'] = 'Unknown';
 $string['url'] = 'URL';
 $string['urldetails'] = 'URL details';

@@ -76,7 +76,7 @@ $table->data = array(
         $robot->username
         . ' | ' . ($boterror ? $boterror : get_string('good', 'local_linkchecker_robot'))
         . ' | ' . html_writer::link(new moodle_url('/user/editadvanced.php',
-                array('id' => $robot->id, 'courseid' => 1)), get_string('useraccount'))
+                array('id' => $robot->id, 'courseid' => 1)), get_string('useraccount', 'local_linkchecker_robot'))
         . ' | ' . html_writer::link(new moodle_url('/admin/roles/usersroles.php',
                 array('userid' => $robot->id, 'courseid' => 1)), get_string('roles')),
     ),
