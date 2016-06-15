@@ -71,36 +71,42 @@ $data  = $DB->get_records_sql("
    ORDER BY f.lastcrawled DESC
 ", array($url));
 
-$table = new html_table();
-$table->head = array(
-    get_string('lastcrawledtime', 'local_linkchecker_robot'),
-    get_string('linktext', 'local_linkchecker_robot'),
-    get_string('idattr', 'local_linkchecker_robot'),
-    get_string('response', 'local_linkchecker_robot'),
-    get_string('size', 'local_linkchecker_robot'),
-    get_string('url', 'local_linkchecker_robot'),
-    get_string('mimetype', 'local_linkchecker_robot'),
-);
-$table->data = array();
-foreach ($data as $row) {
-    $text = trim($row->title);
-    if (!$text || $text == "") {
-        $text = get_string('unknown', 'local_linkchecker_robot');
-    }
-    $code = local_linkchecker_robot_http_code($row);
-    $size = $row->filesize * 1;
-    $data = array(
-        userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
-        $row->text,
-        str_replace(' #', '<br>#', $row->idattr),
-        $code,
-        display_size($size),
-        local_linkchecker_robot_link($row->target, $text, $row->redirect),
-        $row->mimetype,
+
+function print_table($data) {
+
+    $table = new html_table();
+    $table->head = array(
+        get_string('lastcrawledtime', 'local_linkchecker_robot'),
+        get_string('linktext', 'local_linkchecker_robot'),
+        get_string('idattr', 'local_linkchecker_robot'),
+        get_string('response', 'local_linkchecker_robot'),
+        get_string('size', 'local_linkchecker_robot'),
+        get_string('url', 'local_linkchecker_robot'),
+        get_string('mimetype', 'local_linkchecker_robot'),
     );
-    $table->data[] = $data;
+    $table->data = array();
+    foreach ($data as $row) {
+        $text = trim($row->title);
+        if (!$text || $text == "") {
+            $text = get_string('unknown', 'local_linkchecker_robot');
+        }
+        $code = local_linkchecker_robot_http_code($row);
+        $size = $row->filesize * 1;
+        $data = array(
+            userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
+            $row->text,
+            str_replace(' #', '<br>#', $row->idattr),
+            $code,
+            display_size($size),
+            local_linkchecker_robot_link($row->target, $text, $row->redirect),
+            $row->mimetype,
+        );
+        $table->data[] = $data;
+    }
+    echo html_writer::table($table);
 }
-echo html_writer::table($table);
+
+print_table($data);
 
 echo '<h3>' . get_string('incomingurls', 'local_linkchecker_robot') . '</h3>';
 
@@ -126,25 +132,8 @@ $data  = $DB->get_records_sql("
       WHERE t.url = ?
    ORDER BY f.lastcrawled DESC
 ", array($url));
-$table->data = array();
-foreach ($data as $row) {
-    $text = trim($row->title);
-    if (!$text || $text == "") {
-        $text = get_string('unknown', 'local_linkchecker_robot');
-    }
-    $code = local_linkchecker_robot_http_code($row);
-    $size = $row->filesize * 1;
-    $data = array(
-        userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
-        $row->text,
-        str_replace(' #', '<br>#', $row->idattr),
-        $code,
-        display_size($size),
-        local_linkchecker_robot_link($row->target, $text, $row->redirect),
-        $row->mimetype,
-    );
-    $table->data[] = $data;
-}
-echo html_writer::table($table);
+
+print_table($data);
+
 echo $OUTPUT->footer();
 
