@@ -32,7 +32,8 @@ if (isset($courseid) && $courseid) {
         }
         $wrap = (isset($report) && $report == $rpt) ? 'b' : 'span';
         $tabs .= html_writer::start_tag($wrap);
-        $tabs .= html_writer::link(new moodle_url('/local/linkchecker_robot/report.php', array('report' => $rpt, 'course' => $courseid )),
+        $tabs .= html_writer::link(new moodle_url('/local/linkchecker_robot/report.php',
+                array('report' => $rpt, 'course' => $courseid )),
                 get_string($rpt, 'local_linkchecker_robot'));
         $tabs .= html_writer::end_tag($wrap);
     }

@@ -572,7 +572,6 @@ class crawler {
                 continue;
             }
 
-            // should make absolute here?
             $href = $this->absolute_url($node->url, $href);
 
             if (array_key_exists($href, $seen ) ) {
@@ -603,7 +602,7 @@ class crawler {
             $walk = $e;
             do {
                 if ($walk->id) {
-                    $idattr =  '#' . $walk->id . ' ' . $idattr;
+                    $idattr = '#' . $walk->id . ' ' . $idattr;
                 }
                 $walk = $walk->parent;
             } while ($walk);
