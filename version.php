@@ -16,9 +16,9 @@
 
 
 /**
- * Defines the version of local_linkchecker_robot
+ * Defines the version of tool_crawler
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @author     Brendan Heywood <brendan@catalyst-au.net>
  * @copyright  Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->version   = 2015053006;        // The current plugin version (Date: YYYYMMDDXX)
 $plugin->release   = 2015053006;        // The current plugin version (Date: YYYYMMDDXX)
 $plugin->requires  = 2013110500;        // Requires this Moodle version.
-$plugin->component = 'local_linkchecker_robot'; // To check on upgrade, that module sits in correct place.
+$plugin->component = 'tool_crawler'; // To check on upgrade, that module sits in correct place.
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->dependencies = array(
     'auth_basic' => ANY_VERSION,

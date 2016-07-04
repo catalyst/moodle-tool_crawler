@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- *  link checker robot local cli
+ *  tool_crawler cli
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @author     Brendan Heywood <brendan@catalyst-au.net>
  * @copyright  Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,9 +25,9 @@
 
 define('CLI_SCRIPT', true);
 
-require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
+require(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php');
 require_once($CFG->libdir.'/clilib.php');
-require_once($CFG->dirroot .'/local/linkchecker_robot/lib.php');
+require_once($CFG->dirroot .'/admin/tool/crawler/lib.php');
 
-local_linkchecker_robot_crawl(1);
+tool_crawler_crawl(1);
 

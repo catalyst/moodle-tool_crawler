@@ -15,19 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * local_linkchecker_robot
+ * tool_crawler
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Suan Kan <suankan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_linkchecker_robot\task;
+namespace tool_crawler\task;
 
 /**
  * robot_cleanup
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Suan Kan <suankan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -37,7 +37,7 @@ class robot_cleanup extends \core\task\scheduled_task {
      * Get task name
      */
     public function get_name() {
-        return get_string('robotcleanup', 'local_linkchecker_robot');
+        return get_string('robotcleanup', 'tool_crawler');
     }
 
     /**
@@ -53,7 +53,7 @@ class robot_cleanup extends \core\task\scheduled_task {
         }
 
         // Throw and log event that robot_cleanup task was started.
-        $event = \local_linkchecker_robot\event\robot_cleanup_started::create();
+        $event = \tool_crawler\event\robot_cleanup_started::create();
         $event->trigger();
 
         // The logic to remove old URLs from crawling history is:
@@ -61,8 +61,8 @@ class robot_cleanup extends \core\task\scheduled_task {
         // AND if it's crawling had finished before falling into the configured retention period.
         // In other words: by the time of execution of robot_cleanup task there might be current crawling process going.
         // Hence, we don't want to remove URLs belonging to the current crawling queue.
-        $retentionperiod = \local_linkchecker_robot\robot\crawler::get_config()->retentionperiod;
-        $lastcrawlend = \local_linkchecker_robot\robot\crawler::get_config()->crawlend;
+        $retentionperiod = \tool_crawler\robot\crawler::get_config()->retentionperiod;
+        $lastcrawlend = \tool_crawler\robot\crawler::get_config()->crawlend;
         if ($retentionperiod) {
             $param = array(
                 'currenttime' => $currenttime,
@@ -72,8 +72,8 @@ class robot_cleanup extends \core\task\scheduled_task {
             $where = 'lastcrawled <= :currenttime
                   AND lastcrawled <= :lastcrawlfinished
                   AND lastcrawled <= :expiredate';
-            $numrecsdeleted = $DB->count_records_select('linkchecker_url', $where, $param);
-            $DB->delete_records_select('linkchecker_url', $where, $param);
+            $numrecsdeleted = $DB->count_records_select('tool_crawler_url', $where, $param);
+            $DB->delete_records_select('tool_crawler_url', $where, $param);
         }
 
         // Throw and log event that robot_cleanup task was finished and pass number of deleted records.
@@ -82,7 +82,7 @@ class robot_cleanup extends \core\task\scheduled_task {
                 'numrecsdeleted' => $numrecsdeleted
             )
         );
-        $event = \local_linkchecker_robot\event\robot_cleanup_completed::create($eventdata);
+        $event = \tool_crawler\event\robot_cleanup_completed::create($eventdata);
         $event->trigger();
     }
 }

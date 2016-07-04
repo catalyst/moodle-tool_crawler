@@ -17,12 +17,12 @@
 /**
  * Crawl start event
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_linkchecker_robot\event;
+namespace tool_crawler\event;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -50,7 +50,7 @@ class crawl_start extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return get_string('event:crawlstartdesc', 'local_linkchecker_robot', userdate( $this->other['start'] ) );
+        return get_string('event:crawlstartdesc', 'tool_crawler', userdate( $this->other['start'] ) );
     }
 
     /**
@@ -59,7 +59,7 @@ class crawl_start extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('event:crawlstart', 'local_linkchecker_robot');
+        return get_string('event:crawlstart', 'tool_crawler');
     }
 
     /**
@@ -68,7 +68,7 @@ class crawl_start extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        $url = new \moodle_url('/local/linkchecked_robot/index.php');
+        $url = new \moodle_url('/admin/tool/crawler/index.php');
         return $url;
     }
 }

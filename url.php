@@ -17,11 +17,11 @@
 /**
  * URL detail page
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
+require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once('locallib.php');
 
@@ -30,23 +30,23 @@ $context = context_system::instance();
 require_capability('moodle/site:config', $context);
 
 $url = required_param('url', PARAM_RAW);
-$navurl = new moodle_url('/local/linkchecker_robot/url.php', array(
+$navurl = new moodle_url('/admin/tool/crawler/url.php', array(
     'url' => $url
 ));
 $PAGE->set_context($context);
 $PAGE->set_url($navurl);
 $PAGE->set_pagelayout('admin');
-$PAGE->set_title(get_string('urldetails', 'local_linkchecker_robot') );
+$PAGE->set_title(get_string('urldetails', 'tool_crawler') );
 
 echo $OUTPUT->header();
 
-echo $OUTPUT->heading(get_string('urldetails', 'local_linkchecker_robot'));
-echo '<p>' . get_string('urldetails_help', 'local_linkchecker_robot') . '</p>';
+echo $OUTPUT->heading(get_string('urldetails', 'tool_crawler'));
+echo '<p>' . get_string('urldetails_help', 'tool_crawler') . '</p>';
 
-$urlrec = $DB->get_record('linkchecker_url', array('url' => $url));
-echo '<h2>' . local_linkchecker_robot_link($url, $urlrec->title, $urlrec->redirect) . '</h2>';
+$urlrec = $DB->get_record('tool_crawler_url', array('url' => $url));
+echo '<h2>' . tool_crawler_link($url, $urlrec->title, $urlrec->redirect) . '</h2>';
 
-echo '<h3>' . get_string('outgoingurls', 'local_linkchecker_robot') . '</h3>';
+echo '<h3>' . get_string('outgoingurls', 'tool_crawler') . '</h3>';
 
 $data  = $DB->get_records_sql("
      SELECT concat(l.a, '-', l.b) AS id,
@@ -63,9 +63,9 @@ $data  = $DB->get_records_sql("
             t.external,
             t.courseid,
             c.shortname
-       FROM {linkchecker_edge} l
-       JOIN {linkchecker_url} f ON f.id = l.a
-       JOIN {linkchecker_url} t ON t.id = l.b
+       FROM {tool_crawler_edge} l
+       JOIN {tool_crawler_url} f ON f.id = l.a
+       JOIN {tool_crawler_url} t ON t.id = l.b
   LEFT JOIN {course} c ON c.id = t.courseid
       WHERE f.url = ?
    ORDER BY f.lastcrawled DESC
@@ -76,21 +76,21 @@ function print_table($data) {
 
     $table = new html_table();
     $table->head = array(
-        get_string('lastcrawledtime', 'local_linkchecker_robot'),
-        get_string('linktext', 'local_linkchecker_robot'),
-        get_string('idattr', 'local_linkchecker_robot'),
-        get_string('response', 'local_linkchecker_robot'),
-        get_string('size', 'local_linkchecker_robot'),
-        get_string('url', 'local_linkchecker_robot'),
-        get_string('mimetype', 'local_linkchecker_robot'),
+        get_string('lastcrawledtime', 'tool_crawler'),
+        get_string('linktext', 'tool_crawler'),
+        get_string('idattr', 'tool_crawler'),
+        get_string('response', 'tool_crawler'),
+        get_string('size', 'tool_crawler'),
+        get_string('url', 'tool_crawler'),
+        get_string('mimetype', 'tool_crawler'),
     );
     $table->data = array();
     foreach ($data as $row) {
         $text = trim($row->title);
         if (!$text || $text == "") {
-            $text = get_string('unknown', 'local_linkchecker_robot');
+            $text = get_string('unknown', 'tool_crawler');
         }
-        $code = local_linkchecker_robot_http_code($row);
+        $code = tool_crawler_http_code($row);
         $size = $row->filesize * 1;
         $data = array(
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
@@ -98,7 +98,7 @@ function print_table($data) {
             str_replace(' #', '<br>#', $row->idattr),
             $code,
             display_size($size),
-            local_linkchecker_robot_link($row->target, $text, $row->redirect),
+            tool_crawler_link($row->target, $text, $row->redirect),
             $row->mimetype,
         );
         $table->data[] = $data;
@@ -108,7 +108,7 @@ function print_table($data) {
 
 print_table($data);
 
-echo '<h3>' . get_string('incomingurls', 'local_linkchecker_robot') . '</h3>';
+echo '<h3>' . get_string('incomingurls', 'tool_crawler') . '</h3>';
 
 $data  = $DB->get_records_sql("
      SELECT concat(l.a, '-', l.b) AS id,
@@ -125,9 +125,9 @@ $data  = $DB->get_records_sql("
             f.external,
             f.courseid,
             c.shortname
-       FROM {linkchecker_edge} l
-       JOIN {linkchecker_url} f ON f.id = l.a
-       JOIN {linkchecker_url} t ON t.id = l.b
+       FROM {tool_crawler_edge} l
+       JOIN {tool_crawler_url} f ON f.id = l.a
+       JOIN {tool_crawler_url} t ON t.id = l.b
   LEFT JOIN {course} c ON c.id = f.courseid
       WHERE t.url = ?
    ORDER BY f.lastcrawled DESC

@@ -17,12 +17,12 @@
 /**
  * The robot_cleanup_completed event
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Suan Kan <suankan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_linkchecker_robot\event;
+namespace tool_crawler\event;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -51,7 +51,7 @@ class robot_cleanup_completed extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventrobotcleanupcompleted', 'local_linkchecker_robot');
+        return get_string('eventrobotcleanupcompleted', 'tool_crawler');
     }
 
     /**
@@ -60,7 +60,7 @@ class robot_cleanup_completed extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        $desc = get_string('eventrobotcleanupcompleteddesc', 'local_linkchecker_robot',
+        $desc = get_string('eventrobotcleanupcompleteddesc', 'tool_crawler',
             array('numrecsdeleted' => $this->data['other']['numrecsdeleted'])
         );
         return $desc;
@@ -72,7 +72,7 @@ class robot_cleanup_completed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        $url = new \moodle_url('/local/linkchecked_robot/index.php');
+        $url = new \moodle_url('/admin/tool/crawler/index.php');
         return $url;
     }
 }

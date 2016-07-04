@@ -15,23 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * local_linkchecker_robot
+ * tool_crawler
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_linkchecker_robot\robot;
+namespace tool_crawler\robot;
 
-require_once($CFG->dirroot.'/local/linkchecker_robot/lib.php');
-require_once($CFG->dirroot.'/local/linkchecker_robot/extlib/simple_html_dom.php');
+require_once($CFG->dirroot.'/admin/tool/crawler/lib.php');
+require_once($CFG->dirroot.'/admin/tool/crawler/extlib/simple_html_dom.php');
 require_once($CFG->dirroot.'/user/lib.php');
 
 /**
- * local_linkchecker_robot
+ * tool_crawler
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -50,7 +50,7 @@ class crawler {
             'crawltick' => 0,
             'retentionperiod' => 86400 // 1 week.
         );
-        $config = (object) array_merge( $defaults, (array) get_config('local_linkchecker_robot') );
+        $config = (object) array_merge( $defaults, (array) get_config('tool_crawler') );
         return $config;
     }
 
@@ -65,27 +65,27 @@ class crawler {
 
         $botusername  = self::get_config()->botusername;
         if (!$botusername) {
-            return get_string('configmissing', 'local_linkchecker_robot');
+            return get_string('configmissing', 'tool_crawler');
         }
         if ( !$DB->get_record('user', array('username' => $botusername)) ) {
-            return get_string('botusermissing', 'local_linkchecker_robot') .
-                ' <a href="?action=makebot">' . get_string('autocreate', 'local_linkchecker_robot') . '</a>';
+            return get_string('botusermissing', 'tool_crawler') .
+                ' <a href="?action=makebot">' . get_string('autocreate', 'tool_crawler') . '</a>';
         }
 
         // Do a test crawl over the network.
-        $result = $this->scrape($CFG->wwwroot.'/local/linkchecker_robot/tests/test1.php');
+        $result = $this->scrape($CFG->wwwroot.'/admin/tool/crawler/tests/test1.php');
         if ($result->httpcode != '200') {
-            return get_string('botcantgettestpage');
+            return get_string('botcantgettestpage', 'tool_crawler');
         }
         if ($result->redirect) {
-            return get_string('bottestpageredirected', 'local_linkchecker_robot',
+            return get_string('bottestpageredirected', 'tool_crawler',
                 array('resredirect' => $result->redirect));
         }
 
-        $hello = strpos($result->contents, get_string('hellorobot', 'local_linkchecker_robot',
+        $hello = strpos($result->contents, get_string('hellorobot', 'tool_crawler',
                 array('botusername' => self::get_config()->botusername)));
         if (!$hello) {
-            return get_string('bottestpagenotreturned', 'local_linkchecker_robot');
+            return get_string('bottestpagenotreturned', 'tool_crawler');
         }
     }
 
@@ -175,25 +175,25 @@ class crawler {
 
         global $DB;
 
-        if ($DB->get_record('linkchecker_url', array('id' => $nodeid))) {
+        if ($DB->get_record('tool_crawler_url', array('id' => $nodeid))) {
 
             $time = self::get_config()->crawlstart;
 
             // Mark all nodes that link to this as needing a recrawl.
-            $DB->execute("UPDATE {linkchecker_url} u
+            $DB->execute("UPDATE {tool_crawler_url} u
                              SET needscrawl = ?,
                                  lastcrawled = null
-                            FROM {linkchecker_edge} e
+                            FROM {tool_crawler_edge} e
                            WHERE e.a = u.id
                              AND e.b = ?", array($time, $nodeid) );
 
             // Delete all edges that point to this node.
             $DB->execute("DELETE
-                            FROM {linkchecker_edge} e
+                            FROM {tool_crawler_edge} e
                            WHERE e.b = ?", array($nodeid) );
 
             // Delete the 'to' node as it may be completely wrong.
-            $DB->delete_records('linkchecker_url', array('id' => $nodeid) );
+            $DB->delete_records('tool_crawler_url', array('id' => $nodeid) );
 
         }
     }
@@ -299,7 +299,7 @@ class crawler {
             }
         }
 
-        $node = $DB->get_record('linkchecker_url', array('url' => $url) );
+        $node = $DB->get_record('tool_crawler_url', array('url' => $url) );
 
         if (!$node) {
             // If not in the queue then add it.
@@ -308,10 +308,10 @@ class crawler {
             $node->url        = $url;
             $node->external   = strpos($url, $CFG->wwwroot) === 0 ? 0 : 1;
             $node->needscrawl = time();
-            $node->id = $DB->insert_record('linkchecker_url', $node);
+            $node->id = $DB->insert_record('tool_crawler_url', $node);
         } else if ( $node->needscrawl < self::get_config()->crawlstart ) {
             $node->needscrawl = time();
-            $DB->update_record('linkchecker_url', $node);
+            $DB->update_record('tool_crawler_url', $node);
         }
         return $node;
     }
@@ -326,7 +326,7 @@ class crawler {
 
         return $DB->get_field_sql("
                 SELECT COUNT(*)
-                  FROM {linkchecker_url}
+                  FROM {tool_crawler_url}
                  WHERE lastcrawled IS NULL
                     OR lastcrawled < needscrawl");
     }
@@ -341,7 +341,7 @@ class crawler {
 
         return $DB->get_field_sql("
                 SELECT COUNT(*)
-                  FROM {linkchecker_url}
+                  FROM {tool_crawler_url}
                  WHERE lastcrawled >= ?",
                 array(self::get_config()->crawlstart));
     }
@@ -356,7 +356,7 @@ class crawler {
 
         return $DB->get_field_sql("
                 SELECT COUNT(*)
-                  FROM {linkchecker_edge}
+                  FROM {tool_crawler_edge}
                  WHERE lastmod >= ?",
                 array(self::get_config()->crawlstart));
     }
@@ -372,7 +372,7 @@ class crawler {
         // What about 20x?
         return $DB->get_field_sql("
                 SELECT COUNT(*)
-                  FROM {linkchecker_url}
+                  FROM {tool_crawler_url}
                  WHERE httpcode != '200'");
     }
 
@@ -387,8 +387,8 @@ class crawler {
         // What about 20x?
         return $DB->get_field_sql("
                 SELECT COUNT (*)
-                  FROM mdl_linkchecker_url b
-                  JOIN mdl_linkchecker_edge l ON l.b = b.id
+                  FROM mdl_tool_crawler_url b
+                  JOIN mdl_tool_crawler_edge l ON l.b = b.id
                  WHERE b.httpcode != '200'");
     }
 
@@ -402,7 +402,7 @@ class crawler {
 
         return $DB->get_field_sql("
                 SELECT COUNT(*)
-                  FROM {linkchecker_url}
+                  FROM {tool_crawler_url}
                  WHERE filesize > ?", array(self::get_config()->bigfilesize * 1000000));
     }
 
@@ -417,7 +417,7 @@ class crawler {
         // TODO this logic is wrong and will pick up multiple previous sessions.
         return $DB->get_field_sql("
                 SELECT COUNT(*)
-                  FROM {linkchecker_url}
+                  FROM {tool_crawler_url}
                  WHERE lastcrawled < ?",
                array(self::get_config()->crawlstart));
     }
@@ -432,7 +432,7 @@ class crawler {
         global $DB;
 
         $nodes = $DB->get_records_sql('SELECT *
-                                         FROM {linkchecker_url}
+                                         FROM {tool_crawler_url}
                                         WHERE lastcrawled IS NULL
                                            OR lastcrawled < needscrawl
                                      ORDER BY needscrawl ASC, id ASC
@@ -508,7 +508,7 @@ class crawler {
         }
 
         // Wait until we've finished processing the links before we save.
-        $DB->update_record('linkchecker_url', $result);
+        $DB->update_record('tool_crawler_url', $result);
 
     }
 
@@ -650,7 +650,7 @@ class crawler {
             return false;
         }
 
-        $link = $DB->get_record('linkchecker_edge', array('a' => $from->id, 'b' => $to->id));
+        $link = $DB->get_record('tool_crawler_edge', array('a' => $from->id, 'b' => $to->id));
         if (!$link) {
             $link          = new \stdClass();
             $link->a       = $from->id;
@@ -658,11 +658,11 @@ class crawler {
             $link->lastmod = time();
             $link->text    = $text;
             $link->idattr  = $idattr;
-            $link->id = $DB->insert_record('linkchecker_edge', $link);
+            $link->id = $DB->insert_record('tool_crawler_edge', $link);
         } else {
             $link->lastmod = time();
             $link->idattr  = $idattr;
-            $DB->update_record('linkchecker_edge', $link);
+            $DB->update_record('tool_crawler_edge', $link);
         }
         return $link;
     }
@@ -678,7 +678,7 @@ class crawler {
     public function scrape($url) {
 
         global $CFG;
-        $cookiefilelocation = $CFG->dataroot . '/linkchecker_cookies.txt';
+        $cookiefilelocation = $CFG->dataroot . '/tool_crawler_cookies.txt';
 
         $s = curl_init();
         curl_setopt($s, CURLOPT_URL,             $url);

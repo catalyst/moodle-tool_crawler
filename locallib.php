@@ -17,12 +17,12 @@
 /**
  * Helper lib
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function local_linkchecker_robot_link($url, $label, $redirect = '') {
+function tool_crawler_link($url, $label, $redirect = '') {
     $html = html_writer::link(new moodle_url('url.php', array('url' => $url)), $label) .
             ' ' .
             html_writer::link($url, '↗', array('target' => 'link')) .
@@ -41,7 +41,7 @@ function local_linkchecker_robot_link($url, $label, $redirect = '') {
  * @param integer $row row
  * @return html chunk
  */
-function local_linkchecker_robot_http_code($row) {
+function tool_crawler_http_code($row) {
     $msg = isset($row->httpmsg) ? $row->httpmsg : '?';
     $code = $row->httpcode;
     $cc = substr($code, 0, 1);

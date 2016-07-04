@@ -17,22 +17,22 @@
 /**
  * A link checker robot
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
+require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
 require_login();
 require_capability('moodle/site:config', context_system::instance());
-admin_externalpage_setup('local_linkchecker_robot_status');
+admin_externalpage_setup('tool_crawler_status');
 
 echo $OUTPUT->header();
 
 $action         = optional_param('action', '', PARAM_ALPHANUMEXT);
 
-$robot = new \local_linkchecker_robot\robot\crawler();
+$robot = new \tool_crawler\robot\crawler();
 $config = $robot::get_config();
 
 if ($action == 'makebot') {
@@ -68,60 +68,60 @@ $eta = floor($duration / $progress + $crawlstart);
 $robot = $DB->get_record('user', array('username' => $config->botusername));
 
 $table = new html_table();
-$table->head = array(get_string('robotstatus', 'local_linkchecker_robot'));
+$table->head = array(get_string('robotstatus', 'tool_crawler'));
 $table->headspan = array(2, 1);
 $table->data = array(
     array(
-        get_string('botuser', 'local_linkchecker_robot'),
+        get_string('botuser', 'tool_crawler'),
         $robot->username
-        . ' | ' . ($boterror ? $boterror : get_string('good', 'local_linkchecker_robot'))
+        . ' | ' . ($boterror ? $boterror : get_string('good', 'tool_crawler'))
         . ' | ' . html_writer::link(new moodle_url('/user/editadvanced.php',
-                array('id' => $robot->id, 'courseid' => 1)), get_string('useraccount', 'local_linkchecker_robot'))
+                array('id' => $robot->id, 'courseid' => 1)), get_string('useraccount', 'tool_crawler'))
         . ' | ' . html_writer::link(new moodle_url('/admin/roles/usersroles.php',
                 array('userid' => $robot->id, 'courseid' => 1)), get_string('roles')),
     ),
     array(
-        get_string('progress', 'local_linkchecker_robot'),
-        get_string('progresseta', 'local_linkchecker_robot', array(
+        get_string('progress', 'tool_crawler'),
+        get_string('progresseta', 'tool_crawler', array(
             'percent' => sprintf('%.2f%%', $progress * 100),
             'eta' => userdate($eta),
         )),
     ),
     array(
-        get_string('curcrawlstart', 'local_linkchecker_robot'),
-        $crawlstart ? userdate( $crawlstart) : get_string('neverrun', 'local_linkchecker_robot')
+        get_string('curcrawlstart', 'tool_crawler'),
+        $crawlstart ? userdate( $crawlstart) : get_string('neverrun', 'tool_crawler')
     ),
     array(
-        get_string('lastcrawlend', 'local_linkchecker_robot'),
-        $crawlend ? userdate( $crawlend) : get_string('neverfinished', 'local_linkchecker_robot')
+        get_string('lastcrawlend', 'tool_crawler'),
+        $crawlend ? userdate( $crawlend) : get_string('neverfinished', 'tool_crawler')
     ),
     array(
-        get_string('lastcrawlproc', 'local_linkchecker_robot'),
+        get_string('lastcrawlproc', 'tool_crawler'),
         $crawltick ? userdate( $crawltick) : '-'
     ),
     array(
-        get_string('lastqueuesize', 'local_linkchecker_robot'),
+        get_string('lastqueuesize', 'tool_crawler'),
         number_format($oldqueuesize)
     ),
     array(
-        get_string('numlinks', 'local_linkchecker_robot'),
+        get_string('numlinks', 'tool_crawler'),
         number_format($numlinks)
     ),
     array(
-        get_string('queued', 'local_linkchecker_robot'),
+        get_string('queued', 'tool_crawler'),
         "<a href=\"report.php?report=queued\">" . number_format($queuesize) . "</a>"
     ),
     array(
-        get_string('recent', 'local_linkchecker_robot'),
+        get_string('recent', 'tool_crawler'),
         "<a href=\"report.php?report=recent\">" . number_format($recent) . "</a>"
     ),
     array(
-        get_string('broken', 'local_linkchecker_robot'),
+        get_string('broken', 'tool_crawler'),
         "<a href=\"report.php?report=broken\">" . number_format($numpageswithurlsbroken)
                 . " / " . number_format($numurlsbroken) . "</a>"
     ),
     array(
-        get_string('oversize', 'local_linkchecker_robot'),
+        get_string('oversize', 'tool_crawler'),
         "<a href=\"report.php?report=oversize\">" . number_format($oversize) . "</a>"
     ),
 );
@@ -133,18 +133,18 @@ echo html_writer::table($table);
 
 $table = new html_table();
 $table->head = array(
-    get_string('crawlstart', 'local_linkchecker_robot'),
-    get_string('crawlend', 'local_linkchecker_robot'),
-    get_string('duration', 'local_linkchecker_robot'),
-    get_string('cronticks', 'local_linkchecker_robot'),
-    get_string('numurls', 'local_linkchecker_robot'),
-    get_string('numlinks', 'local_linkchecker_robot'),
-    get_string('broken', 'local_linkchecker_robot'),
-    get_string('oversize', 'local_linkchecker_robot'),
+    get_string('crawlstart', 'tool_crawler'),
+    get_string('crawlend', 'tool_crawler'),
+    get_string('duration', 'tool_crawler'),
+    get_string('cronticks', 'tool_crawler'),
+    get_string('numurls', 'tool_crawler'),
+    get_string('numlinks', 'tool_crawler'),
+    get_string('broken', 'tool_crawler'),
+    get_string('oversize', 'tool_crawler'),
 );
 $table->data = array();
 $table->colclasses = array('', '', '', 'rightalign', 'rightalign', 'rightalign', 'rightalign', 'rightalign');
-$history = $DB->get_records('linkchecker_history', array(), 'startcrawl DESC', '*', 0, 5);
+$history = $DB->get_records('tool_crawler_history', array(), 'startcrawl DESC', '*', 0, 5);
 foreach ($history as $record) {
     if ($record->endcrawl) {
         $delta = $record->endcrawl - $record->startcrawl;

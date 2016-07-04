@@ -17,7 +17,7 @@
 /**
  * Unit tests for link crawler robot
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,14 +28,14 @@ defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
  * Unit test for scheduled task robot_cleanup.
  *
  * It sets Retention Period as 1 week and then creates sample records in
- * table {linkchecker_url} which are deliberately older then retention period.
+ * table {tool_crawler_url} which are deliberately older then retention period.
  * Then it executes the robot_cleanup scheduled task and verifies that old records have been deleted.
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Suan Kan <suankan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_linkchecker_robot_robot_cleanup_testcase extends advanced_testcase {
+class tool_crawler_robot_cleanup_testcase extends advanced_testcase {
 
     /**
      * Prepare the config options for plugin which are used for robot_cleanup task logic
@@ -46,11 +46,11 @@ class local_linkchecker_robot_robot_cleanup_testcase extends advanced_testcase {
         global $DB;
 
         $this->resetAfterTest(true);
-        $this->robot = new \local_linkchecker_robot\robot\crawler();
-        set_config('crawlend', strtotime("16-05-2016 14:51:00"), 'local_linkchecker_robot');
-        set_config('retentionperiod', 600, 'local_linkchecker_robot');
+        $this->robot = new \tool_crawler\robot\crawler();
+        set_config('crawlend', strtotime("16-05-2016 14:51:00"), 'tool_crawler');
+        set_config('retentionperiod', 600, 'tool_crawler');
 
-        // Add 3 test records to table {linkchecker_url}: 2 old ones and 1 item not older than configured retention period.
+        // Add 3 test records to table {tool_crawler_url}: 2 old ones and 1 item not older than configured retention period.
         $dataobjects = array(
             array(
                 'url' => 'http://cqu.ubox001.com/course/index.php',
@@ -112,7 +112,7 @@ class local_linkchecker_robot_robot_cleanup_testcase extends advanced_testcase {
         );
 
         try {
-            $DB->insert_records('linkchecker_url', $dataobjects);
+            $DB->insert_records('tool_crawler_url', $dataobjects);
         } catch (Exception $e) {
             echo 'Caught exception: ', $e->getMessage(), "\n";
         }
@@ -121,17 +121,17 @@ class local_linkchecker_robot_robot_cleanup_testcase extends advanced_testcase {
     /**
      * Read plugin config params.
      * Execute robot_cleanup scheduled task.
-     * Check if only 1 record (out of 3 configured above) is left in table {linkchecker_url}.
+     * Check if only 1 record (out of 3 configured above) is left in table {tool_crawler_url}.
      */
     public function test_robot_cleanup() {
         global $DB;
 
         // Expect the task to cleanup 2 records and leave 1.
-        $cleanuptask = new \local_linkchecker_robot\task\robot_cleanup();
+        $cleanuptask = new \tool_crawler\task\robot_cleanup();
         // Simulate execution of robot_cleanup task at "16-05-2016 15:00:00" by passing this time as parameter.
         $cleanuptask->execute(strtotime("16-05-2016 15:00:00"));
 
-        $count = $DB->count_records_select('linkchecker_url', '');
+        $count = $DB->count_records_select('tool_crawler_url', '');
         $this->assertEquals(1, $count);
     }
 }

@@ -17,7 +17,7 @@
 /**
  *  Unit tests for link crawler robot
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,17 +27,17 @@ defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
 /**
  *  Unit tests for link crawler robot
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_linkchecker_robot_test extends advanced_testcase {
+class tool_crawler_test extends advanced_testcase {
 
     protected function setUp() {
         parent::setup();
         $this->resetAfterTest(true);
 
-        $this->robot = new \local_linkchecker_robot\robot\crawler();
+        $this->robot = new \tool_crawler\robot\crawler();
 
     }
 
@@ -131,7 +131,7 @@ class local_linkchecker_robot_test extends advanced_testcase {
     /**
      * @dataProvider should_auth_provider
      *
-     * Tests method should_be_authenticated($url) of class \local_linkchecker_robot\robot\crawler()
+     * Tests method should_be_authenticated($url) of class \tool_crawler\robot\crawler()
      *
      * @param bool $expected
      * @param string $myurl URL of current Moodle installation
@@ -148,7 +148,7 @@ class local_linkchecker_robot_test extends advanced_testcase {
      * Tests existence of new plugin parameter 'retentionperiod'
      */
     public function test_param_retention_exists() {
-        $param = get_config('local_linkchecker_robot', 'retentionperiod');
+        $param = get_config('tool_crawler', 'retentionperiod');
         $this->assertNotEmpty($param);
     }
 }

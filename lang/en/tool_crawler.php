@@ -16,9 +16,9 @@
 
 
 /**
- * Defines the lang strings of linkchecker_robot local plugin
+ * Defines the lang strings of tool_crawler plugin
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @author     Brendan Heywood <brendan@catalyst-au.net>
  * @copyright  Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -72,7 +72,6 @@ $string['lastcrawlend'] = 'Last crawl ended at';
 $string['lastcrawlproc'] = 'Last crawl process';
 $string['lastqueuesize'] = 'Last queue size';
 $string['linktext'] = 'Link text';
-$string['localplugins'] = 'Local Plugins';
 $string['maxcrontime'] = 'Cron run limit';
 $string['maxcrontimedesc'] = 'The crawler will keep crawling until this limit is hit on each cron tick. In seconds';
 $string['maxtime'] = 'Max execution time';
@@ -90,7 +89,7 @@ $string['oversize_header'] = '<p>Big files with multiple incoming links to them 
 $string['outgoingurls'] = 'Outgoing URL\'s';
 $string['progress'] = 'Progress';
 $string['progresseta'] = '{$a->percent} ETA in {$a->eta}';
-$string['pluginname'] = 'Link checker robot';
+$string['pluginname'] = 'Link crawler robot';
 $string['queued'] = 'Queued URL\'s';
 $string['queued_header'] = '<p>The title and course are only known if the URL has been seen on a previous crawl.</p>';
 $string['recent'] = 'Recently crawled URL\'s';

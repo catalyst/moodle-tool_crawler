@@ -17,11 +17,11 @@
 /**
  * Admin report GUI
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
+require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once('locallib.php');
 
@@ -36,17 +36,17 @@ $start = $page * $perpage;
 
 $sqlfilter = '';
 
-$navurl = new moodle_url('/local/linkchecker_robot/report.php', array(
+$navurl = new moodle_url('/admin/tool/crawler/report.php', array(
     'report' => $report,
     'course' => $courseid
 ));
-$baseurl = new moodle_url('/local/linkchecker_robot/report.php', array(
+$baseurl = new moodle_url('/admin/tool/crawler/report.php', array(
     'perpage' => $perpage,
     'report' => $report,
     'course' => $courseid
 ));
 
-$config = get_config('local_linkchecker_robot');
+$config = get_config('tool_crawler');
 
 if ($courseid) {
     // If course then this is an a course editor report.
@@ -59,14 +59,14 @@ if ($courseid) {
     $PAGE->set_context($coursecontext);
     $PAGE->set_url($navurl);
     $PAGE->set_pagelayout('admin');
-    $PAGE->set_title( get_string($report, 'local_linkchecker_robot') );
+    $PAGE->set_title( get_string($report, 'tool_crawler') );
     $sqlfilter = ' AND c.id = '.$courseid;
 
 } else {
 
     // If no course then this is an admin only report.
     require_capability('moodle/site:config', context_system::instance());
-    admin_externalpage_setup('local_linkchecker_robot_'.$report);
+    admin_externalpage_setup('tool_crawler_'.$report);
 }
 echo $OUTPUT->header();
 
@@ -74,15 +74,15 @@ require('tabs.php');
 echo $tabs;
 
 if ($retryid) {
-    $robot = new \local_linkchecker_robot\robot\crawler();
+    $robot = new \tool_crawler\robot\crawler();
     $robot->reset_for_recrawl($retryid);
 }
 
 if ($report == 'broken') {
 
-    $sql = " FROM {linkchecker_url}  b
-       LEFT JOIN {linkchecker_edge} l ON l.b = b.id
-       LEFT JOIN {linkchecker_url}  a ON l.a = a.id
+    $sql = " FROM {tool_crawler_url}  b
+       LEFT JOIN {tool_crawler_edge} l ON l.b = b.id
+       LEFT JOIN {tool_crawler_url}  a ON l.a = a.id
        LEFT JOIN {course} c ON c.id = a.courseid
            WHERE b.httpcode != ? $sqlfilter";
 
@@ -113,27 +113,27 @@ if ($report == 'broken') {
     $table = new html_table();
     $table->head = array(
         '',
-        get_string('lastcrawledtime', 'local_linkchecker_robot'),
-        get_string('response', 'local_linkchecker_robot'),
-        get_string('broken', 'local_linkchecker_robot'),
-        get_string('frompage', 'local_linkchecker_robot')
+        get_string('lastcrawledtime', 'tool_crawler'),
+        get_string('response', 'tool_crawler'),
+        get_string('broken', 'tool_crawler'),
+        get_string('frompage', 'tool_crawler')
     );
     if (!$courseid) {
-        array_push($table->head, get_string('course', 'local_linkchecker_robot'));
+        array_push($table->head, get_string('course', 'tool_crawler'));
     }
     $table->data = array();
     foreach ($data as $row) {
         $text = trim($row->text);
         if (!$text || $text == "") {
-            $text = get_string('missing', 'local_linkchecker_robot');
+            $text = get_string('missing', 'tool_crawler');
         }
         $data = array(
             html_writer::link(new moodle_url($baseurl, array('retryid' => $row->toid )),
-                get_string('retry', 'local_linkchecker_robot')),
+                get_string('retry', 'tool_crawler')),
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
-            local_linkchecker_robot_http_code($row),
-            local_linkchecker_robot_link($row->target, $text, $row->redirect),
-            local_linkchecker_robot_link($row->url, $row->title, $row->redirect)
+            tool_crawler_http_code($row),
+            tool_crawler_link($row->target, $text, $row->redirect),
+            tool_crawler_link($row->url, $row->title, $row->redirect)
         );
         if (!$courseid) {
             array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
@@ -143,7 +143,7 @@ if ($report == 'broken') {
 
 } else if ($report == 'queued') {
 
-    $sql = " FROM {linkchecker_url} a
+    $sql = " FROM {tool_crawler_url} a
        LEFT JOIN {course} c ON c.id = a.courseid
            WHERE (a.lastcrawled IS NULL OR a.lastcrawled < needscrawl)
                  $sqlfilter";
@@ -170,22 +170,22 @@ if ($report == 'broken') {
     $table = new html_table();
 
     $table->head = array(
-        get_string('whenqueued', 'local_linkchecker_robot'),
-        get_string('url', 'local_linkchecker_robot')
+        get_string('whenqueued', 'tool_crawler'),
+        get_string('url', 'tool_crawler')
     );
 
     if (!$courseid) {
-        array_push($table->head, get_string('incourse', 'local_linkchecker_robot'));
+        array_push($table->head, get_string('incourse', 'tool_crawler'));
     }
     $table->data = array();
     foreach ($data as $row) {
         $text = trim($row->title);
         if (!$text || $text == "") {
-            $text = get_string('notyetknown', 'local_linkchecker_robot');
+            $text = get_string('notyetknown', 'tool_crawler');
         }
         $data = array(
             userdate($row->needscrawl, '%h %e,&nbsp;%H:%M:%S'),
-            local_linkchecker_robot_link($row->target, $text, $row->redirect)
+            tool_crawler_link($row->target, $text, $row->redirect)
         );
         if (!$courseid) {
             array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
@@ -195,7 +195,7 @@ if ($report == 'broken') {
 
 } else if ($report == 'recent') {
 
-    $sql = " FROM {linkchecker_url}  b
+    $sql = " FROM {tool_crawler_url}  b
        LEFT JOIN {course} c ON c.id = b.courseid
            WHERE b.lastcrawled IS NOT NULL
                  $sqlfilter";
@@ -224,28 +224,28 @@ if ($report == 'broken') {
 
     $table = new html_table();
     $table->head = array(
-        get_string('lastcrawledtime', 'local_linkchecker_robot'),
-        get_string('response', 'local_linkchecker_robot'),
-        get_string('size', 'local_linkchecker_robot'),
-        get_string('url', 'local_linkchecker_robot'),
-        get_string('mimetype', 'local_linkchecker_robot'),
+        get_string('lastcrawledtime', 'tool_crawler'),
+        get_string('response', 'tool_crawler'),
+        get_string('size', 'tool_crawler'),
+        get_string('url', 'tool_crawler'),
+        get_string('mimetype', 'tool_crawler'),
     );
     if (!$courseid) {
-        array_push($table->head, get_string('incourse', 'local_linkchecker_robot'));
+        array_push($table->head, get_string('incourse', 'tool_crawler'));
     }
     $table->data = array();
     foreach ($data as $row) {
         $text = trim($row->title);
         if (!$text || $text == "") {
-            $text = get_string('unknown', 'local_linkchecker_robot');
+            $text = get_string('unknown', 'tool_crawler');
         }
-        $code = local_linkchecker_robot_http_code($row);
+        $code = tool_crawler_http_code($row);
         $size = $row->filesize * 1;
         $data = array(
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
             $code,
             display_size($size),
-            local_linkchecker_robot_link($row->target, $text, $row->redirect),
+            tool_crawler_link($row->target, $text, $row->redirect),
             $row->mimetype,
         );
         if (!$courseid) {
@@ -256,9 +256,9 @@ if ($report == 'broken') {
 
 } else if ($report == 'oversize') {
 
-    $sql = " FROM {linkchecker_url} b
-       LEFT JOIN {linkchecker_edge} l ON l.b = b.id
-       LEFT JOIN {linkchecker_url}  a ON l.a = a.id
+    $sql = " FROM {tool_crawler_url} b
+       LEFT JOIN {tool_crawler_edge} l ON l.b = b.id
+       LEFT JOIN {tool_crawler_url}  a ON l.a = a.id
        LEFT JOIN {course} c ON c.id = a.courseid
            WHERE b.filesize > ?
                  $sqlfilter";
@@ -291,15 +291,15 @@ if ($report == 'broken') {
     $table = new html_table();
 
     $table->head = array(
-        get_string('lastcrawledtime', 'local_linkchecker_robot'),
-        get_string('size', 'local_linkchecker_robot'),
-        get_string('slowurl', 'local_linkchecker_robot'),
-        get_string('mimetype', 'local_linkchecker_robot'),
-        get_string('frompage', 'local_linkchecker_robot'),
+        get_string('lastcrawledtime', 'tool_crawler'),
+        get_string('size', 'tool_crawler'),
+        get_string('slowurl', 'tool_crawler'),
+        get_string('mimetype', 'tool_crawler'),
+        get_string('frompage', 'tool_crawler'),
     );
 
     if (!$courseid) {
-        array_push($table->head, get_string('course', 'local_linkchecker_robot'));
+        array_push($table->head, get_string('course', 'tool_crawler'));
     }
 
     $table->data = array();
@@ -307,14 +307,14 @@ if ($report == 'broken') {
         $size = $row->filesize * 1;
         $text = trim($row->text);
         if (!$text || $text == "") {
-            $text = get_string('missing', 'local_linkchecker_robot');
+            $text = get_string('missing', 'tool_crawler');
         }
         $data = array(
             userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
             display_size($size),
-            local_linkchecker_robot_link($row->target, $text, $row->redirect),
+            tool_crawler_link($row->target, $text, $row->redirect),
             $row->mimetype,
-            local_linkchecker_robot_link($row->url, $row->title, $row->redirect)
+            tool_crawler_link($row->url, $row->title, $row->redirect)
         );
         if (!$courseid) {
             array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
@@ -324,13 +324,13 @@ if ($report == 'broken') {
 
 }
 
-echo $OUTPUT->heading(get_string('numberurlsfound', 'local_linkchecker_robot',
+echo $OUTPUT->heading(get_string('numberurlsfound', 'tool_crawler',
     array(
         'reports_number' => $count,
         'repoprt_type' => $report
     )
 ));
-echo get_string($report . '_header', 'local_linkchecker_robot');
+echo get_string($report . '_header', 'tool_crawler');
 echo html_writer::table($table);
 echo $OUTPUT->paging_bar($count, $page, $perpage, $baseurl);
 echo $OUTPUT->footer();

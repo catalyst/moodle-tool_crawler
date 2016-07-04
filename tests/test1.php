@@ -17,13 +17,13 @@
 /**
  * A test authenticated page that we can check over the network
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @author     Brendan Heywood <brendan@catalyst-au.net>
  * @copyright  Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))) . '/../config.php');
+require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/../config.php');
 
 require_login();
 
@@ -31,7 +31,7 @@ $header = 'Hello robot!';
 
 $context = context_user::instance($USER->id);
 $PAGE->set_context($context);
-$PAGE->set_url('/local/linkchecker_robot/tests/test1.php');
+$PAGE->set_url('/admin/tool/crawler/tests/test1.php');
 $PAGE->set_title($header);
 $PAGE->set_heading($header);
 

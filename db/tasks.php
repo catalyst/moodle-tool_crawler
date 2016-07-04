@@ -15,15 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * local_linkchecker_robot
+ * tool_crawler
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 $tasks = array(
     array(
-        'classname' => 'local_linkchecker_robot\task\crawl_task',
+        'classname' => 'tool_crawler\task\crawl_task',
         'blocking'  => 0,
         'minute'    => '*',
         'hour '     => '*',
@@ -32,7 +32,7 @@ $tasks = array(
         'month'     => '*'
     ),
     array(
-        'classname' => 'local_linkchecker_robot\task\robot_cleanup',
+        'classname' => 'tool_crawler\task\robot_cleanup',
         'blocking' => 0,
         'minute' => '30',
         'hour' => '2',

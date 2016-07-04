@@ -1,5 +1,5 @@
-<a href="https://travis-ci.org/central-queensland-uni/moodle-local_linkchecker_robot">
-<img src="https://api.travis-ci.org/central-queensland-uni/moodle-local_linkchecker_robot.svg?branch=master">
+<a href="https://travis-ci.org/central-queensland-uni/moodle-tool_crawler">
+<img src="https://api.travis-ci.org/central-queensland-uni/moodle-tool_crawler.svg?branch=master">
 </a>
 
 # What is this?
@@ -10,7 +10,7 @@ files.
 
 # How does it work?
 
-It is a local plugin with a moodle cron task. It logs into your moodle
+It is an admin tool plugin with a moodle cron task. It logs into your moodle
 via curl effectively from outside moodle. The cronjob scrapes each page,
 parses it and follows links. By using this architecture it will only find
 broken links that actually matter to students.
@@ -27,9 +27,9 @@ git submodule add https://github.com/CatalystIT-AU/moodle-auth_basic.git auth/ba
 
 # Installing plugin source code
 
-Install plugin moodle-local_linkchecker_robot as a git submodule:
+Install plugin moodle-tool_crawler as a git submodule:
 ```
-git submodule add https://github.com/central-queensland-uni/moodle-local_linkchecker_robot.git local/linkchecker_robot
+git submodule add https://github.com/central-queensland-uni/moodle-tool_crawler.git admin/tool/crawler
 ```
 # Configure
 
@@ -67,7 +67,7 @@ Enable auth_basic plugin (if you haven't done that earlier) from
 
 Home ► Site administration ► Plugins ► Authentication ► Manage authentication
 
-Now navigate to URL http://your_moodle_website.com/local/linkchecker_robot/index.php". It will show some stats about the Link checker Robot.
+Now navigate to URL http://your_moodle_website.com/admin/tool/crawler/index.php". It will show some stats about the Link checker Robot.
 
 Click "Auto create" button against "Bot user". This actually creates the user which username and password you have
 configured previously on page "New settings - Link checker robot".
@@ -79,7 +79,7 @@ Once bot user is created "Bot user" line in status report should be showing "Goo
 This is achieved by configuring proper security roles in Moodle and assigning 
 these roles to the robot user on desired categories.
 
-Import role "Robot" from local/linkchecker_robot/roles/robot.xml on 
+Import role "Robot" from admin/tool/crawler/roles/robot.xml on 
 
 
 Site administration ► Users ► Permissions ► Define roles ► Add a new role
@@ -90,7 +90,7 @@ Add this role to the "Link checker robot" user on
 Site administration ► Users ► Permissions ► Assign system roles.
 
 Import role "Robot nofollow" from file 
-local/linkchecker_robot/roles/robotnofollow.xml on 
+admin/tool/crawler/roles/robotnofollow.xml on 
 
 
 Site administration ► Users ► Permissions ► Define roles ► Add a new role.
@@ -128,7 +128,7 @@ This command should log you in with specified credentials via Basic HTTP Auth. I
 Once Basic HTTP auth works test running the robot task from the CLI:
 
 ```
-php admin/tool/task/cli/schedule_task.php  --execute='\local_linkchecker_robot\task\crawl_task'
+php admin/tool/task/cli/schedule_task.php  --execute='\tool_crawler\task\crawl_task'
 Scheduled task: Link checker robot
 ... used 2997 dbqueries
 ... used 59.828736066818 seconds
@@ -138,11 +138,11 @@ If this worked then it's a matter of sitting back and waiting for the
 robot to do it's thing. It works incrementally spreading the load over many
 cron cycles, you can watch it's progress in
 
-/local/linkchecker_robot/report.php?report=queued
+/admin/tool/crawler/report.php?report=queued
 
 and
 
-/local/linkchecker_robot/report.php?report=recent
+/admin/tool/crawler/report.php?report=recent
 
 # Reporting
 
@@ -155,7 +155,7 @@ Administration > Reports > Link checker
 
 Please raise any issues in github:
 
-https://github.com/central-queensland-uni/moodle-local_linkchecker_robot/issues
+https://github.com/central-queensland-uni/moodle-tool_crawler/issues
 
 If you need anything urgently and would like to sponsor it's implemenation please
 email me: [Brendan Heywood](mailto:brendan@catalyst-au.net).

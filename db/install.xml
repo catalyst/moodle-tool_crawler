@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/linkchecker_robot/db" VERSION="20160601" COMMENT="XMLDB file for Moodle local/linkchecker_robot"
+<XMLDB PATH="admin/tool/crawler/db" VERSION="20160601" COMMENT="XMLDB file for Moodle tool_crawler"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="linkchecker_url" COMMENT="URL the link checker has or will crawl">
+    <TABLE NAME="tool_crawler_url" COMMENT="URL the link checker has or will crawl">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="url" TYPE="char" LENGTH="1333" NOTNULL="true" SEQUENCE="false"/>
@@ -35,7 +35,7 @@
         <INDEX NAME="httpcode" UNIQUE="false" FIELDS="httpcode"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="linkchecker_edge" COMMENT="Links between urls">
+    <TABLE NAME="tool_crawler_edge" COMMENT="Links between urls">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="a" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -54,7 +54,7 @@
         <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="linkchecker_history" COMMENT="Info around previous scraping runs">
+    <TABLE NAME="tool_crawler_history" COMMENT="Info around previous scraping runs">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="startcrawl" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>

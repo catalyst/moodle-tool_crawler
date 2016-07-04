@@ -17,7 +17,7 @@
 /**
  *  link checker robot local plugin settings
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @author     Brendan Heywood <brendan@catalyst-au.net>
  * @copyright  Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,77 +27,72 @@ defined('MOODLE_INTERNAL') || die;
 if ($hassiteconfig) {
 
     // Site admin reports.
-    $cat = new admin_category('local_linkchecker_cat', 'Link checker');
+    $cat = new admin_category('tool_crawler_cat', 'Link crawler');
     $ADMIN->add('reports', $cat);
 
-    $ADMIN->add('local_linkchecker_cat', new admin_externalpage('local_linkchecker_robot_status',
-                                           get_string('status', 'local_linkchecker_robot'),
-                                           $CFG->wwwroot . '/local/linkchecker_robot/index.php') );
+    $ADMIN->add('tool_crawler_cat', new admin_externalpage('tool_crawler_status',
+                                           get_string('status', 'tool_crawler'),
+                                           $CFG->wwwroot . '/admin/tool/crawler/index.php') );
 
-    $ADMIN->add('local_linkchecker_cat', new admin_externalpage('local_linkchecker_robot_queued',
-                                           get_string('queued', 'local_linkchecker_robot'),
-                                           $CFG->wwwroot . '/local/linkchecker_robot/report.php?report=queued') );
+    $ADMIN->add('tool_crawler_cat', new admin_externalpage('tool_crawler_queued',
+                                           get_string('queued', 'tool_crawler'),
+                                           $CFG->wwwroot . '/admin/tool/crawler/report.php?report=queued') );
 
-    $ADMIN->add('local_linkchecker_cat', new admin_externalpage('local_linkchecker_robot_recent',
-                                           get_string('recent', 'local_linkchecker_robot'),
-                                           $CFG->wwwroot . '/local/linkchecker_robot/report.php?report=recent') );
+    $ADMIN->add('tool_crawler_cat', new admin_externalpage('tool_crawler_recent',
+                                           get_string('recent', 'tool_crawler'),
+                                           $CFG->wwwroot . '/admin/tool/crawler/report.php?report=recent') );
 
-    $ADMIN->add('local_linkchecker_cat', new admin_externalpage('local_linkchecker_robot_broken',
-                                           get_string('broken', 'local_linkchecker_robot'),
-                                           $CFG->wwwroot . '/local/linkchecker_robot/report.php?report=broken') );
+    $ADMIN->add('tool_crawler_cat', new admin_externalpage('tool_crawler_broken',
+                                           get_string('broken', 'tool_crawler'),
+                                           $CFG->wwwroot . '/admin/tool/crawler/report.php?report=broken') );
 
-    $ADMIN->add('local_linkchecker_cat', new admin_externalpage('local_linkchecker_robot_oversize',
-                                           get_string('oversize', 'local_linkchecker_robot'),
-                                           $CFG->wwwroot . '/local/linkchecker_robot/report.php?report=oversize') );
+    $ADMIN->add('tool_crawler_cat', new admin_externalpage('tool_crawler_oversize',
+                                           get_string('oversize', 'tool_crawler'),
+                                           $CFG->wwwroot . '/admin/tool/crawler/report.php?report=oversize') );
 
 
     // Local plugin settings.
-    $settings = new admin_settingpage('local_linkchecker_robot', get_string('pluginname', 'local_linkchecker_robot'));
+    $settings = new admin_settingpage('tool_crawler', get_string('pluginname', 'tool_crawler'));
 
-    // Add the admin page to the menu tree if it ain't exist.
-    if (!$ADMIN->locate('localplugins')) {
-        $ADMIN->add('root', new admin_category('localplugins', get_string('localplugins', 'local_linkchecker_robot')));
-    }
-
-    $ADMIN->add('localplugins', $settings);
+    $ADMIN->add('tools', $settings);
     if (!during_initial_install()) {
 
         require('tabs.php');
-        $settings->add(new admin_setting_heading('linkchecker',
+        $settings->add(new admin_setting_heading('tool_crawler',
                                                     '',
                                                     $tabs
                                                     ));
 
-        $settings->add(new admin_setting_configtext('local_linkchecker_robot/seedurl',
-                                                    new lang_string('seedurl',           'local_linkchecker_robot'),
-                                                    new lang_string('seedurldesc',       'local_linkchecker_robot'),
+        $settings->add(new admin_setting_configtext('tool_crawler/seedurl',
+                                                    new lang_string('seedurl',           'tool_crawler'),
+                                                    new lang_string('seedurldesc',       'tool_crawler'),
                                                     '/' ));
 
-        $settings->add(new admin_setting_configtext('local_linkchecker_robot/botusername',
-                                                    new lang_string('botusername',       'local_linkchecker_robot'),
-                                                    new lang_string('botusernamedesc',   'local_linkchecker_robot'),
+        $settings->add(new admin_setting_configtext('tool_crawler/botusername',
+                                                    new lang_string('botusername',       'tool_crawler'),
+                                                    new lang_string('botusernamedesc',   'tool_crawler'),
                                                     'moodlebot' ));
 
-        $settings->add(new admin_setting_configpasswordunmask('local_linkchecker_robot/botpassword',
-                                                    new lang_string('botpassword',       'local_linkchecker_robot'),
-                                                    new lang_string('botpassworddesc',   'local_linkchecker_robot'),
+        $settings->add(new admin_setting_configpasswordunmask('tool_crawler/botpassword',
+                                                    new lang_string('botpassword',       'tool_crawler'),
+                                                    new lang_string('botpassworddesc',   'tool_crawler'),
                                                     'moodlebot' ));
 
-        $settings->add(new admin_setting_configtext('local_linkchecker_robot/useragent',
-                                                    new lang_string('useragent',         'local_linkchecker_robot'),
-                                                    new lang_string('useragentdesc',     'local_linkchecker_robot'),
+        $settings->add(new admin_setting_configtext('tool_crawler/useragent',
+                                                    new lang_string('useragent',         'tool_crawler'),
+                                                    new lang_string('useragentdesc',     'tool_crawler'),
                                                     'MoodleLinkChecker' ));
 
-        $settings->add(new admin_setting_configtextarea('local_linkchecker_robot/excludeexturl',
-                                                    new lang_string('excludeexturl',     'local_linkchecker_robot'),
-                                                    new lang_string('excludeexturldesc', 'local_linkchecker_robot'),
+        $settings->add(new admin_setting_configtextarea('tool_crawler/excludeexturl',
+                                                    new lang_string('excludeexturl',     'tool_crawler'),
+                                                    new lang_string('excludeexturldesc', 'tool_crawler'),
                                                     'http://moodle.org/
 http://validator.w3.org/
 http://www.contentquality.com/' ));
 
-        $settings->add(new admin_setting_configtextarea('local_linkchecker_robot/excludemdlurl',
-                                                    new lang_string('excludemdlurl',     'local_linkchecker_robot'),
-                                                    new lang_string('excludemdlurldesc', 'local_linkchecker_robot'),
+        $settings->add(new admin_setting_configtextarea('tool_crawler/excludemdlurl',
+                                                    new lang_string('excludemdlurl',     'tool_crawler'),
+                                                    new lang_string('excludemdlurldesc', 'tool_crawler'),
                                                     "grading
 /admin
 /blog
@@ -113,40 +108,40 @@ http://www.contentquality.com/' ));
 /user
 /tag/" ));
 
-        $settings->add(new admin_setting_configtextarea('local_linkchecker_robot/excludemdlparam',
-                                                    new lang_string('excludemdlparam',     'local_linkchecker_robot'),
-                                                    new lang_string('excludemdlparamdesc', 'local_linkchecker_robot'),
+        $settings->add(new admin_setting_configtextarea('tool_crawler/excludemdlparam',
+                                                    new lang_string('excludemdlparam',     'tool_crawler'),
+                                                    new lang_string('excludemdlparamdesc', 'tool_crawler'),
                                                     "sesskey
 time
 lang" ));
 
-        $settings->add(new admin_setting_configtextarea('local_linkchecker_robot/excludemdldom',
-                                                    new lang_string('excludemdldom',     'local_linkchecker_robot'),
-                                                    new lang_string('excludemdldomdesc', 'local_linkchecker_robot'),
+        $settings->add(new admin_setting_configtextarea('tool_crawler/excludemdldom',
+                                                    new lang_string('excludemdldom',     'tool_crawler'),
+                                                    new lang_string('excludemdldomdesc', 'tool_crawler'),
                                                     ".block.block_settings
 .block.block_book_toc
 .block.block_calendar_month
 .block.block_navigation
 .block.block_cqu_assessment" ));
 
-        $settings->add(new admin_setting_configtextarea('local_linkchecker_robot/excludecourses',
-                                                    new lang_string('excludecourses',       'local_linkchecker_robot'),
-                                                    new lang_string('excludecoursesdesc',   'local_linkchecker_robot'),
+        $settings->add(new admin_setting_configtextarea('tool_crawler/excludecourses',
+                                                    new lang_string('excludecourses',       'tool_crawler'),
+                                                    new lang_string('excludecoursesdesc',   'tool_crawler'),
                                                     "" ));
 
-        $settings->add(new admin_setting_configtext('local_linkchecker_robot/maxtime',
-                                                    new lang_string('maxtime',           'local_linkchecker_robot'),
-                                                    new lang_string('maxtimedesc',       'local_linkchecker_robot'),
+        $settings->add(new admin_setting_configtext('tool_crawler/maxtime',
+                                                    new lang_string('maxtime',           'tool_crawler'),
+                                                    new lang_string('maxtimedesc',       'tool_crawler'),
                                                     '60' ));
 
-        $settings->add(new admin_setting_configtext('local_linkchecker_robot/maxcrontime',
-                                                    new lang_string('maxcrontime',       'local_linkchecker_robot'),
-                                                    new lang_string('maxcrontimedesc',   'local_linkchecker_robot'),
+        $settings->add(new admin_setting_configtext('tool_crawler/maxcrontime',
+                                                    new lang_string('maxcrontime',       'tool_crawler'),
+                                                    new lang_string('maxcrontimedesc',   'tool_crawler'),
                                                     '60' ));
 
-        $settings->add(new admin_setting_configtext('local_linkchecker_robot/bigfilesize',
-                                                    new lang_string('bigfilesize',       'local_linkchecker_robot'),
-                                                    new lang_string('bigfilesizedesc',   'local_linkchecker_robot'),
+        $settings->add(new admin_setting_configtext('tool_crawler/bigfilesize',
+                                                    new lang_string('bigfilesize',       'tool_crawler'),
+                                                    new lang_string('bigfilesizedesc',   'tool_crawler'),
                                                     '1' ));
 
         $options = array(
@@ -158,9 +153,9 @@ lang" ));
             15724800 => new lang_string('nummonths', 'moodle', 6),
             0 => new lang_string('never')
         );
-        $settings->add(new admin_setting_configselect('local_linkchecker_robot/retentionperiod',
-                                                    new lang_string('retentionperiod',        'local_linkchecker_robot'),
-                                                    new lang_string('retentionperioddesc',    'local_linkchecker_robot'),
+        $settings->add(new admin_setting_configselect('tool_crawler/retentionperiod',
+                                                    new lang_string('retentionperiod',        'tool_crawler'),
+                                                    new lang_string('retentionperioddesc',    'tool_crawler'),
                                                     2620800,
                                                     $options));
     }

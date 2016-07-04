@@ -17,7 +17,7 @@
 /**
  * Quick access tabs
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -32,34 +32,34 @@ if (isset($courseid) && $courseid) {
         }
         $wrap = (isset($report) && $report == $rpt) ? 'b' : 'span';
         $tabs .= html_writer::start_tag($wrap);
-        $tabs .= html_writer::link(new moodle_url('/local/linkchecker_robot/report.php',
+        $tabs .= html_writer::link(new moodle_url('/admin/tool/crawler/report.php',
                 array('report' => $rpt, 'course' => $courseid )),
-                get_string($rpt, 'local_linkchecker_robot'));
+                get_string($rpt, 'tool_crawler'));
         $tabs .= html_writer::end_tag($wrap);
     }
 } else {
 
     $section = optional_param('section', '', PARAM_RAW);
-    $wrap = ($section == 'local_linkchecker_robot') ? 'b' : 'span';
+    $wrap = ($section == 'tool_crawler') ? 'b' : 'span';
     $tabs .= html_writer::start_tag($wrap);
-    $tabs .= html_writer::link(new moodle_url("/admin/settings.php?section=local_linkchecker_robot"),
-        get_string('settings', 'local_linkchecker_robot'));
+    $tabs .= html_writer::link(new moodle_url("/admin/settings.php?section=tool_crawler"),
+        get_string('settings', 'tool_crawler'));
     $tabs .= html_writer::end_tag($wrap);
 
     $tabs .= ' | ';
 
     $wrap = (isset($report) && $report == 'index') ? 'b' : 'span';
     $tabs .= html_writer::start_tag($wrap);
-    $tabs .= html_writer::link(new moodle_url("/local/linkchecker_robot/index.php"),
-            get_string('status', 'local_linkchecker_robot'));
+    $tabs .= html_writer::link(new moodle_url("/admin/tool/crawler/index.php"),
+            get_string('status', 'tool_crawler'));
     $tabs .= html_writer::end_tag($wrap);
 
     foreach ($reports as $rpt) {
         $tabs .= ' | ';
         $wrap = (isset($report) && $report == $rpt) ? 'b' : 'span';
         $tabs .= html_writer::start_tag($wrap);
-        $tabs .= html_writer::link(new moodle_url('/local/linkchecker_robot/report.php', array('report' => $rpt )),
-                get_string($rpt, 'local_linkchecker_robot'));
+        $tabs .= html_writer::link(new moodle_url('/admin/tool/crawler/report.php', array('report' => $rpt )),
+                get_string($rpt, 'tool_crawler'));
         $tabs .= html_writer::end_tag($wrap);
     }
 }

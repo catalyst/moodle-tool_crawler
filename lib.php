@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * local_linkchecker_robot
+ * tool_crawler
  *
- * @package    local_linkchecker_robot
+ * @package    tool_crawler
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,11 +28,11 @@
  * Has limits of both how many urls to crawl
  * and a soft time limit on total crawl time.
  */
-function local_linkchecker_robot_crawl($verbose = false) {
+function tool_crawler_crawl($verbose = false) {
 
     global $CFG, $DB;
 
-    $robot = new \local_linkchecker_robot\robot\crawler();
+    $robot = new \tool_crawler\robot\crawler();
     $config = $robot::get_config();
     $crawlstart = $config->crawlstart;
     $crawlend   = $config->crawlend;
@@ -43,7 +43,7 @@ function local_linkchecker_robot_crawl($verbose = false) {
     if (!$crawlstart || $crawlstart <= $crawlend) {
 
         $start = time();
-        set_config('crawlstart', $start, 'local_linkchecker_robot');
+        set_config('crawlstart', $start, 'tool_crawler');
         $robot->mark_for_crawl($CFG->wwwroot.'/', $config->seedurl);
 
         // Create a new history record.
@@ -54,9 +54,9 @@ function local_linkchecker_robot_crawl($verbose = false) {
         $history->broken = 0;
         $history->oversize = 0;
         $history->cronticks = 0;
-        $history->id = $DB->insert_record('linkchecker_history', $history);
+        $history->id = $DB->insert_record('tool_crawler_history', $history);
     } else {
-        $history = $DB->get_record('linkchecker_history', array('startcrawl' => $crawlstart));
+        $history = $DB->get_record('tool_crawler_history', array('startcrawl' => $crawlstart));
     }
 
     // While we are not exceeding the maxcron time, and the queue is not empty
@@ -73,14 +73,14 @@ function local_linkchecker_robot_crawl($verbose = false) {
 
         $hasmore = $robot->process_queue($verbose);
         $hastime = time() < $cronstop;
-        set_config('crawltick', time(), 'local_linkchecker_robot');
+        set_config('crawltick', time(), 'tool_crawler');
     }
 
     if ($hastime) {
         // Time left over, which means the queue is empty!
         // Mark the crawl as ended.
         $history->endcrawl = time();
-        set_config('crawlend', time(), 'local_linkchecker_robot');
+        set_config('crawlend', time(), 'tool_crawler');
     }
     $history->urls = $robot->get_processed();
     $history->links = $robot->get_num_links();
@@ -88,7 +88,7 @@ function local_linkchecker_robot_crawl($verbose = false) {
     $history->oversize = $robot->get_num_oversize();
     $history->cronticks++;
 
-    $DB->update_record('linkchecker_history', $history);
+    $DB->update_record('tool_crawler_history', $history);
 }
 
 /**
@@ -98,7 +98,7 @@ function local_linkchecker_robot_crawl($verbose = false) {
  *
  * @return an array of summary data
  */
-function local_linkchecker_robot_summary($courseid) {
+function tool_crawler_summary($courseid) {
 
     global $DB;
 
@@ -110,9 +110,9 @@ function local_linkchecker_robot_summary($courseid) {
     $result['broken']   = $DB->get_records_sql("
          SELECT substr(b.httpcode,0,2) code,
                 count(substr(b.httpcode,0,2))
-           FROM {linkchecker_url}   b
-      LEFT JOIN {linkchecker_edge}  l ON l.b  = b.id
-      LEFT JOIN {linkchecker_url}   a ON l.a  = a.id
+           FROM {tool_crawler_url}   b
+      LEFT JOIN {tool_crawler_edge}  l ON l.b  = b.id
+      LEFT JOIN {tool_crawler_url}   a ON l.a  = a.id
       LEFT JOIN {course}            c ON c.id = a.courseid
           WHERE a.courseid = :course
        GROUP BY substr(b.httpcode,0,2)
