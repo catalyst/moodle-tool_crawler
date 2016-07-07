@@ -37,12 +37,14 @@ When installing the plugins please keep in mind the official Moodle recommendati
 
 ## Step 1
 
-Login to Moodle after you have downloaded the plugin code with git. You will be forwarded to URL http://your_moodle_website.com/admin/index.php with Plugins check.
+Login to Moodle after you have downloaded the plugin code with git. You will be
+forwarded to URL http://your_moodle_website.com/admin/index.php with Plugins check.
 There you should see plugins "Basic authentication" and "Link checker robot".
 
 Click button "Upgrade Moodle database now" which should initiate plugins installation.
 
-Now you should see page "Upgrading to new version" with plugins installation statuses and button "Continue".
+Now you should see page "Upgrading to new version" with plugins installation
+statuses and button "Continue".
 
 **Note! Plugin auth_basic is disabled by default after installation.
 You will need to enable it manually from 
@@ -54,33 +56,33 @@ After clicking "Continue" you will get to the page "New settings - Link checker 
 While you may leave other settings default, you might want to setup a custom bot username
 and make sure to change bot password.
 
-**It is recommended that bot user should be kept with readonly access to all the site pages you wish to crawl.
-You can give the robot similar read capabilities that real students have.
-Never give your bot user write capabilities.**
+**It is recommended that bot user should be kept with readonly access to all
+the site pages you wish to crawl. You can give the robot similar read
+capabilities that real students have. Never give your bot user write capabilities.**
 
 After verifying all settings click "Save changes".
 
 ## Step 2
 
-Enable auth_basic plugin (if you haven't done that earlier) from 
-
+Enable auth_basic plugin (if you haven't done that earlier) from
 
 Home ► Site administration ► Plugins ► Authentication ► Manage authentication
 
-Now navigate to URL http://your_moodle_website.com/admin/tool/crawler/index.php". It will show some stats about the Link checker Robot.
+Now navigate to URL http://your_moodle_website.com/admin/tool/crawler/index.php".
+It will show some stats about the Link checker Robot.
 
-Click "Auto create" button against "Bot user". This actually creates the user which username and password you have
-configured previously on page "New settings - Link checker robot".
+Click "Auto create" button against "Bot user". This actually creates the user
+with the username and password you have configured previously on page
+"New settings - Link checker robot".
 
 Once bot user is created "Bot user" line in status report should be showing "Good".
 
 ## Disabling crawling of specific course categories
 
-This is achieved by configuring proper security roles in Moodle and assigning 
+This is achieved by configuring proper security roles in Moodle and assigning
 these roles to the robot user on desired categories.
 
-Import role "Robot" from admin/tool/crawler/roles/robot.xml on 
-
+Import role "Robot" from admin/tool/crawler/roles/robot.xml on
 
 Site administration ► Users ► Permissions ► Define roles ► Add a new role
 
@@ -95,24 +97,24 @@ admin/tool/crawler/roles/robotnofollow.xml on
 
 Site administration ► Users ► Permissions ► Define roles ► Add a new role.
 
-To disable crawling of, say "Category ABC", go to 
+To disable crawling of, say "Category ABC", go to
 
 
 Site administration ► Courses ► Manage courses and categories ► Category ABC
- 
-then click on "Assign roles" in the left navigation menu. 
-Click on role "Robot nofollow", click on user "Link checker Robot" 
+
+then click on "Assign roles" in the left navigation menu.
+Click on role "Robot nofollow", click on user "Link checker Robot"
 under "Potential users" and add him to "Existing users".
 
-The above configuration applies role "Robot" on the whole moodle site 
-and lets crawler to access general content. And "Role nofollow" prohibits 
+The above configuration applies role "Robot" on the whole moodle site
+and lets crawler to access general content. And "Role nofollow" prohibits
 crawler from accessing the specific category.
 
-In the same way it is possible to restrict crawler from accessing other 
+In the same way it is possible to restrict crawler from accessing other
 moodle contexts such as courses, activities and blocks.
- 
-The same effect could be achieved even without role "Robot nofollow" by 
-assigning role "Robot" on the contexts you want to be crawled. But 
+
+The same effect could be achieved even without role "Robot nofollow" by
+assigning role "Robot" on the contexts you want to be crawled. But
 using the combination of two roles gives more flexibility.
 
 # Testing
@@ -120,20 +122,25 @@ using the combination of two roles gives more flexibility.
 ##Test basic authentication with curl
 
 Example in bash:
+
 ```
 curl -c /tmp/cookies -v -L --user moodlebot:moodlebot http://your_moodle_website.com/course/view.php?id=3
 ```
-This command should log you in with specified credentials via Basic HTTP Auth. It will dump headers, requests and responses and among the output you should be able to see the line "You are logged in as ".
+
+This command should log you in with specified credentials via Basic HTTP Auth.
+It will dump headers, requests and responses and among the output you should
+be able to see the line "You are logged in as ".
 
 Once Basic HTTP auth works test running the robot task from the CLI:
 
 ```
-php admin/tool/task/cli/schedule_task.php  --execute='\tool_crawler\task\crawl_task'
+php admin/tool/task/cli/schedule_task.php --execute='\tool_crawler\task\crawl_task'
 Scheduled task: Link checker robot
 ... used 2997 dbqueries
 ... used 59.828736066818 seconds
 Task completed.
 ```
+
 If this worked then it's a matter of sitting back and waiting for the
 robot to do it's thing. It works incrementally spreading the load over many
 cron cycles, you can watch it's progress in
@@ -146,8 +153,8 @@ and
 
 # Reporting
 
-4 new admin reports are available for showing the current crawl status, broken links and URLs and slow links. They are available under:
-
+4 new admin reports are available for showing the current crawl status, broken
+links and URLs and slow links. They are available under:
 
 Administration > Reports > Link checker
 
