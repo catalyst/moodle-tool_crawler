@@ -27,6 +27,8 @@
  *
  * Has limits of both how many urls to crawl
  * and a soft time limit on total crawl time.
+ *
+ * @param boolean $verbose show verbose feedback
  */
 function tool_crawler_crawl($verbose = false) {
 

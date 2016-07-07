@@ -43,7 +43,7 @@ class robot_cleanup extends \core\task\scheduled_task {
     /**
      * Finds and deletes all bad URLs which belong to previous scrape session, but not the current one.
      *
-     * @param null $time. For unit tests purpose: we need to simulate execution of this task at any arbitrary time.
+     * @param null $currenttime For unit tests purpose: we need to simulate execution of this task at any arbitrary time.
      */
     public function execute($currenttime = null) {
         global $DB;

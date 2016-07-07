@@ -425,6 +425,7 @@ class crawler {
     /**
      * Pops an item off the queue and processes it
      *
+     * @param boolean $verbose show debugging
      * @return true if it did anything, false if the queue is empty
      */
     public function process_queue($verbose = false) {
@@ -456,6 +457,7 @@ class crawler {
      * to pull out the links to other urls
      *
      * @param object $node a node
+     * @param boolean $verbose show debugging
      */
     public function crawl($node, $verbose = false) {
 
@@ -521,7 +523,7 @@ class crawler {
      *
      * @param object $node a url node
      * @param boolean $external is the url ourside moodle
-     * @param boolean $external print verbose info
+     * @param boolean $verbose show debugging
      */
     private function parse_html($node, $external, $verbose = false) {
 
@@ -639,6 +641,7 @@ class crawler {
      * @param string $from from url
      * @param string $url current url
      * @param string $text the link text label
+     * @param string $idattr the id attribute of it or it's nearest ancestor
      * @return the new url node or false
      */
     private function link_from_node_to_url($from, $url, $text, $idattr) {

@@ -72,6 +72,12 @@ $data  = $DB->get_records_sql("
 ", array($url));
 
 
+/**
+ * Print a nice table
+ *
+ * @param array $data table
+ * @return html output
+ */
 function print_table($data) {
 
     $table = new html_table();
