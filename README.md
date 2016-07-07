@@ -60,6 +60,11 @@ and make sure to change bot password.
 the site pages you wish to crawl. You can give the robot similar read
 capabilities that real students have. Never give your bot user write capabilities.**
 
+It can also be a good idea to give your robot some extra permissions, like visibility of hidden courses
+or activites so it can crawl content which is being developed and will be later delivered to students.
+If you are worried about load and total crawl time then you can filter out whole courses, eg last years
+archives courses, see below for more details.
+
 After verifying all settings click "Save changes".
 
 ## Step 2
