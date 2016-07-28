@@ -8,6 +8,8 @@ This is a link checking robot, that crawls your moodle site following links
 and reporting on links that are either broken or that link to very large
 files.
 
+https://moodle.org/plugins/tool_crawler
+
 # How does it work?
 
 It is an admin tool plugin with a moodle cron task. It logs into your moodle
