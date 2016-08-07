@@ -57,7 +57,7 @@ if ($hassiteconfig) {
     $ADMIN->add('tools', $settings);
     if (!during_initial_install()) {
 
-        require('tabs.php');
+        require("$CFG->dirroot/admin/tool/crawler/tabs.php");
         $settings->add(new admin_setting_heading('tool_crawler',
                                                     '',
                                                     $tabs
