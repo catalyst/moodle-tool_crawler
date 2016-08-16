@@ -698,10 +698,17 @@ class crawler {
         curl_setopt($s, CURLOPT_HEADER,          true);
         curl_setopt($s, CURLOPT_COOKIEJAR,       $cookiefilelocation);
         curl_setopt($s, CURLOPT_COOKIEFILE,      $cookiefilelocation);
+        curl_setopt($s, CURLOPT_SSL_VERIFYHOST,  0);
+        curl_setopt($s, CURLOPT_SSL_VERIFYPEER,  0);
 
         $result = (object) array();
         $result->url              = $url;
         $raw   = curl_exec($s);
+        if (empty($raw)) {
+            $error = curl_error($s) . ' ' . curl_errno($s);
+            curl_close($s);
+            throw new \Exception($error);
+        }
         $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
         $headers = substr($raw, 0, $headersize);
         $header = strtok($headers, "\n");
