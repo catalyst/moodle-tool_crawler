@@ -113,7 +113,9 @@ http://www.contentquality.com/' ));
                                                     new lang_string('excludemdlparamdesc', 'tool_crawler'),
                                                     "sesskey
 time
-lang" ));
+lang
+useridlistid
+" ));
 
         $settings->add(new admin_setting_configtextarea('tool_crawler/excludemdldom',
                                                     new lang_string('excludemdldom',     'tool_crawler'),

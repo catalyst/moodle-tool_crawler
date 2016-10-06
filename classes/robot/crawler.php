@@ -480,10 +480,12 @@ class crawler {
             if ($result->mimetype == 'text/html') {
                 if ($verbose) {
                     echo "html\n";
-                } else {
-                    echo "NOT html\n";
                 }
                 $this->parse_html($result, $result->external, $verbose);
+            } else {
+                if ($verbose) {
+                    echo "NOT html\n";
+                }
             }
             // Else TODO Possibly we can infer the course purely from the url
             // Maybe the plugin serving urls?
