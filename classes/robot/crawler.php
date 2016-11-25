@@ -713,9 +713,29 @@ class crawler {
         $result->url              = $url;
         $raw   = curl_exec($s);
         if (empty($raw)) {
-            $error = curl_error($s) . ' ' . curl_errno($s);
+            $result->url              = $url;
+            $result->httpmsg          = 'Curl Error: ' . curl_errno($s);
+            $result->title            = curl_error($s);
+            $result->contents         = '';
+            $result->httpcode         = '500';
+            $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
+            $mimetype                 = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
+            $mimetype                 = preg_replace('/;.*/', '', $mimetype);
+            $result->mimetype         = $mimetype;
+            $result->lastcrawled      = time();
+            $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
+            $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
+            if ($final != $url) {
+                $result->redirect = $final;
+                $mdlw = strlen($CFG->wwwroot);
+                if (substr ($final, 0, $mdlw) !== $CFG->wwwroot) {
+                    $result->external = 1;
+                }
+            } else {
+                $result->redirect = '';
+            }
             curl_close($s);
-            throw new \Exception($error);
+            return $result;
         }
         $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
         $headers = substr($raw, 0, $headersize);
