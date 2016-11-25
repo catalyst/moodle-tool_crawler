@@ -282,6 +282,12 @@ class crawler {
                 $shortname = $cm->shortname;
             }
         }
+        if(preg_match('/\/course\/(.*?)\//', $url, $matches) ) {
+            $course = $DB->get_record('course', array('shortname' => $matches[1]));
+            if ($course) {
+                $shortname = $course->shortname;
+            }
+        }
         if ($shortname) {
             $bad = 0;
             $excludes = str_replace("\r", '', self::get_config()->excludecourses);
