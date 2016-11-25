@@ -282,7 +282,7 @@ class crawler {
                 $shortname = $cm->shortname;
             }
         }
-        if(preg_match('/\/course\/(.*?)\//', $url, $matches) ) {
+        if (preg_match('/\/course\/(.*?)\//', $url, $matches) ) {
             $course = $DB->get_record('course', array('shortname' => $matches[1]));
             if ($course) {
                 $shortname = $course->shortname;
