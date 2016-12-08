@@ -140,4 +140,36 @@ function tool_crawler_summary($courseid) {
     return $result;
 }
 
+/**
+ * This function extends the course navigation
+ *
+ * @param navigation_node $navigation The navigation node to extend
+ * @param stdClass $course The course to object for the tool
+ * @param context $coursecontext The context of the course
+ */
+function tool_crawler_extend_navigation_course($navigation, $course, $coursecontext) {
+    $reports = array('queued', 'recent', 'broken', 'oversize');
 
+    $coursereports = $navigation->get('coursereports');
+
+    $node = $coursereports->add(
+        get_string('pluginname', 'tool_crawler'),
+        null,
+        navigation_node::TYPE_CONTAINER,
+        null,
+        'linkchecker',
+        new pix_icon('i/report', get_string('pluginname', 'tool_crawler'))
+    );
+
+    foreach ($reports as $rpt) {
+        $url = new moodle_url('/admin/tool/crawler/report.php', array('report' => $rpt, 'course' => $course->id));
+        $node->add(
+            get_string($rpt, 'tool_crawler'),
+            $url,
+            navigation_node::TYPE_SETTING,
+            null,
+            null,
+            new pix_icon('i/report', '')
+        );
+    }
+}
