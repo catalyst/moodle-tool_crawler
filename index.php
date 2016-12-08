@@ -85,7 +85,9 @@ $table->data = array(
         get_string('progresseta', 'tool_crawler', array(
             'percent' => sprintf('%.2f%%', $progress * 100),
             'eta' => userdate($eta),
-        )),
+        ))
+        . ' | ' . html_writer::link(new moodle_url('/admin/tool/crawler/resetprogress.php'),
+            get_string('resetprogress', 'tool_crawler'))
     ),
     array(
         get_string('curcrawlstart', 'tool_crawler'),
