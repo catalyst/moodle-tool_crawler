@@ -162,7 +162,7 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
     );
 
     foreach ($reports as $rpt) {
-        $url = new moodle_url('/admin/tool/crawler/report.php', array('report' => $rpt, 'course'=>$course->id));
+        $url = new moodle_url('/admin/tool/crawler/report.php', array('report' => $rpt, 'course' => $course->id));
         $node->add(
             get_string($rpt, 'tool_crawler'),
             $url,
