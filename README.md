@@ -4,7 +4,7 @@
 
 # What is this?
 
-This is a link checking robot, that crawls your moodle site following links
+This is a link checking robot, that crawls your Moodle site following links
 and reporting on links that are either broken or that link to very large
 files.
 
@@ -12,8 +12,8 @@ https://moodle.org/plugins/tool_crawler
 
 # How does it work?
 
-It is an admin tool plugin with a moodle cron task. It logs into your moodle
-via curl effectively from outside moodle. The cronjob scrapes each page,
+It is an admin tool plugin with a Moodle cron task. It logs into your Moodle
+via curl effectively from outside Moodle. The cronjob scrapes each page,
 parses it and follows links. By using this architecture it will only find
 broken links that actually matter to students.
 
@@ -24,7 +24,7 @@ Since the plugin cronjob comes in from outside it needs to authenticate in Moodl
 The plugin has a dependency on the [moodle-auth_basic](https://moodle.org/plugins/auth_basic).
 To install the dependency plugin as a git submodule:
 ```
-git submodule add https://github.com/CatalystIT-AU/moodle-auth_basic.git auth/basic
+git submodule add https://github.com/catalyst/moodle-auth_basic auth/basic
 ```
 
 # Installing plugin source code
@@ -35,7 +35,7 @@ git submodule add https://github.com/central-queensland-uni/moodle-tool_crawler.
 ```
 # Configure
 
-When installing the plugins please keep in mind the official Moodle recommendations: [installing Moodle plugins](https://docs.moodle.org/30/en/Installing_add-ons)
+When installing the plugins please keep in mind the official Moodle recommendations: [installing Moodle plugins](https://docs.moodle.org/32/en/Installing_add-ons)
 
 ## Step 1
 
@@ -113,12 +113,12 @@ then click on "Assign roles" in the left navigation menu.
 Click on role "Robot nofollow", click on user "Link checker Robot"
 under "Potential users" and add him to "Existing users".
 
-The above configuration applies role "Robot" on the whole moodle site
+The above configuration applies role "Robot" on the whole Moodle site
 and lets crawler to access general content. And "Role nofollow" prohibits
 crawler from accessing the specific category.
 
 In the same way it is possible to restrict crawler from accessing other
-moodle contexts such as courses, activities and blocks.
+Moodle contexts such as courses, activities and blocks.
 
 The same effect could be achieved even without role "Robot nofollow" by
 assigning role "Robot" on the contexts you want to be crawled. But
@@ -126,7 +126,7 @@ using the combination of two roles gives more flexibility.
 
 # Testing
 
-##Test basic authentication with curl
+## Test basic authentication with curl
 
 Example in bash:
 
@@ -167,10 +167,10 @@ Administration > Reports > Link checker
 
 # Issues and Feedback
 
-Please raise any issues in github:
+Please raise any issues in GitHub:
 
 https://github.com/central-queensland-uni/moodle-tool_crawler/issues
 
-If you need anything urgently and would like to sponsor it's implemenation please
+If you need anything urgently and would like to sponsor it's implementation please
 email me: [Brendan Heywood](mailto:brendan@catalyst-au.net).
 
