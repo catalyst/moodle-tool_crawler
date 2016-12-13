@@ -151,6 +151,9 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
     $reports = array('queued', 'recent', 'broken', 'oversize');
 
     $coursereports = $navigation->get('coursereports');
+    if (!$coursereports) {
+        return; // Course reports submenu in "course administration" not available.
+    }
 
     $node = $coursereports->add(
         get_string('pluginname', 'tool_crawler'),
