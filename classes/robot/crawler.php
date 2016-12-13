@@ -737,16 +737,17 @@ class crawler {
             curl_close($s);
             return $result;
         }
+        // See http://stackoverflow.com/questions/9351694/setting-php-default-encoding-to-utf-8 for more.
+        unset($charset);
+        $contenttype = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
+        $ishtml = (strpos($contenttype, 'text/html') === 0); // Related to Issue #13.
+
         $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
         $headers = substr($raw, 0, $headersize);
         $header = strtok($headers, "\n");
         $result->httpmsg          = explode(" ", $header, 3)[2];
-        $result->contents         = substr($raw, $headersize);
+        $result->contents         = $ishtml ? substr($raw, $headersize) : '';
         $data = $result->contents;
-
-        // See http://stackoverflow.com/questions/9351694/setting-php-default-encoding-to-utf-8 for more.
-        unset($charset);
-        $contenttype = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
 
         /* 1: HTTP Content-Type: header */
         preg_match( '@([\w/+]+)(;\s*charset=(\S+))?@i', $contenttype, $matches );
