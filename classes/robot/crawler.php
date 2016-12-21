@@ -292,8 +292,12 @@ class crawler {
             $bad = 0;
             $excludes = str_replace("\r", '', self::get_config()->excludecourses);
             $excludes = explode("\n", $excludes);
-            if (count($excludes) > 0 && $excludes[0]) {
+            if (count($excludes) > 0) {
                 foreach ($excludes as $exclude) {
+                    $exclude = trim($exclude);
+                    if ($exclude == '') {
+                        continue;
+                    }
                     if (strpos($shortname, $exclude) !== false ) {
                         $bad = 1;
                         break;
