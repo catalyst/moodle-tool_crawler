@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_crawler\robot\crawler;
+
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
 
 /**
@@ -150,6 +152,39 @@ class tool_crawler_test extends advanced_testcase {
     public function test_param_retention_exists() {
         $param = get_config('tool_crawler', 'retentionperiod');
         $this->assertNotEmpty($param);
+    }
+
+    /** Regression test for Issue #17  */
+    public function test_reset_queries() {
+        global $DB;
+
+        $node = [
+            'url' => 'http://crawler.test/course/index.php',
+            'external' => 0,
+            'createdate' => strtotime("16-05-2016 10:00:00"),
+            'lastcrawled' => strtotime("16-05-2016 11:20:00"),
+            'needscrawl' => strtotime("17-05-2017 10:00:00"),
+            'httpcode' => 200,
+            'mimetype' => 'text/html',
+            'title' => 'Crawler Test',
+            'downloadduration' => 0.23,
+            'filesize' => 44003,
+            'redirect' => null,
+            'courseid' => 1,
+            'contextid' => 1,
+            'cmid' => null,
+            'ignoreduserid' => null,
+            'ignoredtime' => null,
+            'httpmsg' => 'OK'
+        ];
+        $nodeid = $DB->insert_record('tool_crawler_url', $node);
+
+        $crawler = new crawler();
+        $crawler->reset_for_recrawl($nodeid);
+
+        // Record should not exist anymore.
+        $found = $DB->record_exists('tool_crawler_url', ['id'=>$nodeid]);
+        self::assertFalse($found);
     }
 }
 
