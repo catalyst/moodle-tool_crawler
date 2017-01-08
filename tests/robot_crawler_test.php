@@ -183,7 +183,7 @@ class tool_crawler_test extends advanced_testcase {
         $crawler->reset_for_recrawl($nodeid);
 
         // Record should not exist anymore.
-        $found = $DB->record_exists('tool_crawler_url', ['id'=>$nodeid]);
+        $found = $DB->record_exists('tool_crawler_url', ['id' => $nodeid]);
         self::assertFalse($found);
     }
 }

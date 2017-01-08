@@ -24,6 +24,8 @@
 
 namespace tool_crawler\robot;
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot.'/admin/tool/crawler/lib.php');
 require_once($CFG->dirroot.'/admin/tool/crawler/extlib/simple_html_dom.php');
 require_once($CFG->dirroot.'/user/lib.php');

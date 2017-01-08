@@ -25,6 +25,8 @@
 
 namespace tool_crawler\form;
 
+defined('MOODLE_INTERNAL') || die();
+
 use html_writer;
 use moodleform;
 

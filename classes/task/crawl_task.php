@@ -25,6 +25,8 @@
 
 namespace tool_crawler\task;
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once("$CFG->dirroot/admin/tool/crawler/lib.php");
 
 /**
