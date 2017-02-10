@@ -407,8 +407,8 @@ class crawler {
         // What about 20x?
         return $DB->get_field_sql("
                 SELECT COUNT(*)
-                  FROM mdl_tool_crawler_url b
-                  JOIN mdl_tool_crawler_edge l ON l.b = b.id
+                  FROM {tool_crawler_url} b
+                  JOIN {tool_crawler_edge} l ON l.b = b.id
                  WHERE b.httpcode != '200'");
     }
 
