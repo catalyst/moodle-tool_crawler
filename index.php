@@ -24,7 +24,7 @@
 require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-require_login();
+require_login(null, false);
 require_capability('moodle/site:config', context_system::instance());
 admin_externalpage_setup('tool_crawler_status');
 

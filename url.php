@@ -25,7 +25,7 @@ require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once('locallib.php');
 
-require_login();
+require_login(null, false);
 $context = context_system::instance();
 require_capability('moodle/site:config', $context);
 
