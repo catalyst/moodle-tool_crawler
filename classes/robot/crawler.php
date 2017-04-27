@@ -143,10 +143,14 @@ class crawler {
 
         $parts = parse_url($base);
         $scheme = $parts['scheme'];
-        $path = $parts['path'];
+        if (isset($parts['path'])) {
+            $path = $parts['path'];
+        } else {
+            $path = '/';
+        }
         $host = $parts['host'];
 
-        if ($rel[0] == '/') {
+        if ($rel && $rel[0] == '/') {
             $abs = $host . $rel;
         } else {
 
