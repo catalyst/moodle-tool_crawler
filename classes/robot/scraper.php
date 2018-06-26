@@ -23,8 +23,6 @@
 
 namespace tool_crawler\robot;
 
-use stdClass;
-
 defined('MOODLE_INTERNAL') || die();
 
 class scraper {
@@ -96,33 +94,40 @@ class scraper {
     private function prepare_error_result($url, $curl) {
         global $CFG;
 
-        $result = new stdClass();
-        $result->url = $url;
-        $result->httpmsg = 'Curl Error: ' . curl_errno($curl);
-        $result->title = curl_error($curl);
-        $result->contents = '';
-        $result->httpcode = '500';
-        $result->filesize = curl_getinfo($curl, CURLINFO_SIZE_DOWNLOAD);
         $mimetype = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
         $mimetype = preg_replace('/;.*/', '', $mimetype);
-        $result->mimetype = $mimetype;
-        $result->lastcrawled = time();
-        $result->downloadduration = curl_getinfo($curl, CURLINFO_TOTAL_TIME);
         $final = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
+        $external = 0;
         if ($final != $url) {
-            $result->redirect = $final;
+            $redirect = $final;
             $mdlw = strlen($CFG->wwwroot);
             if (substr($final, 0, $mdlw) !== $CFG->wwwroot) {
-                $result->external = 1;
+                $external = 1;
             }
         } else {
-            $result->redirect = '';
+            $redirect = '';
         }
+
+        $result = (object)[
+            'url'              => $url,
+            'httpmsg'          => 'Curl Error: ' . curl_errno($curl),
+            'title'            => curl_error($curl),
+            'contents'         => '',
+            'httpcode'         => '500',
+            'filesize'         => curl_getinfo($curl, CURLINFO_SIZE_DOWNLOAD),
+            'mimetype'         => $mimetype,
+            'lastcrawled'      => time(),
+            'downloadduration' => curl_getinfo($curl, CURLINFO_TOTAL_TIME),
+            'redirect'         => $redirect,
+            'external'         => $external,
+        ];
 
         return $result;
     }
 
-    private function detect_charset($contenttype, $data) {
+    private function detect_charset($contenttype, $contents) {
+        $charset = null;
+
         /* 1: HTTP Content-Type: header */
         preg_match('@([\w/+]+)(;\s*charset=(\S+))?@i', $contenttype, $matches);
         if (isset($matches[3])) {
@@ -131,7 +136,7 @@ class scraper {
 
         /* 2: <meta> element in the page */
         if (!isset($charset)) {
-            preg_match('@<meta\s+http-equiv="Content-Type"\s+content="([\w/]+)(;\s*charset=([^\s"]+))?@i', $data, $matches);
+            preg_match('@<meta\s+http-equiv="Content-Type"\s+content="([\w/]+)(;\s*charset=([^\s"]+))?@i', $contents, $matches);
             if (isset($matches[3])) {
                 $charset = $matches[3];
             }
@@ -139,7 +144,7 @@ class scraper {
 
         /* 3: <xml> element in the page */
         if (!isset($charset)) {
-            preg_match('@<\?xml.+encoding="([^\s"]+)@si', $data, $matches);
+            preg_match('@<\?xml.+encoding="([^\s"]+)@si', $contents, $matches);
             if (isset($matches[1])) {
                 $charset = $matches[1];
             }
@@ -147,7 +152,7 @@ class scraper {
 
         /* 4: PHP's heuristic detection */
         if (!isset($charset)) {
-            $encoding = mb_detect_encoding($data);
+            $encoding = mb_detect_encoding($contents);
             if ($encoding) {
                 $charset = $encoding;
             }
@@ -159,54 +164,59 @@ class scraper {
                 $charset = "ISO 8859-1";
             }
         }
+
         return $charset;
     }
 
-    private function convert_to_utf8($contenttype, $data, $result) {
-        unset($charset);
-        $charset = $this->detect_charset($contenttype, $data);
+    private function convert_to_utf8($contenttype, $contents) {
+        $charset = $this->detect_charset($contenttype, $contents);
 
         /* Convert it if it is anything but UTF-8 */
         /* You can change "UTF-8"  to "UTF-8//IGNORE" to
            ignore conversion errors and still output something reasonable */
         if (isset($charset) && strtoupper($charset) != "UTF-8") {
-            $result->contents = iconv($charset, 'UTF-8', $result->contents);
+            $contents = iconv($charset, 'UTF-8', $contents);
         }
+
+        return $contents;
     }
 
     private function prepare_result($curl, $url, $raw) {
         global $CFG;
 
-        $result = (object)['url' => $url];
         $contenttype = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
         $ishtml = (strpos($contenttype, 'text/html') === 0); // Related to Issue #13.
 
         $headersize = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
         $headers = substr($raw, 0, $headersize);
         $header = strtok($headers, "\n");
-        $result->httpmsg = explode(" ", $header, 3)[2];
-        $result->contents = $ishtml ? substr($raw, $headersize) : '';
-        $data = $result->contents;
-        $this->convert_to_utf8($contenttype, $data, $result);
-
-        $result->httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        $result->filesize = curl_getinfo($curl, CURLINFO_SIZE_DOWNLOAD);
+        $contents = $ishtml ? substr($raw, $headersize) : '';
         $mimetype = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
         $mimetype = preg_replace('/;.*/', '', $mimetype);
-        $result->mimetype = $mimetype;
-        $result->lastcrawled = time();
-        $result->downloadduration = curl_getinfo($curl, CURLINFO_TOTAL_TIME);
-
         $final = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
+        $external = 0;
         if ($final != $url) {
-            $result->redirect = $final;
+            $redirect = $final;
             $mdlw = strlen($CFG->wwwroot);
             if (substr($final, 0, $mdlw) !== $CFG->wwwroot) {
-                $result->external = 1;
+                $external = 1;
             }
         } else {
-            $result->redirect = '';
+            $redirect = '';
         }
+
+        $result = (object)[
+            'url'              => $url,
+            'httpmsg'          => explode(" ", $header, 3)[2],
+            'contents'         => $this->convert_to_utf8($contenttype, $contents),
+            'httpcode'         => curl_getinfo($curl, CURLINFO_HTTP_CODE),
+            'filesize'         => curl_getinfo($curl, CURLINFO_SIZE_DOWNLOAD),
+            'mimetype'         => $mimetype,
+            'lastcrawled'      => time(),
+            'downloadduration' => curl_getinfo($curl, CURLINFO_TOTAL_TIME),
+            'redirect'         => $redirect,
+            'external'         => $external,
+        ];
 
         return $result;
     }
