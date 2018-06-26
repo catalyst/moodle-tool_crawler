@@ -1,54 +1,53 @@
 language: php
 
-notifications:
-  email:
-    recipients:
-    - brendan.heywood@gmail.com
-    - marcus@boon.mx
-
-sudo: false
-
 cache:
   directories:
     - $HOME/.composer/cache
+    - $HOME/.npm
 
 php:
- - 5.6
+  - 7.0
+
+sudo: required
+
+addons:
+  firefox: "35.0.1"
+  postgresql: "9.3"
+  apt:
+    packages:
+      - oracle-java8-installer
+      - oracle-java8-set-default
 
 env:
-  - DB=pgsql MOODLE_BRANCH=MOODLE_27_STABLE
-  - DB=pgsql MOODLE_BRANCH=MOODLE_28_STABLE
-  - DB=pgsql MOODLE_BRANCH=MOODLE_29_STABLE
-  - DB=pgsql MOODLE_BRANCH=MOODLE_30_STABLE
-  - DB=pgsql MOODLE_BRANCH=MOODLE_31_STABLE
-  - DB=pgsql MOODLE_BRANCH=master
-  - DB=mysqli MOODLE_BRANCH=MOODLE_27_STABLE
-  - DB=mysqli MOODLE_BRANCH=MOODLE_28_STABLE
-  - DB=mysqli MOODLE_BRANCH=MOODLE_29_STABLE
   - DB=mysqli MOODLE_BRANCH=MOODLE_30_STABLE
-  - DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE
-  - DB=mysqli MOODLE_BRANCH=master
+  - DB=pgsql MOODLE_BRANCH=MOODLE_31_STABLE
+  - DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE CI_PLUGIN=2
+  - DB=pgsql MOODLE_BRANCH=MOODLE_33_STABLE CI_PLUGIN=2
+  - DB=mysqli MOODLE_BRANCH=MOODLE_34_STABLE CI_PLUGIN=2
+  - DB=pgsql MOODLE_BRANCH=MOODLE_35_STABLE CI_PLUGIN=2
 
 matrix:
   include:
-    - php: 7.0
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_30_STABLE
-    - php: 7.0
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_31_STABLE
-    - php: 7.0
-      env: DB=pgsql MOODLE_BRANCH=master
-    - php: 7.0
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_30_STABLE
-    - php: 7.0
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE
-    - php: 7.0
-      env: DB=mysqli MOODLE_BRANCH=master
+    - php: 5.6
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_27_STABLE
+    - php: 5.6
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_28_STABLE
+    - php: 5.6
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_29_STABLE
+    - php: 7.1
+      env: DB=mysqli MOODLE_BRANCH=master CI_PLUGIN=2
 
 before_install:
+  - sudo hostname short-hostname
   - phpenv config-rm xdebug.ini
   - cd ../..
-  - composer selfupdate
-  - composer create-project -n --no-dev moodlerooms/moodle-plugin-ci ci ^1
+  - if [ "$CI_PLUGIN" = 2 ]; then
+      nvm install node;
+      nvm use 8.9;
+      composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2;
+    else
+      composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^1;
+    fi
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
 
 install:
@@ -57,11 +56,17 @@ install:
 script:
   - moodle-plugin-ci phplint
   - moodle-plugin-ci phpcpd
-# - moodle-plugin-ci phpmd
+  - moodle-plugin-ci phpmd
   - moodle-plugin-ci codechecker
-  - moodle-plugin-ci csslint
-  - moodle-plugin-ci shifter
-  - moodle-plugin-ci jshint
   - moodle-plugin-ci validate
+  - if [ "$CI_PLUGIN" = 2 ]; then
+      moodle-plugin-ci savepoints || travis_terminate 1;
+      moodle-plugin-ci mustache || travis_terminate 1;
+      moodle-plugin-ci grunt || travis_terminate 1;
+    else
+      moodle-plugin-ci csslint || travis_terminate 1;
+      moodle-plugin-ci jshint || travis_terminate 1;
+      moodle-plugin-ci shifter || travis_terminate 1;
+    fi
   - moodle-plugin-ci phpunit
   - moodle-plugin-ci behat
