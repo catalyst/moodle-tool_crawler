@@ -126,46 +126,37 @@ class scraper {
     }
 
     private function detect_charset($contenttype, $contents) {
-        $charset = null;
-
         /* 1: HTTP Content-Type: header */
         preg_match('@([\w/+]+)(;\s*charset=(\S+))?@i', $contenttype, $matches);
         if (isset($matches[3])) {
-            $charset = $matches[3];
+            return $matches[3];
         }
 
         /* 2: <meta> element in the page */
-        if (!isset($charset)) {
-            preg_match('@<meta\s+http-equiv="Content-Type"\s+content="([\w/]+)(;\s*charset=([^\s"]+))?@i', $contents, $matches);
-            if (isset($matches[3])) {
-                $charset = $matches[3];
-            }
+        preg_match('@<meta\s+http-equiv="Content-Type"\s+content="([\w/]+)(;\s*charset=([^\s"]+))?@i', $contents, $matches);
+        if (isset($matches[3])) {
+            return $matches[3];
         }
 
         /* 3: <xml> element in the page */
-        if (!isset($charset)) {
-            preg_match('@<\?xml.+encoding="([^\s"]+)@si', $contents, $matches);
-            if (isset($matches[1])) {
-                $charset = $matches[1];
-            }
+        preg_match('@<\?xml.+encoding="([^\s"]+)@si', $contents, $matches);
+        if (isset($matches[1])) {
+            return $matches[1];
         }
 
         /* 4: PHP's heuristic detection */
-        if (!isset($charset)) {
-            $encoding = mb_detect_encoding($contents);
-            if ($encoding) {
-                $charset = $encoding;
-            }
+        $encoding = mb_detect_encoding($contents);
+        if ($encoding) {
+            return $encoding;
         }
 
         // 5: Default for HTML.
-        if (!isset($charset)) {
-            if (strstr($contenttype, "text/html") === 0) {
-                $charset = "ISO 8859-1";
-            }
+        if (strstr($contenttype, "text/html") === 0) {
+            return "ISO 8859-1";
         }
 
-        return $charset;
+        // Could not detect, use HTML as default.
+        return "ISO 8859-1";
     }
 
     private function convert_to_utf8($contenttype, $contents) {
