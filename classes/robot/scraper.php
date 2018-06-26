@@ -23,6 +23,8 @@
 
 namespace tool_crawler\robot;
 
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 class scraper {
@@ -31,67 +33,96 @@ class scraper {
     }
 
     public function scrape($url) {
+        $result = null;
+
+        try {
+            $curl = $this->prepare_curl($url);
+            $raw = curl_exec($curl);
+
+            if (empty($raw)) {
+                $result = $this->prepare_error_result($url, $curl);
+            } else {
+                $result = $this->prepare_result($curl, $url, $raw);
+            }
+        } finally {
+            curl_close($curl);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Checks whether robot should authenticate or not.
+     * Bot should authenticate if URL it is crawling over is local URL
+     * And bot should not authenticate when crawling over external URLs.
+     *
+     * @param string $url
+     * @return boolean
+     */
+    public function should_be_authenticated($url) {
         global $CFG;
+        if (strpos($url, $CFG->wwwroot . '/') === 0 || $url === $CFG->wwwroot) {
+            return true;
+        }
+        return false;
+    }
+
+    private function prepare_curl($url) {
+        global $CFG;
+
         $cookiefilelocation = $CFG->dataroot . '/tool_crawler_cookies.txt';
 
-        $s = curl_init();
-        curl_setopt($s, CURLOPT_URL, $url);
-        curl_setopt($s, CURLOPT_TIMEOUT, self::get_config()->maxtime);
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_TIMEOUT, self::get_config()->maxtime);
         if ($this->should_be_authenticated($url)) {
-            curl_setopt($s, CURLOPT_USERPWD, self::get_config()->botusername . ':' . self::get_config()->botpassword);
+            curl_setopt($curl, CURLOPT_USERPWD, self::get_config()->botusername . ':' . self::get_config()->botpassword);
         }
-        curl_setopt($s, CURLOPT_USERAGENT,
+        curl_setopt($curl, CURLOPT_USERAGENT,
                     self::get_config()->useragent . '/' . self::get_config()->version . ' (' . $CFG->wwwroot . ')');
-        curl_setopt($s, CURLOPT_MAXREDIRS, 5);
-        curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($s, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($s, CURLOPT_FRESH_CONNECT, true);
-        curl_setopt($s, CURLOPT_HEADER, true);
-        curl_setopt($s, CURLOPT_COOKIEJAR, $cookiefilelocation);
-        curl_setopt($s, CURLOPT_COOKIEFILE, $cookiefilelocation);
-        curl_setopt($s, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($s, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($curl, CURLOPT_MAXREDIRS, 5);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($curl, CURLOPT_FRESH_CONNECT, true);
+        curl_setopt($curl, CURLOPT_HEADER, true);
+        curl_setopt($curl, CURLOPT_COOKIEJAR, $cookiefilelocation);
+        curl_setopt($curl, CURLOPT_COOKIEFILE, $cookiefilelocation);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
 
-        $result = (object)[];
+        return $curl;
+    }
+
+    private function prepare_error_result($url, $curl) {
+        global $CFG;
+
+        $result = new stdClass();
         $result->url = $url;
-        $raw = curl_exec($s);
-        if (empty($raw)) {
-            $result->url = $url;
-            $result->httpmsg = 'Curl Error: ' . curl_errno($s);
-            $result->title = curl_error($s);
-            $result->contents = '';
-            $result->httpcode = '500';
-            $result->filesize = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
-            $mimetype = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
-            $mimetype = preg_replace('/;.*/', '', $mimetype);
-            $result->mimetype = $mimetype;
-            $result->lastcrawled = time();
-            $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
-            $final = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
-            if ($final != $url) {
-                $result->redirect = $final;
-                $mdlw = strlen($CFG->wwwroot);
-                if (substr($final, 0, $mdlw) !== $CFG->wwwroot) {
-                    $result->external = 1;
-                }
-            } else {
-                $result->redirect = '';
+        $result->httpmsg = 'Curl Error: ' . curl_errno($curl);
+        $result->title = curl_error($curl);
+        $result->contents = '';
+        $result->httpcode = '500';
+        $result->filesize = curl_getinfo($curl, CURLINFO_SIZE_DOWNLOAD);
+        $mimetype = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
+        $mimetype = preg_replace('/;.*/', '', $mimetype);
+        $result->mimetype = $mimetype;
+        $result->lastcrawled = time();
+        $result->downloadduration = curl_getinfo($curl, CURLINFO_TOTAL_TIME);
+        $final = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
+        if ($final != $url) {
+            $result->redirect = $final;
+            $mdlw = strlen($CFG->wwwroot);
+            if (substr($final, 0, $mdlw) !== $CFG->wwwroot) {
+                $result->external = 1;
             }
-            curl_close($s);
-            return $result;
+        } else {
+            $result->redirect = '';
         }
-        // See http://stackoverflow.com/questions/9351694/setting-php-default-encoding-to-utf-8 for more.
-        unset($charset);
-        $contenttype = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
-        $ishtml = (strpos($contenttype, 'text/html') === 0); // Related to Issue #13.
 
-        $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
-        $headers = substr($raw, 0, $headersize);
-        $header = strtok($headers, "\n");
-        $result->httpmsg = explode(" ", $header, 3)[2];
-        $result->contents = $ishtml ? substr($raw, $headersize) : '';
-        $data = $result->contents;
+        return $result;
+    }
 
+    private function detect_charset($contenttype, $data) {
         /* 1: HTTP Content-Type: header */
         preg_match('@([\w/+]+)(;\s*charset=(\S+))?@i', $contenttype, $matches);
         if (isset($matches[3])) {
@@ -128,6 +159,12 @@ class scraper {
                 $charset = "ISO 8859-1";
             }
         }
+        return $charset;
+    }
+
+    private function convert_to_utf8($contenttype, $data, $result) {
+        unset($charset);
+        $charset = $this->detect_charset($contenttype, $data);
 
         /* Convert it if it is anything but UTF-8 */
         /* You can change "UTF-8"  to "UTF-8//IGNORE" to
@@ -135,15 +172,32 @@ class scraper {
         if (isset($charset) && strtoupper($charset) != "UTF-8") {
             $result->contents = iconv($charset, 'UTF-8', $result->contents);
         }
+    }
 
-        $result->httpcode = curl_getinfo($s, CURLINFO_HTTP_CODE);
-        $result->filesize = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
-        $mimetype = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
+    private function prepare_result($curl, $url, $raw) {
+        global $CFG;
+
+        $result = (object)['url' => $url];
+        $contenttype = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
+        $ishtml = (strpos($contenttype, 'text/html') === 0); // Related to Issue #13.
+
+        $headersize = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
+        $headers = substr($raw, 0, $headersize);
+        $header = strtok($headers, "\n");
+        $result->httpmsg = explode(" ", $header, 3)[2];
+        $result->contents = $ishtml ? substr($raw, $headersize) : '';
+        $data = $result->contents;
+        $this->convert_to_utf8($contenttype, $data, $result);
+
+        $result->httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $result->filesize = curl_getinfo($curl, CURLINFO_SIZE_DOWNLOAD);
+        $mimetype = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
         $mimetype = preg_replace('/;.*/', '', $mimetype);
         $result->mimetype = $mimetype;
         $result->lastcrawled = time();
-        $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
-        $final = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
+        $result->downloadduration = curl_getinfo($curl, CURLINFO_TOTAL_TIME);
+
+        $final = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
         if ($final != $url) {
             $result->redirect = $final;
             $mdlw = strlen($CFG->wwwroot);
@@ -154,23 +208,6 @@ class scraper {
             $result->redirect = '';
         }
 
-        curl_close($s);
         return $result;
-    }
-
-    /**
-     * Checks whether robot should authenticate or not.
-     * Bot should authenticate if URL it is crawling over is local URL
-     * And bot should not authenticate when crawling over external URLs.
-     *
-     * @param string $url
-     * @return boolean
-     */
-    public function should_be_authenticated($url) {
-        global $CFG;
-        if (strpos($url, $CFG->wwwroot . '/') === 0 || $url === $CFG->wwwroot) {
-            return true;
-        }
-        return false;
     }
 }
