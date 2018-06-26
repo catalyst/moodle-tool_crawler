@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
  * @copyright  2016 Suan Kan <suankan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class tool_crawler_robot_cleanup_testcase extends advanced_testcase {
+class tool_crawler_robot_cleanup_test extends advanced_testcase {
 
     /**
      * Prepare the config options for plugin which are used for robot_cleanup task logic
