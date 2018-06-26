@@ -113,40 +113,6 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
     }
 
     /**
-     * @return array of test cases
-     *
-     * Local and external URLs and their tricky combinations
-     */
-    public function should_auth_provider() {
-        return array(
-            array(false, 'http://my_moodle.com', 'http://evil.com/blah/http://my_moodle.com'),
-            array(false, 'http://my_moodle.com', 'http://my_moodle.com.actually.im.evil.com'),
-            array(true,  'http://my_moodle.com', 'http://my_moodle.com'),
-            array(true,  'http://my_moodle.com', 'http://my_moodle.com/whatever/file1.php'),
-            array(false, 'http://my_moodle.com/subdir', 'http://evil.com/blah/http://my_moodle.com/subdir'),
-            array(false, 'http://my_moodle.com/subdir', 'http://my_moodle.com/subdir.actually.im.evil.com'),
-            array(true,  'http://my_moodle.com/subdir', 'http://my_moodle.com/subdir'),
-            array(true,  'http://my_moodle.com/subdir', 'http://my_moodle.com/subdir/whatever/file1.php'),
-        );
-    }
-
-    /**
-     * @dataProvider should_auth_provider
-     *
-     * Tests method should_be_authenticated($url) of class \tool_crawler\robot\crawler()
-     *
-     * @param bool $expected
-     * @param string $myurl URL of current Moodle installation
-     * @param string $testurl URL where we should authenticate
-     */
-    public function test_should_be_authenticated($expected, $myurl, $testurl) {
-        global $CFG;
-        $CFG->wwwroot = $myurl;
-        $this->assertEquals((bool)$expected, $this->robot->should_be_authenticated($testurl));
-        $this->resetAfterTest(true);
-    }
-
-    /**
      * Tests existence of new plugin parameter 'retentionperiod'
      */
     public function test_param_retention_exists() {
@@ -187,5 +153,3 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
         self::assertFalse($found);
     }
 }
-
-
