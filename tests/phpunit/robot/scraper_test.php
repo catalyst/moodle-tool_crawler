@@ -14,21 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- *  Unit tests for link crawler robot
- *
- * @package    tool_crawler
- * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 use tool_crawler\robot\scraper;
 
-defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
+defined('MOODLE_INTERNAL') || die();
 
 /**
- *  Unit tests for link crawler robot
- *
  * @package    tool_crawler
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -52,20 +42,15 @@ class tool_crawler_robot_scraper_test extends advanced_testcase {
         ];
     }
 
-    /**
-     * @dataProvider should_auth_provider
-     *
-     * Tests method should_be_authenticated($url) of class \tool_crawler\robot\crawler()
-     *
-     * @param bool   $expected
-     * @param string $myurl   URL of current Moodle installation
-     * @param string $testurl URL where we should authenticate
-     */
+    /** @dataProvider should_auth_provider */
     public function test_should_be_authenticated($expected, $myurl, $testurl) {
         global $CFG;
-        $CFG->wwwroot = $myurl;
-        $scraper = new scraper();
-        $this->assertEquals((bool)$expected, $scraper->should_be_authenticated($testurl));
         $this->resetAfterTest(true);
+        $CFG->wwwroot = $myurl;
+
+        $scraper = new scraper();
+        $actual = $scraper->should_be_authenticated($testurl);
+
+        $this->assertSame($expected, $actual);
     }
 }
