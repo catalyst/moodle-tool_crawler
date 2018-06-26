@@ -26,10 +26,6 @@ namespace tool_crawler\robot;
 defined('MOODLE_INTERNAL') || die();
 
 class scraper {
-    private static function get_config() {
-        return crawler::get_config();
-    }
-
     public function scrape($url) {
         $result = null;
 
@@ -72,12 +68,12 @@ class scraper {
 
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_TIMEOUT, self::get_config()->maxtime);
+        curl_setopt($curl, CURLOPT_TIMEOUT, crawler::get_config()->maxtime);
         if ($this->should_be_authenticated($url)) {
-            curl_setopt($curl, CURLOPT_USERPWD, self::get_config()->botusername . ':' . self::get_config()->botpassword);
+            curl_setopt($curl, CURLOPT_USERPWD, crawler::get_config()->botusername . ':' . crawler::get_config()->botpassword);
         }
         curl_setopt($curl, CURLOPT_USERAGENT,
-                    self::get_config()->useragent . '/' . self::get_config()->version . ' (' . $CFG->wwwroot . ')');
+                    crawler::get_config()->useragent . '/' . crawler::get_config()->version . ' (' . $CFG->wwwroot . ')');
         curl_setopt($curl, CURLOPT_MAXREDIRS, 5);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
