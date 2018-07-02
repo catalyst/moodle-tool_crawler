@@ -122,4 +122,4 @@ $string['whenqueued'] = 'When queued';
 /*
  * Privacy provider (GDPR)
  */
-$string["privacy:no_data_reason"] = "The 'auth basic' plugins doesn't store any personnel data.";
+$string["privacy:no_data_reason"] = "The Basic authentication plugin does not store any personal data.";
