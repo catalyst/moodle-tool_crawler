@@ -131,6 +131,21 @@ useridlistid
                                                     new lang_string('excludecoursesdesc',   'tool_crawler'),
                                                     "" ));
 
+        $options = array(
+            0 => new lang_string('no'),
+            1 => new lang_string('yes'),
+        );
+        $settings->add(new admin_setting_configselect('tool_crawler/uselogs',
+                                                      new lang_string('uselogs',        'tool_crawler'),
+                                                      new lang_string('uselogsdesc',    'tool_crawler'),
+                                                      0,
+                                                      $options));
+
+        $settings->add(new admin_setting_configtext('tool_crawler/recentactivity',
+                                                    new lang_string('recentactivity',    'tool_crawler'),
+                                                    new lang_string('recentactivitydesc','tool_crawler'),
+                                                    '1' ));
+
         $settings->add(new admin_setting_configtext('tool_crawler/maxtime',
                                                     new lang_string('maxtime',           'tool_crawler'),
                                                     new lang_string('maxtimedesc',       'tool_crawler'),

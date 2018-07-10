@@ -58,7 +58,7 @@ $string['excludemdlparam'] = 'Exclude moodle url params\'s';
 $string['excludemdlparamdesc'] = 'One param key per line. Url\'s using this will still be crawled but with these params removed to avoid duplicates.';
 $string['excludemdlurl'] = 'Exclude moodle URL\'s';
 $string['excludemdlurldesc'] = 'One url regex per line, each is matched excluding the wwwroot';
-$string['excludecourses'] = 'Exclude courses\'s';
+$string['excludecourses'] = 'Exclude courses';
 $string['excludecoursesdesc'] = 'One course shortcode regex per line';
 $string['found'] = 'Found';
 $string['frompage'] = 'From page';
@@ -93,6 +93,14 @@ $string['pluginname'] = 'Link crawler robot';
 $string['queued'] = 'Queued URL\'s';
 $string['queued_header'] = '<p>The title and course are only known if the URL has been seen on a previous crawl.</p>';
 $string['recent'] = 'Recently crawled URL\'s';
+
+$robot = new \tool_crawler\robot\crawler();
+$days = $robot::get_config()->recentactivity;
+$count = count($robot->get_includedcourses());
+$string['recentactivitydesc'] = 'A course is crawled only if it has been viewed in the last X days.
+At '. $days . ' days of recent activity, this will include ' . $count . ' courses total.';
+
+$string['recentactivity'] = 'Days of recent activity';
 $string['recent_header'] = '';
 $string['response'] = 'Response';
 $string['retentionperiod'] = 'Retention period for bad URLs';
@@ -115,8 +123,11 @@ $string['url'] = 'URL';
 $string['urldetails'] = 'URL details';
 $string['urldetails_help'] = 'This shows all incoming and outgoing links for this URL.
 Links which have been blacklisted or which are in excluded DOM elements will not be shown.';
+$string['uselogs'] = 'Use log tables';
+$string['uselogsdesc'] = 'Use the table mdl_logstore_standard_log to only crawl links that are part of courses with recent activity. Setting to yes enables the recentactivity setting.';
 $string['useragent'] = 'Bot user agent string';
 $string['useragentdesc'] = 'The User agent string it use in the http headers + the version of this plugin';
 $string['whenqueued'] = 'When queued';
-
+$string['yes'] = 'Yes';
+$string['no'] = 'No';
 

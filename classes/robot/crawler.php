@@ -217,7 +217,7 @@ class crawler {
      *
      * @param string $baseurl
      * @param string $url relative url
-     * @return the node record or if the url is invalid returns false.
+     * @return mixed the node record or if the url is invalid returns false.
      */
     public function mark_for_crawl($baseurl, $url) {
 
@@ -271,7 +271,7 @@ class crawler {
         $url = $murl->raw_out();
 
         // Some special logic, if it looks like a course url or module url
-        // then avoid scraping the URL at all.
+        // then avoid scraping the URL at all, if it has been excluded.
         $shortname = '';
         if (preg_match('/\/course\/(info|view).php\?id=(\d+)/', $url , $matches) ) {
             $course = $DB->get_record('course', array('id' => $matches[2]));
@@ -323,8 +323,11 @@ class crawler {
             }
         }
 
+        // Find the current node in the queue.
         $node = $DB->get_record('tool_crawler_url', array('url' => $url) );
 
+        // Should also add the courseid from where we are if it doesnt exist in the url table.
+        // That is the courseid from the crawled link, not this newly found link.
         if (!$node) {
             // If not in the queue then add it.
             $node = (object) array();
@@ -334,10 +337,61 @@ class crawler {
             $node->needscrawl = time();
             $node->id = $DB->insert_record('tool_crawler_url', $node);
         } else if ( $node->needscrawl < self::get_config()->crawlstart ) {
+            // Push this node to the end of the queue.
             $node->needscrawl = time();
             $DB->update_record('tool_crawler_url', $node);
         }
         return $node;
+    }
+
+    /**
+     * Checks if url is a course or module url.
+     * Can find info about this url without curling it, extract straight from the database.
+     * Still need to find links on this page, in which case we need the html, so we need to curl anyway...
+     *
+     * @param string the url link to be check
+     * @return bool true if the url is a course or module url
+     */
+    public function url_is_course_or_module($url) {
+        global $DB;
+
+        // Some special logic, if it looks like a course url or module url
+        // then avoid scraping the URL at all.
+        $shortname = '';
+        if (preg_match('/\/course\/(info|view).php\?id=(\d+)/', $url, $matches)) {
+            $course = $DB->get_record('course', ['id' => $matches[2]]);
+            if ($course) {
+                $shortname = $course->shortname;
+            }
+        }
+        if (preg_match('/\/enrol\/index.php\?id=(\d+)/', $url, $matches)) {
+            $course = $DB->get_record('course', ['id' => $matches[1]]);
+            if ($course) {
+                $shortname = $course->shortname;
+            }
+        }
+        if (preg_match('/\/mod\/(\w+)\/(index|view).php\?id=(\d+)/', $url, $matches)) {
+            $cm = $DB->get_record_sql("
+                    SELECT cm.*,
+                           c.shortname
+                      FROM {course_modules} cm
+                      JOIN {course} c ON cm.course = c.id
+                     WHERE cm.id = ?", [$matches[3]]);
+            if ($cm) {
+                $shortname = $cm->shortname;
+            }
+        }
+        if (preg_match('/\/course\/(.*?)\//', $url, $matches)) {
+            $course = $DB->get_record('course', ['shortname' => $matches[1]]);
+            if ($course) {
+                $shortname = $course->shortname;
+            }
+        }
+        if ($shortname) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -456,15 +510,14 @@ class crawler {
 
         global $DB;
 
-        $nodes = $DB->get_records_sql('SELECT *
-                                         FROM {tool_crawler_url}
-                                        WHERE lastcrawled IS NULL
-                                           OR lastcrawled < needscrawl
-                                     ORDER BY needscrawl ASC, id ASC
-                                        LIMIT 1
-                                    ');
+        // Grab the first item from the queue.
+        $node = $DB->get_record_sql('SELECT *
+                                            FROM {tool_crawler_url}
+                                            WHERE lastcrawled IS NULL
+                                            OR lastcrawled < needscrawl
+                                            ORDER BY needscrawl ASC, id ASC
+                                            LIMIT 1');
 
-        $node = array_pop($nodes);
         if ($node) {
             $this->crawl($node, $verbose);
             return true;
@@ -490,6 +543,7 @@ class crawler {
         if ($verbose) {
             echo "Crawling $node->url ";
         }
+        // Scraping returns info about the url. Not info about the courseid and context, just the url itself.
         $result = $this->scrape($node->url);
         $result = (object) array_merge((array) $node, (array) $result);
 
@@ -505,6 +559,10 @@ class crawler {
                 if ($verbose) {
                     echo "html\n";
                 }
+
+                // Look for new links on this page from the html.
+                // Insert new links into tool_crawler_edge, and into tool_crawler_url table.
+                // Find the course, cm, and context of where we are for the main scraped url.
                 $this->parse_html($result, $result->external, $verbose);
             } else {
                 if ($verbose) {
@@ -535,7 +593,7 @@ class crawler {
             $result->title = utf8_decode($result->title);
         }
 
-        // Wait until we've finished processing the links before we save.
+        // Wait until we've finished processing the links before we save
         $DB->update_record('tool_crawler_url', $result);
 
     }
@@ -554,6 +612,8 @@ class crawler {
     private function parse_html($node, $external, $verbose = false) {
 
         global $CFG;
+        $config = self::get_config();
+
         $raw = $node->contents;
 
         // Strip out any data uri's - the parser doesn't like them.
@@ -575,6 +635,7 @@ class crawler {
         }
 
         // Everything after this is only for internal moodle pages.
+        // External is set when this link is crawled, in scrape();
         if ($external) {
             if ($verbose) {
                 echo " - External so stopping here.\n";
@@ -583,14 +644,77 @@ class crawler {
         }
 
         // Remove any chunks of DOM that we know to be safe and don't want to follow.
-        $excludes = explode("\n", self::get_config()->excludemdldom);
+        $excludes = explode("\n", $config->excludemdldom);
         foreach ($excludes as $exclude) {
             foreach ($html->find($exclude) as $e) {
                 $e->outertext = ' ';
             }
         }
 
+        // Need to query again for $courseidincluded.
+        if ($config->uselogs == 1) {
+            $courseidincluded = $this->get_includedcourses();
+        }
+
+        // Store some context about where we are, the crawled url.
+        foreach ($html->find('body') as $body) {
+            // Grabs the information from the classes in the html body section.
+            $classes = explode(" ", $body->class);
+
+            $hascourse = false;
+            foreach ($classes as $cl) {
+                if (substr($cl, 0, 7) == 'course-') {
+                    $node->courseid = intval(substr($cl, 7));
+
+                    if ($config->uselogs == 1) {
+                        // Don't continue if we get to a page not part of this specific course.
+                        if (!in_array($node->courseid, $courseidincluded)) {
+                            if ($verbose) {
+                                echo "Not the right course we want, stopping here. \n";
+                            }
+                            return $node;
+                        }
+                    }
+                    $hascourse = true;
+                }
+                if (substr($cl, 0, 8) == 'context-') {
+                    $node->contextid = intval(substr($cl, 8));
+                }
+                if (substr($cl, 0, 5) == 'cmid-') {
+                    $node->cmid = intval(substr($cl, 5));
+                }
+            }
+            if ($config->uselogs == 1) {
+                // If this page does not have a course specified in it's classes, don't parse the html.
+                if ($hascourse === false) {
+                    if ($verbose) {
+                        echo "No course specified in the html, stopping here. \n";
+                    }
+                    return $node;
+                }
+            }
+        }
+
+        // Do not parse html if this course has no recent activity.
+        if ($config->uselogs == 1) {
+
+            $recentcourse = $this->course_has_recent_activity($node->courseid);
+
+            // If this course has not been viewed recently, then don't continue on to parse the html.
+            if (!$recentcourse) {
+                return $node;
+            }
+        }
+
+        // Finds each link in the html and adds to database.
         $seen = array();
+
+        // check right here see what links this even finds.. doesnt seem like it finds them all, misses some!
+        $links = $html->find('a[href]');
+        $add = array();
+        foreach ($links as $link) {
+            array_push($add, $link->attr["href"]);
+        }
         foreach ($html->find('a[href]') as $e) {
             $href = $e->href;
             $href = htmlspecialchars_decode($href);
@@ -611,9 +735,9 @@ class crawler {
             $mdlw = strlen($CFG->wwwroot);
             $bad = 0;
             if (substr ($href, 0, $mdlw) === $CFG->wwwroot) {
-                $excludes = str_replace("\r", '', self::get_config()->excludemdlurl);
+                $excludes = str_replace("\r", '', $config->excludemdlurl);
             } else {
-                $excludes = str_replace("\r", '', self::get_config()->excludeexturl);
+                $excludes = str_replace("\r", '', $config->excludeexturl);
             }
             $excludes = explode("\n", $excludes);
             if (count($excludes) > 0 && $excludes[0]) {
@@ -640,29 +764,44 @@ class crawler {
             }
             $this->link_from_node_to_url($node, $href, $e->innertext, $idattr);
         }
-
-        // Store some context about where we are.
-        foreach ($html->find('body') as $body) {
-            $classes = explode(" ", $body->class);
-            foreach ($classes as $cl) {
-                if (substr($cl, 0, 7) == 'course-') {
-                    $node->courseid = intval(substr($cl, 7));
-                }
-                if (substr($cl, 0, 8) == 'context-') {
-                    $node->contextid = intval(substr($cl, 8));
-                }
-                if (substr($cl, 0, 5) == 'cmid-') {
-                    $node->cmid = intval(substr($cl, 5));
-                }
-            }
-        }
-
         return $node;
     }
 
+    /**
+     * Checks if a course has recent activity from the logs table mdl_logstore_standard_log
+     *
+     * @param int course id
+     * @return bool
+     */
+    private function course_has_recent_activity($courseid) {
+
+        global $DB;
+
+        $config = self::get_config();
+
+        $startingtime_recentactivity = strtotime("-$config->recentactivity days", time());
+
+        // Grab a log from this course if it has recent activity.
+        $recentcourse = $DB->get_record_sql("SELECT courseid
+                                            FROM {logstore_standard_log} log
+                                            WHERE log.timecreated > ?
+                                            AND courseid = ?
+                                            LIMIT 1
+                                            ", array($startingtime_recentactivity, $courseid));
+
+        if ($recentcourse) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+
 
     /**
-     * Upserts a link between two nodes in the url graph
+     * Upserts a link between two nodes in the url graph.
+     * Which crawled url's html did we parse to find this link.
      *
      * @param string $from from url
      * @param string $url current url
@@ -674,11 +813,13 @@ class crawler {
 
         global $DB;
 
+        // Add the node url to the queue.
         $to = $this->mark_for_crawl($from->url, $url);
         if ($to === false) {
             return false;
         }
 
+        // For this link, insert or update with the current time for last modified.
         $link = $DB->get_record('tool_crawler_edge', array('a' => $from->id, 'b' => $to->id));
         if (!$link) {
             $link          = new \stdClass();
@@ -711,7 +852,7 @@ class crawler {
 
         $s = curl_init();
         curl_setopt($s, CURLOPT_URL,             $url);
-        curl_setopt($s, CURLOPT_TIMEOUT,         self::get_config()->maxtime);
+        curl_setopt($s, CURLOPT_TIMEOUT, self::get_config()->maxtime);
         if ( $this->should_be_authenticated($url) ) {
             curl_setopt($s, CURLOPT_USERPWD,         self::get_config()->botusername.':'.self::get_config()->botpassword);
         }
@@ -729,6 +870,7 @@ class crawler {
 
         $result = (object) array();
         $result->url              = $url;
+
         $raw   = curl_exec($s);
         if (empty($raw)) {
             $result->url              = $url;
@@ -819,6 +961,7 @@ class crawler {
         $result->lastcrawled      = time();
         $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
         $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
+
         if ($final != $url) {
             $result->redirect = $final;
             $mdlw = strlen($CFG->wwwroot);
@@ -848,6 +991,28 @@ class crawler {
         }
         return false;
     }
+
+    /**
+     * Grabs the recent courses.
+     *
+     * @return array
+     */
+    public function get_includedcourses() {
+        global $DB;
+        $config = self::get_config();
+
+        $startingtime_recentactivity = strtotime("-$config->recentactivity days", time());
+
+        // Get entries from courses that have been crawled recently.
+        $courses = $DB->get_records_sql("SELECT DISTINCT log.courseid
+                                                 FROM {logstore_standard_log} log
+                                                WHERE log.timecreated > ?
+                                            ", [$startingtime_recentactivity]);
+
+        $courseidincluded = [];
+        foreach ($courses as $course) {
+            array_push($courseidincluded, $course->courseid);
+        }
+        return $courseidincluded;
+    }
 }
-
-
