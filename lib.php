@@ -36,99 +36,106 @@ function tool_crawler_crawl($verbose = false) {
 
     global $CFG, $DB;
 
-    while (1==1) {
-        $robot = new \tool_crawler\robot\crawler();
-        $config = $robot::get_config();
-        $crawlstart = $config->crawlstart;
-        $crawlend   = $config->crawlend;
+    $robot = new \tool_crawler\robot\crawler();
+    $config = $robot::get_config();
+    $crawlstart = $config->crawlstart;
+    $crawlend   = $config->crawlend;
 
-        // If we need to start a new crawl, add recently viewed course index pages to the queue.
-        if (!$crawlstart || $crawlstart <= $crawlend) {
-
-            $start = time();
-            set_config('crawlstart', $start, 'tool_crawler');
-
-            if ($config->uselogs == 1) {
-                $courseidincluded = $robot->get_includedcourses();
-
-                foreach ($courseidincluded as $courseid) {
-                    $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid);
-                }
-            } else {
-                $robot->mark_for_crawl($CFG->wwwroot.'/', $config->seedurl);
-            }
-
-            // Create a new history record.
-            $history = new stdClass();
-            $history->startcrawl = $start;
-            $history->urls = 0;
-            $history->links = 0;
-            $history->broken = 0;
-            $history->oversize = 0;
-            $history->cronticks = 0;
-            $history->id = $DB->insert_record('tool_crawler_history', $history);
-        } else {
-            $history = $DB->get_record('tool_crawler_history', array('startcrawl' => $crawlstart));
-        }
-
-        // Before beginning to process queue, add any new courses to the queue.
-        // If a course from recent activity is not in the url table, add it.
-        if ($config->uselogs == 1) {
-            $coursesinurltable = $DB->get_records_list('tool_crawler_url', 'courseid', $courseidincluded);
-
-            foreach ($courseidincluded as $courseid) {
-                if (!in_array($courseid, $coursesinurltable)) {
-                    $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid);
-                }
-            }
-        }
-
-        $cronstart = time();
-        $cronstop = $cronstart + $config->maxcrontime;
-
-        $hasmore = true;
-        $hastime = true;
-        while ($hasmore && $hastime) {
-
-            $hasmore = $robot->process_queue($verbose);
-            $hastime = time() < $cronstop;
-            set_config('crawltick', time(), 'tool_crawler');
-        }
-
-        // If the queue is empty then mark the crawl as ended.
-        if ($hastime) {
-            // Time left over, which means the queue is empty!
-            // Mark the crawl as ended.
-            $history->endcrawl = time();
-            set_config('crawlend', time(), 'tool_crawler');
-        }
-
-        $history->urls = $robot->get_processed();
-        $history->links = $robot->get_num_links();
-        $history->broken = $robot->get_num_broken_urls();
-        $history->oversize = $robot->get_num_oversize();
-        $history->cronticks++;
-
-        $DB->update_record('tool_crawler_history', $history);
-
-        // Write the total never crawled number to a file after each run to track the performance of the crawler.
-        $my_file = '/home/kristianringer/Documents/CQUHE/limittorecentcourses.csv';
-
-        // Append the next crawl to the end of that file.
-        $handle = fopen($my_file, 'a') or die('Cannot append file:  '.$my_file);
-
-        // Write
-        $totalqueuesize = $DB->get_records_sql(
-            'SELECT count(*)
-                                FROM {tool_crawler_url}
-                                WHERE lastcrawled IS NULL');
-        $totalqueuesize = array_pop($totalqueuesize);
-
-        fwrite($handle, $totalqueuesize->count . "\n");
-
-        // Close
-        fclose($handle);
+    if ($config->uselogs == 1) {
+        $recentcourses = $robot->get_recentcourses();
     }
+
+    // If we need to start a new crawl, add new items to the queue.
+    if (!$crawlstart || $crawlstart <= $crawlend) {
+
+        $start = time();
+        set_config('crawlstart', $start, 'tool_crawler');
+
+        if ($config->uselogs == 1) {
+            foreach ($recentcourses as $courseid) {
+                $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid);
+            }
+        } else {
+            $robot->mark_for_crawl($CFG->wwwroot.'/', $config->seedurl);
+        }
+        // Create a new history record.
+        $history = new stdClass();
+        $history->startcrawl = $start;
+        $history->urls = 0;
+        $history->links = 0;
+        $history->broken = 0;
+        $history->oversize = 0;
+        $history->cronticks = 0;
+        $history->id = $DB->insert_record('tool_crawler_history', $history);
+    } else {
+        $history = $DB->get_record('tool_crawler_history', array('startcrawl' => $crawlstart));
+    }
+
+    // Before beginning to process queue, add any new courses to the queue.
+    if ($config->uselogs == 1) {
+
+        $coursesinurltableobject = $DB->get_records_list('tool_crawler_url', 'courseid', $recentcourses, '', 'DISTINCT courseid');
+
+        $coursesinurltable = [];
+        foreach ($coursesinurltableobject as $course) {
+            array_push($coursesinurltable, $course->courseid);
+        }
+
+        foreach ($recentcourses as $courseid) {
+
+            // If a course from recent activity is not in the queue, add it.
+            if (!in_array($courseid, $coursesinurltable)) {
+                $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid);
+            }
+        }
+    }
+
+    $cronstart = time();
+    $cronstop = $cronstart + $config->maxcrontime;
+
+    $hasmore = true;
+    $hastime = true;
+    while ($hasmore && $hastime) {
+
+        $hasmore = $robot->process_queue($verbose);
+        $hastime = time() < $cronstop;
+        set_config('crawltick', time(), 'tool_crawler');
+    }
+
+    // If the queue is empty then mark the crawl as ended.
+    if ($hastime) {
+        // Time left over, which means the queue is empty!
+        // Mark the crawl as ended.
+        $history->endcrawl = time();
+        set_config('crawlend', time(), 'tool_crawler');
+    }
+
+    $history->urls = $robot->get_processed();
+    $history->links = $robot->get_num_links();
+    $history->broken = $robot->get_num_broken_urls();
+    $history->oversize = $robot->get_num_oversize();
+    $history->cronticks++;
+
+    $DB->update_record('tool_crawler_history', $history);
+
+    // Write the total never crawled number to a file after each run to track the performance of the crawler.
+    $my_file = '/home/kristianringer/Documents/CQUHE/july25.csv';
+
+    // Append the next crawl to the end of that file.
+    $handle = fopen($my_file, 'a') or die('Cannot append file:  '.$my_file);
+
+    // Write
+    $totalqueuesize = $DB->get_records_sql(
+        'SELECT count(*)
+                            FROM {tool_crawler_url}
+                            WHERE lastcrawled IS NULL');
+    $totalqueuesize = array_pop($totalqueuesize);
+
+    fwrite($handle, $totalqueuesize->count . "\n");
+
+    // Close
+    fclose($handle);
+
 }
 
 /**

@@ -96,7 +96,7 @@ $string['recent'] = 'Recently crawled URL\'s';
 
 $robot = new \tool_crawler\robot\crawler();
 $days = $robot::get_config()->recentactivity;
-$count = count($robot->get_includedcourses());
+$count = count($robot->get_recentcourses());
 $string['recentactivitydesc'] = 'A course is crawled only if it has been viewed in the last X days.
 At '. $days . ' days of recent activity, this will include ' . $count . ' courses total.';
 

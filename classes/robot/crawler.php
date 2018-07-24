@@ -213,6 +213,71 @@ class crawler {
     }
 
     /**
+     * Checks if url is a course or module url.
+     * Can find info about this url without curling it, extract straight from the database.
+     * Still need to find links on this page, in which case we need the html, so we need to curl anyway...
+     *
+     * @param string the url link to be check
+     * @return bool true if the url is a course or module url
+     */
+    public function url_is_course_or_module($url) {
+        global $DB;
+
+        // Some special logic, if it looks like a course url or module url
+        // then avoid scraping the URL at all.
+        $shortname = '';
+        if (preg_match('/\/course\/(info|view).php\?id=(\d+)/', $url, $matches)) {
+            $course = $DB->get_record('course', ['id' => $matches[2]]);
+            if ($course) {
+                $shortname = $course->shortname;
+            }
+        }
+        if (preg_match('/\/enrol\/index.php\?id=(\d+)/', $url, $matches)) {
+            $course = $DB->get_record('course', ['id' => $matches[1]]);
+            if ($course) {
+                $shortname = $course->shortname;
+            }
+        }
+        if (preg_match('/\/mod\/(\w+)\/(index|view).php\?id=(\d+)/', $url, $matches)) {
+            $cm = $DB->get_record_sql("
+                    SELECT cm.*,
+                           c.shortname
+                      FROM {course_modules} cm
+                      JOIN {course} c ON cm.course = c.id
+                     WHERE cm.id = ?", [$matches[3]]);
+            if ($cm) {
+                $shortname = $cm->shortname;
+            }
+        }
+        if (preg_match('/\/course\/(.*?)\//', $url, $matches)) {
+            $course = $DB->get_record('course', ['shortname' => $matches[1]]);
+            if ($course) {
+                $shortname = $course->shortname;
+            }
+        }
+        if ($shortname) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Many urls are in the queue now (more will probably be added)
+     *
+     * @return size of queue
+     */
+    public function get_queue_size() {
+        global $DB;
+
+        return $DB->get_field_sql("
+                SELECT COUNT(*)
+                  FROM {tool_crawler_url}
+                 WHERE lastcrawled IS NULL
+                    OR lastcrawled < needscrawl");
+    }
+
+    /**
      * Adds a url to the queue for crawling
      *
      * @param string $baseurl
@@ -230,7 +295,7 @@ class crawler {
         if (array_key_exists('scheme', $bits)
             && $bits['scheme'] != 'http'
             && $bits['scheme'] != 'https'
-            ) {
+        ) {
             return false;
         }
 
@@ -345,71 +410,6 @@ class crawler {
     }
 
     /**
-     * Checks if url is a course or module url.
-     * Can find info about this url without curling it, extract straight from the database.
-     * Still need to find links on this page, in which case we need the html, so we need to curl anyway...
-     *
-     * @param string the url link to be check
-     * @return bool true if the url is a course or module url
-     */
-    public function url_is_course_or_module($url) {
-        global $DB;
-
-        // Some special logic, if it looks like a course url or module url
-        // then avoid scraping the URL at all.
-        $shortname = '';
-        if (preg_match('/\/course\/(info|view).php\?id=(\d+)/', $url, $matches)) {
-            $course = $DB->get_record('course', ['id' => $matches[2]]);
-            if ($course) {
-                $shortname = $course->shortname;
-            }
-        }
-        if (preg_match('/\/enrol\/index.php\?id=(\d+)/', $url, $matches)) {
-            $course = $DB->get_record('course', ['id' => $matches[1]]);
-            if ($course) {
-                $shortname = $course->shortname;
-            }
-        }
-        if (preg_match('/\/mod\/(\w+)\/(index|view).php\?id=(\d+)/', $url, $matches)) {
-            $cm = $DB->get_record_sql("
-                    SELECT cm.*,
-                           c.shortname
-                      FROM {course_modules} cm
-                      JOIN {course} c ON cm.course = c.id
-                     WHERE cm.id = ?", [$matches[3]]);
-            if ($cm) {
-                $shortname = $cm->shortname;
-            }
-        }
-        if (preg_match('/\/course\/(.*?)\//', $url, $matches)) {
-            $course = $DB->get_record('course', ['shortname' => $matches[1]]);
-            if ($course) {
-                $shortname = $course->shortname;
-            }
-        }
-        if ($shortname) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Many urls are in the queue now (more will probably be added)
-     *
-     * @return size of queue
-     */
-    public function get_queue_size() {
-        global $DB;
-
-        return $DB->get_field_sql("
-                SELECT COUNT(*)
-                  FROM {tool_crawler_url}
-                 WHERE lastcrawled IS NULL
-                    OR lastcrawled < needscrawl");
-    }
-
-    /**
      * How many urls have been processed off the queue
      *
      * @return size of processes list
@@ -509,16 +509,51 @@ class crawler {
     public function process_queue($verbose = false) {
 
         global $DB;
+        $config = $this::get_config();
 
-        // Grab the first item from the queue.
-        $node = $DB->get_record_sql('SELECT *
-                                            FROM {tool_crawler_url}
-                                            WHERE lastcrawled IS NULL
-                                            OR lastcrawled < needscrawl
-                                            ORDER BY needscrawl ASC, id ASC
-                                            LIMIT 1');
+        if ($config->uselogs == 1) {
+            $recentcourses = $this->get_recentcourses();
+        }
 
-        if ($node) {
+        // Iterate through the queue until we find an item that is a recent course, or the time runs out.
+        $cronstart = time();
+        $cronstop = $cronstart + $config->maxcrontime;
+        $hasmore = true;
+        $hastime = true;
+        while ($hasmore && $hastime) {
+            // Grab the first item from the queue.
+            $node = $DB->get_record_sql('SELECT *
+                                         FROM {tool_crawler_url}
+                                        WHERE lastcrawled IS NULL
+                                           OR lastcrawled < needscrawl
+                                     ORDER BY needscrawl ASC, id ASC
+                                        LIMIT 1
+                                    ');
+
+            if ($config->uselogs == 1) {
+
+                // If the course id is not in recent courses, skip it and grab the next queue item.
+                if (isset($node->courseid)) {
+
+                    // Put this queue item to the end of the queue, so we don't come across it every time.
+                    if (!in_array($node->courseid, $recentcourses)) {
+                        $node->needscrawl = time();
+                        $DB->update_record('tool_crawler_url', $node);
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+
+            $hastime = time() < $cronstop;
+            set_config('crawltick', time(), 'tool_crawler');
+        }
+
+        if (isset($node) && $node !== false) {
             $this->crawl($node, $verbose);
             return true;
         }
@@ -651,9 +686,9 @@ class crawler {
             }
         }
 
-        // Need to query again for $courseidincluded.
+        // Need to query again for $recentcourses.
         if ($config->uselogs == 1) {
-            $courseidincluded = $this->get_includedcourses();
+            $recentcourses = $this->get_recentcourses();
         }
 
         // Store some context about where we are, the crawled url.
@@ -668,7 +703,7 @@ class crawler {
 
                     if ($config->uselogs == 1) {
                         // Don't continue if we get to a page not part of this specific course.
-                        if (!in_array($node->courseid, $courseidincluded)) {
+                        if (!in_array($node->courseid, $recentcourses)) {
                             if ($verbose) {
                                 echo "Not the right course we want, stopping here. \n";
                             }
@@ -775,6 +810,8 @@ class crawler {
      */
     private function course_has_recent_activity($courseid) {
 
+
+        // refactor this to use recentcourses query.
         global $DB;
 
         $config = self::get_config();
@@ -997,22 +1034,26 @@ class crawler {
      *
      * @return array
      */
-    public function get_includedcourses() {
+    public function get_recentcourses() {
         global $DB;
         $config = self::get_config();
 
         $startingtime_recentactivity = strtotime("-$config->recentactivity days", time());
 
         // Get entries from courses that have been crawled recently.
+        // CHANGE USER ID to 19156 production link checker userid.
         $courses = $DB->get_records_sql("SELECT DISTINCT log.courseid
                                                  FROM {logstore_standard_log} log
-                                                WHERE log.timecreated > ?
-                                            ", [$startingtime_recentactivity]);
+                                                WHERE log.timecreated > :startingtime
+                                                AND target = 'course'
+                                                AND userid <> '67357'
+                                                AND courseid <> 1
+                                            ", array('startingtime' => $startingtime_recentactivity));
 
-        $courseidincluded = [];
+        $recentcourses = [];
         foreach ($courses as $course) {
-            array_push($courseidincluded, $course->courseid);
+            array_push($recentcourses, $course->courseid);
         }
-        return $courseidincluded;
+        return $recentcourses;
     }
 }
