@@ -117,25 +117,6 @@ function tool_crawler_crawl($verbose = false) {
     $history->cronticks++;
 
     $DB->update_record('tool_crawler_history', $history);
-
-    // Write the total never crawled number to a file after each run to track the performance of the crawler.
-    $my_file = '/home/kristianringer/Documents/CQUHE/july25.csv';
-
-    // Append the next crawl to the end of that file.
-    $handle = fopen($my_file, 'a') or die('Cannot append file:  '.$my_file);
-
-    // Write
-    $totalqueuesize = $DB->get_records_sql(
-        'SELECT count(*)
-                            FROM {tool_crawler_url}
-                            WHERE lastcrawled IS NULL');
-    $totalqueuesize = array_pop($totalqueuesize);
-
-    fwrite($handle, $totalqueuesize->count . "\n");
-
-    // Close
-    fclose($handle);
-
 }
 
 /**

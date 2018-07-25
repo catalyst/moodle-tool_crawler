@@ -50,7 +50,8 @@ class crawler {
             'crawlstart' => 0,
             'crawlend' => 0,
             'crawltick' => 0,
-            'retentionperiod' => 86400 // 1 week.
+            'retentionperiod' => 86400, // 1 week.
+            'recentactivity' => 1
         );
         $config = (object) array_merge( $defaults, (array) get_config('tool_crawler') );
         return $config;
@@ -702,10 +703,10 @@ class crawler {
                     $node->courseid = intval(substr($cl, 7));
 
                     if ($config->uselogs == 1) {
-                        // Don't continue if we get to a page not part of this specific course.
+                        // If this course has not been viewed recently, then don't continue on to parse the html.
                         if (!in_array($node->courseid, $recentcourses)) {
                             if ($verbose) {
-                                echo "Not the right course we want, stopping here. \n";
+                                echo "Course with id " . $node->courseid . " has not been viewed recenty, skipping. \n";
                             }
                             return $node;
                         }
@@ -727,17 +728,6 @@ class crawler {
                     }
                     return $node;
                 }
-            }
-        }
-
-        // Do not parse html if this course has no recent activity.
-        if ($config->uselogs == 1) {
-
-            $recentcourse = $this->course_has_recent_activity($node->courseid);
-
-            // If this course has not been viewed recently, then don't continue on to parse the html.
-            if (!$recentcourse) {
-                return $node;
             }
         }
 
@@ -801,40 +791,6 @@ class crawler {
         }
         return $node;
     }
-
-    /**
-     * Checks if a course has recent activity from the logs table mdl_logstore_standard_log
-     *
-     * @param int course id
-     * @return bool
-     */
-    private function course_has_recent_activity($courseid) {
-
-
-        // refactor this to use recentcourses query.
-        global $DB;
-
-        $config = self::get_config();
-
-        $startingtime_recentactivity = strtotime("-$config->recentactivity days", time());
-
-        // Grab a log from this course if it has recent activity.
-        $recentcourse = $DB->get_record_sql("SELECT courseid
-                                            FROM {logstore_standard_log} log
-                                            WHERE log.timecreated > ?
-                                            AND courseid = ?
-                                            LIMIT 1
-                                            ", array($startingtime_recentactivity, $courseid));
-
-        if ($recentcourse) {
-            return true;
-        } else {
-            return false;
-        }
-
-    }
-
-
 
     /**
      * Upserts a link between two nodes in the url graph.
@@ -1041,12 +997,11 @@ class crawler {
         $startingtime_recentactivity = strtotime("-$config->recentactivity days", time());
 
         // Get entries from courses that have been crawled recently.
-        // CHANGE USER ID to 19156 production link checker userid.
         $courses = $DB->get_records_sql("SELECT DISTINCT log.courseid
                                                  FROM {logstore_standard_log} log
                                                 WHERE log.timecreated > :startingtime
                                                 AND target = 'course'
-                                                AND userid <> '67357'
+                                                AND userid <> '19156'
                                                 AND courseid <> 1
                                             ", array('startingtime' => $startingtime_recentactivity));
 
