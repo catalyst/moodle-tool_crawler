@@ -283,9 +283,10 @@ class crawler {
      *
      * @param string $baseurl
      * @param string $url relative url
+     * @param int the course id if it is known.
      * @return mixed the node record or if the url is invalid returns false.
      */
-    public function mark_for_crawl($baseurl, $url) {
+    public function mark_for_crawl($baseurl, $url, $courseid = null) {
 
         global $DB, $CFG;
 
@@ -392,8 +393,6 @@ class crawler {
         // Find the current node in the queue.
         $node = $DB->get_record('tool_crawler_url', array('url' => $url) );
 
-        // Should also add the courseid from where we are if it doesnt exist in the url table.
-        // That is the courseid from the crawled link, not this newly found link.
         if (!$node) {
             // If not in the queue then add it.
             $node = (object) array();
@@ -401,10 +400,20 @@ class crawler {
             $node->url        = $url;
             $node->external   = strpos($url, $CFG->wwwroot) === 0 ? 0 : 1;
             $node->needscrawl = time();
+
+            if (isset($courseid)) {
+                $node->courseid = $courseid;
+            }
+
             $node->id = $DB->insert_record('tool_crawler_url', $node);
         } else if ( $node->needscrawl < self::get_config()->crawlstart ) {
             // Push this node to the end of the queue.
             $node->needscrawl = time();
+
+            if (isset($courseid)) {
+                $node->courseid = $courseid;
+            }
+
             $DB->update_record('tool_crawler_url', $node);
         }
         return $node;

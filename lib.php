@@ -53,7 +53,7 @@ function tool_crawler_crawl($verbose = false) {
 
         if ($config->uselogs == 1) {
             foreach ($recentcourses as $courseid) {
-                $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid);
+                $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
             }
         } else {
             $robot->mark_for_crawl($CFG->wwwroot.'/', $config->seedurl);
@@ -85,7 +85,7 @@ function tool_crawler_crawl($verbose = false) {
 
             // If a course from recent activity is not in the queue, add it.
             if (!in_array($courseid, $coursesinurltable)) {
-                $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid);
+                $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
             }
         }
     }
