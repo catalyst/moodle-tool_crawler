@@ -629,7 +629,7 @@ class crawler {
             $result->title = utf8_decode($result->title);
         }
 
-        // Wait until we've finished processing the links before we save
+        // Wait until we've finished processing the links before we save.
         $DB->update_record('tool_crawler_url', $result);
 
     }
@@ -671,7 +671,7 @@ class crawler {
         }
 
         // Everything after this is only for internal moodle pages.
-        // External is set when this link is crawled, in scrape();
+        // External is set when this link is crawled, in scrape().
         if ($external) {
             if ($verbose) {
                 echo " - External so stopping here.\n";
@@ -734,7 +734,6 @@ class crawler {
         // Finds each link in the html and adds to database.
         $seen = array();
 
-        // check right here see what links this even finds.. doesnt seem like it finds them all, misses some!
         $links = $html->find('a[href]');
         $add = array();
         foreach ($links as $link) {
@@ -994,16 +993,15 @@ class crawler {
         global $DB;
         $config = self::get_config();
 
-        $startingtime_recentactivity = strtotime("-$config->recentactivity days", time());
+        $startingtimerecentactivity = strtotime("-$config->recentactivity days", time());
 
-        // Get entries from courses that have been crawled recently.
         $courses = $DB->get_records_sql("SELECT DISTINCT log.courseid
                                                  FROM {logstore_standard_log} log
                                                 WHERE log.timecreated > :startingtime
                                                 AND target = 'course'
                                                 AND userid <> '19156'
                                                 AND courseid <> 1
-                                            ", array('startingtime' => $startingtime_recentactivity));
+                                            ", array('startingtime' => $startingtimerecentactivity));
 
         $recentcourses = [];
         foreach ($courses as $course) {

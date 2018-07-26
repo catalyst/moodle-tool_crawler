@@ -93,13 +93,8 @@ $string['pluginname'] = 'Link crawler robot';
 $string['queued'] = 'Queued URL\'s';
 $string['queued_header'] = '<p>The title and course are only known if the URL has been seen on a previous crawl.</p>';
 $string['recent'] = 'Recently crawled URL\'s';
-
-$robot = new \tool_crawler\robot\crawler();
-$days = $robot::get_config()->recentactivity;
-$count = count($robot->get_recentcourses());
 $string['recentactivitydesc'] = 'A course is crawled only if it has been viewed in the last X days.
-At '. $days . ' days of recent activity, this will include ' . $count . ' courses total.';
-
+At ' . '{$a->days}' . ' day(s) of recent activity, this will include ' . '{$a->count}' . ' courses total.';
 $string['recentactivity'] = 'Days of recent activity';
 $string['recent_header'] = '';
 $string['response'] = 'Response';
