@@ -674,9 +674,15 @@ class crawler {
             return;
         }
 
-        $node->title = $html->find('title', 0)->plaintext;
-        if ($verbose) {
-            echo " - Found title of: '$node->title'\n";
+        if (isset($html->find('title', 0)->plaintext)) {
+            $node->title = $html->find('title', 0)->plaintext;
+            if ($verbose) {
+                echo " - Found title of: '$node->title'\n";
+            }
+        } else {
+            if ($verbose) {
+                echo "Did not find a title.  \n";
+            }
         }
 
         // Everything after this is only for internal moodle pages.
