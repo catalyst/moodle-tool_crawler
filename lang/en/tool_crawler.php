@@ -80,6 +80,7 @@ $string['mimetype'] = 'Mime type';
 $string['missing'] = 'Missing';
 $string['neverfinished'] = 'Never finished';
 $string['neverrun'] = 'Never run';
+$string['no'] = 'No';
 $string['notyetknown'] = 'Not yet known';
 $string['numberurlsfound'] = 'Found {$a->reports_number} {$a->repoprt_type}  URLs';
 $string['numlinks'] = 'Total links';
@@ -93,9 +94,9 @@ $string['pluginname'] = 'Link crawler robot';
 $string['queued'] = 'Queued URL\'s';
 $string['queued_header'] = '<p>The title and course are only known if the URL has been seen on a previous crawl.</p>';
 $string['recent'] = 'Recently crawled URL\'s';
+$string['recentactivity'] = 'Days of recent activity';
 $string['recentactivitydesc'] = 'A course is crawled only if it has been viewed in the last X days.
 At ' . '{$a->days}' . ' day(s) of recent activity, this will include ' . '{$a->count}' . ' courses total.';
-$string['recentactivity'] = 'Days of recent activity';
 $string['recent_header'] = '';
 $string['response'] = 'Response';
 $string['retentionperiod'] = 'Retention period for bad URLs';
@@ -124,5 +125,4 @@ $string['useragent'] = 'Bot user agent string';
 $string['useragentdesc'] = 'The User agent string it use in the http headers + the version of this plugin';
 $string['whenqueued'] = 'When queued';
 $string['yes'] = 'Yes';
-$string['no'] = 'No';
 

@@ -594,16 +594,6 @@ class simple_html_dom_node
                 continue;
             }
 
-            $one = 1;
-            if (isset($node->attr["href"])) {
-                $one = $node->attr["href"];
-            }
-
-
-            if ($one == "http://cqu.local/mod/page/view.php?id=547888") {
-                $true = true;
-            }
-
             // compare tag
             if ($tag && $tag!=$node->tag && $tag!=='*') {$pass=false;}
             // compare key

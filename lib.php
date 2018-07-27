@@ -93,6 +93,8 @@ function tool_crawler_crawl($verbose = false) {
     $cronstart = time();
     $cronstop = $cronstart + $config->maxcrontime;
 
+    // While we are not exceeding the maxcron time, and the queue is not empty
+    // find the next url in the queue and crawl it.
     $hasmore = true;
     $hastime = true;
     while ($hasmore && $hastime) {
@@ -109,7 +111,6 @@ function tool_crawler_crawl($verbose = false) {
         $history->endcrawl = time();
         set_config('crawlend', time(), 'tool_crawler');
     }
-
     $history->urls = $robot->get_processed();
     $history->links = $robot->get_num_links();
     $history->broken = $robot->get_num_broken_urls();

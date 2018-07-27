@@ -146,7 +146,8 @@ useridlistid
         $count = count($robot->get_recentcourses());
         $settings->add(new admin_setting_configtext('tool_crawler/recentactivity',
                                                     new lang_string('recentactivity',    'tool_crawler'),
-                                                    get_string('recentactivitydesc', 'tool_crawler', ['days' => $days, 'count' => $count]),
+                                                    get_string('recentactivitydesc', 'tool_crawler',
+                                                    ['days' => $days, 'count' => $count]),
                                                     '1'));
 
         $settings->add(new admin_setting_configtext('tool_crawler/maxtime',

@@ -214,56 +214,6 @@ class crawler {
     }
 
     /**
-     * Checks if url is a course or module url.
-     * Can find info about this url without curling it, extract straight from the database.
-     * Still need to find links on this page, in which case we need the html, so we need to curl anyway...
-     *
-     * @param string the url link to be check
-     * @return bool true if the url is a course or module url
-     */
-    public function url_is_course_or_module($url) {
-        global $DB;
-
-        // Some special logic, if it looks like a course url or module url
-        // then avoid scraping the URL at all.
-        $shortname = '';
-        if (preg_match('/\/course\/(info|view).php\?id=(\d+)/', $url, $matches)) {
-            $course = $DB->get_record('course', ['id' => $matches[2]]);
-            if ($course) {
-                $shortname = $course->shortname;
-            }
-        }
-        if (preg_match('/\/enrol\/index.php\?id=(\d+)/', $url, $matches)) {
-            $course = $DB->get_record('course', ['id' => $matches[1]]);
-            if ($course) {
-                $shortname = $course->shortname;
-            }
-        }
-        if (preg_match('/\/mod\/(\w+)\/(index|view).php\?id=(\d+)/', $url, $matches)) {
-            $cm = $DB->get_record_sql("
-                    SELECT cm.*,
-                           c.shortname
-                      FROM {course_modules} cm
-                      JOIN {course} c ON cm.course = c.id
-                     WHERE cm.id = ?", [$matches[3]]);
-            if ($cm) {
-                $shortname = $cm->shortname;
-            }
-        }
-        if (preg_match('/\/course\/(.*?)\//', $url, $matches)) {
-            $course = $DB->get_record('course', ['shortname' => $matches[1]]);
-            if ($course) {
-                $shortname = $course->shortname;
-            }
-        }
-        if ($shortname) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
      * Many urls are in the queue now (more will probably be added)
      *
      * @return size of queue
@@ -297,7 +247,7 @@ class crawler {
         if (array_key_exists('scheme', $bits)
             && $bits['scheme'] != 'http'
             && $bits['scheme'] != 'https'
-        ) {
+            ) {
             return false;
         }
 
@@ -542,12 +492,14 @@ class crawler {
 
             if ($config->uselogs == 1) {
 
-                // If the course id is not in recent courses, skip it and grab the next queue item.
                 if (isset($node->courseid)) {
 
-                    // Put this queue item to the end of the queue, so we don't come across it every time.
+                    // If the course id is not in recent courses, remove it from the queue.
                     if (!in_array($node->courseid, $recentcourses)) {
-                        $node->needscrawl = time();
+
+                        // Will not show up in queue, but still keeps the data
+                        // in case the course becomes recently active in the future.
+                        $node->needscrawl = $node->lastcrawled;
                         $DB->update_record('tool_crawler_url', $node);
                     } else {
                         break;
@@ -702,30 +654,15 @@ class crawler {
             }
         }
 
-        // Need to query again for $recentcourses.
-        if ($config->uselogs == 1) {
-            $recentcourses = $this->get_recentcourses();
-        }
-
         // Store some context about where we are, the crawled url.
         foreach ($html->find('body') as $body) {
-            // Grabs the information from the classes in the html body section.
+            // Grabs the course, context, cmid from the classes in the html body section.
             $classes = explode(" ", $body->class);
 
             $hascourse = false;
             foreach ($classes as $cl) {
                 if (substr($cl, 0, 7) == 'course-') {
                     $node->courseid = intval(substr($cl, 7));
-
-                    if ($config->uselogs == 1) {
-                        // If this course has not been viewed recently, then don't continue on to parse the html.
-                        if (!in_array($node->courseid, $recentcourses)) {
-                            if ($verbose) {
-                                echo "Course with id " . $node->courseid . " has not been viewed recenty, skipping. \n";
-                            }
-                            return $node;
-                        }
-                    }
                     $hascourse = true;
                 }
                 if (substr($cl, 0, 8) == 'context-') {
@@ -735,11 +672,24 @@ class crawler {
                     $node->cmid = intval(substr($cl, 5));
                 }
             }
+
             if ($config->uselogs == 1) {
                 // If this page does not have a course specified in it's classes, don't parse the html.
                 if ($hascourse === false) {
                     if ($verbose) {
                         echo "No course specified in the html, stopping here. \n";
+                    }
+                    return $node;
+                }
+                // If this course has not been viewed recently, then don't continue on to parse the html.
+                $recentcourses = $this->get_recentcourses();
+                if (!in_array($node->courseid, $recentcourses)) {
+                    if ($verbose) {
+                        if ($node->courseid == 1) {
+                            echo "Ignore index.php page. \n";
+                        } else {
+                            echo "Course with id " . $node->courseid . " has not been viewed recently, skipping. \n";
+                        }
                     }
                     return $node;
                 }
