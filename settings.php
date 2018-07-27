@@ -131,6 +131,25 @@ useridlistid
                                                     new lang_string('excludecoursesdesc',   'tool_crawler'),
                                                     "" ));
 
+        $options = array(
+            0 => new lang_string('no'),
+            1 => new lang_string('yes'),
+        );
+        $settings->add(new admin_setting_configselect('tool_crawler/uselogs',
+                                                      new lang_string('uselogs',        'tool_crawler'),
+                                                      new lang_string('uselogsdesc',    'tool_crawler'),
+                                                      0,
+                                                      $options));
+
+        $robot = new \tool_crawler\robot\crawler();
+        $days = $robot::get_config()->recentactivity;
+        $count = count($robot->get_recentcourses());
+        $settings->add(new admin_setting_configtext('tool_crawler/recentactivity',
+                                                    new lang_string('recentactivity',    'tool_crawler'),
+                                                    get_string('recentactivitydesc', 'tool_crawler',
+                                                    ['days' => $days, 'count' => $count]),
+                                                    '1'));
+
         $settings->add(new admin_setting_configtext('tool_crawler/maxtime',
                                                     new lang_string('maxtime',           'tool_crawler'),
                                                     new lang_string('maxtimedesc',       'tool_crawler'),
