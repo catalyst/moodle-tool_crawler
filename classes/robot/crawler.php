@@ -960,18 +960,22 @@ class crawler {
 
         $startingtimerecentactivity = strtotime("-$config->recentactivity days", time());
 
-        $courses = $DB->get_records_sql("SELECT DISTINCT log.courseid
+        $sql = "SELECT DISTINCT log.courseid
                                                  FROM {logstore_standard_log} log
                                                 WHERE log.timecreated > :startingtime
                                                 AND target = 'course'
                                                 AND userid <> '19156'
                                                 AND courseid <> 1
-                                            ", array('startingtime' => $startingtimerecentactivity));
+                                            ";
+        $values = ['startingtime' => $startingtimerecentactivity];
 
+        $rs = $DB->get_recordset_sql($sql, $values);
         $recentcourses = [];
-        foreach ($courses as $course) {
-            array_push($recentcourses, $course->courseid);
+        foreach ($rs as $record) {
+            array_push($recentcourses, $record->courseid);
         }
+        $rs->close();
+
         return $recentcourses;
     }
 }
