@@ -39,6 +39,8 @@ require_once($CFG->dirroot.'/user/lib.php');
  */
 class crawler {
 
+    private static $recentcourses = false;
+
     /**
      * Returns configuration object if it has been initialised.
      * If it is not initialises then it creates and returns it.
@@ -955,6 +957,11 @@ class crawler {
      * @return array
      */
     public function get_recentcourses() {
+
+        if (self::$recentcourses != false) {
+            return self::$recentcourses;
+        }
+
         global $DB;
         $config = self::get_config();
 
@@ -976,6 +983,7 @@ class crawler {
         }
         $rs->close();
 
+        self::$recentcourses = $recentcourses;
         return $recentcourses;
     }
 }
