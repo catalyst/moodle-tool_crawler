@@ -73,6 +73,9 @@ define('TOOL_CRAWLER_HEADER_LIMIT', 16 * 1024);
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class crawler {
+
+    private static $recentcourses = false;
+
     /**
      * Returns configuration object if it has been initialised.
      * If it is not initialises then it creates and returns it.
@@ -1528,6 +1531,11 @@ class crawler {
      * @return array
      */
     public function get_recentcourses() {
+
+        if (self::$recentcourses != false) {
+            return self::$recentcourses;
+        }
+
         global $DB;
         $config = self::get_config();
 
@@ -1558,6 +1566,7 @@ class crawler {
         }
         $rs->close();
 
+        self::$recentcourses = $recentcourses;
         return $recentcourses;
     }
 
