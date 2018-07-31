@@ -1309,6 +1309,15 @@ class crawler {
             $method = 'GET';
         }
 
+        curl_setopt($s, CURLOPT_BUFFERSIZE, 128);
+        curl_setopt($s, CURLOPT_NOPROGRESS, false);
+        curl_setopt($s, CURLOPT_PROGRESSFUNCTION, function(
+            $DownloadSize, $Downloaded, $UploadSize, $Uploaded
+        ){
+            // If $Downloaded exceeds 1KB, returning non-0 breaks the connection!
+            return ($Downloaded > (1024 * 1000 * self::get_config()->bigfilesize)) ? 1 : 0;
+        });
+
         $result = (object) [];
         $result->url              = $url;
 
