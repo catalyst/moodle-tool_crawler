@@ -124,5 +124,9 @@ $string['uselogsdesc'] = 'Use the table mdl_logstore_standard_log to only crawl 
 $string['useragent'] = 'Bot user agent string';
 $string['useragentdesc'] = 'The User agent string it use in the http headers + the version of this plugin';
 $string['whenqueued'] = 'When queued';
+/*
+ * Privacy provider (GDPR)
+ */
+$string["privacy:no_data_reason"] = "The Basic authentication plugin does not store any personal data.";
 $string['yes'] = 'Yes';
 
