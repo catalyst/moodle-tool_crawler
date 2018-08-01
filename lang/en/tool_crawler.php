@@ -58,7 +58,7 @@ $string['excludemdlparam'] = 'Exclude moodle url params\'s';
 $string['excludemdlparamdesc'] = 'One param key per line. Url\'s using this will still be crawled but with these params removed to avoid duplicates.';
 $string['excludemdlurl'] = 'Exclude moodle URL\'s';
 $string['excludemdlurldesc'] = 'One url regex per line, each is matched excluding the wwwroot';
-$string['excludecourses'] = 'Exclude courses\'s';
+$string['excludecourses'] = 'Exclude courses';
 $string['excludecoursesdesc'] = 'One course shortcode regex per line';
 $string['found'] = 'Found';
 $string['frompage'] = 'From page';
@@ -80,6 +80,7 @@ $string['mimetype'] = 'Mime type';
 $string['missing'] = 'Missing';
 $string['neverfinished'] = 'Never finished';
 $string['neverrun'] = 'Never run';
+$string['no'] = 'No';
 $string['notyetknown'] = 'Not yet known';
 $string['numberurlsfound'] = 'Found {$a->reports_number} {$a->repoprt_type}  URLs';
 $string['numlinks'] = 'Total links';
@@ -93,6 +94,9 @@ $string['pluginname'] = 'Link crawler robot';
 $string['queued'] = 'Queued URL\'s';
 $string['queued_header'] = '<p>The title and course are only known if the URL has been seen on a previous crawl.</p>';
 $string['recent'] = 'Recently crawled URL\'s';
+$string['recentactivity'] = 'Days of recent activity';
+$string['recentactivitydesc'] = 'A course is crawled only if it has been viewed in the last X days.
+At ' . '{$a->days}' . ' day(s) of recent activity, this will include ' . '{$a->count}' . ' courses total.';
 $string['recent_header'] = '';
 $string['response'] = 'Response';
 $string['retentionperiod'] = 'Retention period for bad URLs';
@@ -115,11 +119,14 @@ $string['url'] = 'URL';
 $string['urldetails'] = 'URL details';
 $string['urldetails_help'] = 'This shows all incoming and outgoing links for this URL.
 Links which have been blacklisted or which are in excluded DOM elements will not be shown.';
+$string['uselogs'] = 'Use log tables';
+$string['uselogsdesc'] = 'Use the table mdl_logstore_standard_log to only crawl links that are part of courses with recent activity. Setting to yes enables the recentactivity setting.';
 $string['useragent'] = 'Bot user agent string';
 $string['useragentdesc'] = 'The User agent string it use in the http headers + the version of this plugin';
 $string['whenqueued'] = 'When queued';
-
 /*
  * Privacy provider (GDPR)
  */
 $string["privacy:no_data_reason"] = "The Basic authentication plugin does not store any personal data.";
+$string['yes'] = 'Yes';
+

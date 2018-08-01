@@ -85,5 +85,5 @@ if (!$options['url']) {
 $url    = $options['url'];
 $node   = $robot->mark_for_crawl($url, $url);
 $res    = $robot->scrape($url);
-$result = $robot->crawl($node, 2);
+$robot->crawl($node, 2);
 
