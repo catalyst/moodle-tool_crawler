@@ -32,6 +32,7 @@ $page       = optional_param('page',    0,  PARAM_INT);
 $perpage    = optional_param('perpage', 50, PARAM_INT);
 $courseid   = optional_param('course',  0,  PARAM_INT);
 $retryid    = optional_param('retryid', 0,  PARAM_INT);
+$retryall    = optional_param('retryall', 0,  PARAM_BOOL);
 $start = $page * $perpage;
 
 $sqlfilter = '';
@@ -68,7 +69,11 @@ if ($courseid) {
     require_capability('moodle/site:config', context_system::instance());
     admin_externalpage_setup('tool_crawler_'.$report);
 }
-echo $OUTPUT->header();
+
+// Do not start output if we are redirecting back to this page.
+if ($retryall == 0) {
+    echo $OUTPUT->header();
+}
 
 require('tabs.php');
 echo $tabs;
@@ -123,6 +128,13 @@ if ($report == 'broken') {
     }
     $table->data = array();
     foreach ($data as $row) {
+        if ($retryall == 1) {
+            $retryid = $row->toid;
+            $robot = new \tool_crawler\robot\crawler();
+            $robot->reset_for_recrawl($retryid);
+            continue;
+        }
+
         $text = trim($row->text);
         if (!$text || $text == "") {
             $text = get_string('missing', 'tool_crawler');
@@ -140,7 +152,10 @@ if ($report == 'broken') {
         }
         $table->data[] = $data;
     }
-
+    if ($retryall == 1) {
+        $url = $PAGE->url;
+        redirect($url->raw_out(true), get_string('retryallmessage', 'tool_crawler'));
+    }
 } else if ($report == 'queued') {
 
     $sql = " FROM {tool_crawler_url} a
@@ -331,6 +346,10 @@ echo $OUTPUT->heading(get_string('numberurlsfound', 'tool_crawler',
     )
 ));
 echo get_string($report . '_header', 'tool_crawler');
+if (count($data) > 1) {
+    echo html_writer::link(new moodle_url($navurl->out(), array('retryall' => 1 )),
+                           get_string('retryall', 'tool_crawler'));
+}
 echo html_writer::table($table);
 echo $OUTPUT->paging_bar($count, $page, $perpage, $baseurl);
 echo $OUTPUT->footer();

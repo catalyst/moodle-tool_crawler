@@ -830,10 +830,10 @@ class crawler {
         curl_setopt($s, CURLOPT_BUFFERSIZE, 128);
         curl_setopt($s, CURLOPT_NOPROGRESS, false);
         curl_setopt($s, CURLOPT_PROGRESSFUNCTION, function(
-            $DownloadSize, $Downloaded, $UploadSize, $Uploaded
+            $downloadsize, $downloaded, $uploadsize, $uploaded
         ){
-            // If $Downloaded exceeds 1KB, returning non-0 breaks the connection!
-            return ($Downloaded > (1024 * 1000 * self::get_config()->bigfilesize)) ? 1 : 0;
+            // If $Downloaded exceeds bigfilesize, returning non-0 breaks the connection!
+            return ($downloaded > (1024 * 1000 * self::get_config()->bigfilesize)) ? 1 : 0;
         });
 
         $result = (object) array();
