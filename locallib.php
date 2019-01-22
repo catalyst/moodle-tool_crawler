@@ -36,7 +36,7 @@ function tool_crawler_link($url, $label, $redirect = '') {
     $html = html_writer::link(new moodle_url('url.php', array('url' => $url)), $label) .
             ' ' .
             html_writer::link($url, '↗', array('target' => 'link')) .
-            '<br><small>' . $url . '</small>';
+            '<br><small>' . htmlspecialchars($url) . '</small>';
 
     if ($redirect) {
         $html .= "<br>Redirect: " . html_writer::link($redirect, htmlspecialchars($redirect, ENT_NOQUOTES | ENT_HTML5));
