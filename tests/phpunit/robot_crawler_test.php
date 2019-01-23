@@ -213,6 +213,46 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
         self::assertRegExp($expectedpattern, $page);
     }
 
+    /**
+     * Regression test for an issue similar to Issue #48: redirection URI must be escaped when it is output to an HTML document.
+     */
+    public function test_redirection_uri_escaping() {
+        global $DB;
+
+        $url = 'http://crawler.test/course/view.php?id=1&section=2';
+        $redirecturl = 'http://crawler.test/local/extendedview/viewcourse.php?id=1&section=2'; // The '&' is the important part.
+        $escapedredirecturl = 'http://crawler.test/local/extendedview/viewcourse.php?id=1&amp;section=2';
+        $node = [
+            'url' => $url,
+            'external' => 0,
+            'createdate' => strtotime("16-05-2016 10:00:00"),
+            'lastcrawled' => strtotime("16-05-2016 11:20:00"),
+            'needscrawl' => strtotime("17-05-2017 10:00:00"),
+            'httpcode' => 200,
+            'mimetype' => 'text/html',
+            'title' => 'Crawler Test',
+            'downloadduration' => 0.23,
+            'filesize' => 44003,
+            'redirect' => $redirecturl,
+            'courseid' => 1,
+            'contextid' => 1,
+            'cmid' => null,
+            'ignoreduserid' => null,
+            'ignoredtime' => null,
+            'httpmsg' => 'OK'
+        ];
+        $DB->insert_record('tool_crawler_url', $node);
+
+        $this->setAdminUser();
+        $page = tool_crawler_url_create_page($url);
+        $expectedpattern = '@' .
+                preg_quote('<h2>', '@') .
+                '.*' .
+                preg_quote('<br>Redirect: <a href="' . $escapedredirecturl . '">' . $escapedredirecturl . '</a></h2>', '@') .
+                '@';
+        self::assertRegExp($expectedpattern, $page);
+    }
+
 }
 
 
