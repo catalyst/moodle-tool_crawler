@@ -26,6 +26,8 @@ use tool_crawler\robot\crawler;
 
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
 
+require_once(__DIR__ . '/../../locallib.php');
+
 /**
  *  Unit tests for link crawler robot
  *
@@ -186,6 +188,31 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
         $found = $DB->record_exists('tool_crawler_url', ['id' => $nodeid]);
         self::assertFalse($found);
     }
+
+    /**
+     * Regression test for Issue #48: database must store URI without HTML-escaping, but URI must still be escaped when it is output
+     * to an HTML document.
+     */
+    public function test_uri_escaping() {
+        $baseurl = 'http://crawler.test/';
+        $relativeurl = 'course/view.php?id=1&section=2'; // The '&' character is the important part here.
+        $expectedurl = $baseurl . $relativeurl;
+        $escapedexpected = 'http://crawler.test/course/view.php?id=1&amp;section=2';
+        $node = $this->robot->mark_for_crawl($baseurl, $relativeurl);
+        self::assertEquals($expectedurl, $node->url);
+
+        $this->setAdminUser();
+        $page = tool_crawler_url_create_page($expectedurl);
+        $expectedpattern = '@' .
+                preg_quote('<h2>', '@') .
+                '.*' .
+                preg_quote('<a ', '@') .
+                '[^>]*' . // XXX: Not *100%* reliable, as '>' *might* be contained in attribute values.
+                preg_quote('href="' . $escapedexpected . '">↗</a><br><small>' . $escapedexpected . '</small>', '@') .
+                '@';
+        self::assertRegExp($expectedpattern, $page);
+    }
+
 }
 
 
