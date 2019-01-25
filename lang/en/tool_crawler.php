@@ -98,6 +98,7 @@ $string['recentactivity'] = 'Days of recent activity';
 $string['recentactivitydesc'] = 'A course is crawled only if it has been viewed in the last X days.
 At ' . '{$a->days}' . ' day(s) of recent activity, this will include ' . '{$a->count}' . ' courses total.';
 $string['recent_header'] = '';
+$string['redirect'] = 'Redirect: {$a->redirectlink}';
 $string['response'] = 'Response';
 $string['retentionperiod'] = 'Retention period for bad URLs';
 $string['retentionperioddesc'] = 'How many days to keep bad URLs in db.';

@@ -39,7 +39,8 @@ function tool_crawler_link($url, $label, $redirect = '') {
             '<br><small>' . $url . '</small>';
 
     if ($redirect) {
-        $html .= "<br>Redirect: " . html_writer::link($redirect, $redirect);
+        $linkhtmlsnippet = html_writer::link($redirect, $redirect);
+        $html .= "<br>" . get_string('redirect', 'tool_crawler', array('redirectlink' => $linkhtmlsnippet));
     }
 
     return $html;
