@@ -69,7 +69,6 @@ $string['duration'] = 'Duration';
 $string['event:crawlstart'] = 'Link check crawl started';
 $string['event:crawlstartdesc'] = 'Link check crawl started {$a}';
 $string['eventrobotcleanupcompleted'] = 'Linkchecker robot cleanup completed';
-$string['eventrobotcleanupcompleteddesc'] = 'Linkchecker robot finished clearing old URLs from crawling history. Number of removed records: {$a->numrecsdeleted}';
 $string['eventrobotcleanupstarted'] = 'Linkchecker robot cleanup started';
 $string['excludeexturl'] = 'Exclude external URL\'s';
 $string['excludeexturldesc'] = 'One url regex per line, each is matched against the full url';

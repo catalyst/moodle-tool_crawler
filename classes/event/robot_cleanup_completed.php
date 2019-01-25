@@ -60,10 +60,8 @@ class robot_cleanup_completed extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        $desc = get_string('eventrobotcleanupcompleteddesc', 'tool_crawler',
-            array('numrecsdeleted' => $this->data['other']['numrecsdeleted'])
-        );
-        return $desc;
+        return 'Linkchecker robot finished clearing old URLs from crawling history. Number of removed records: ' .
+                $this->data['other']['numrecsdeleted'];
     }
 
     /**
