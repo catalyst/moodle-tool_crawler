@@ -105,6 +105,7 @@ $string['retry'] = 'Retry';
 $string['resetprogress'] = 'Reset Progress';
 $string['resetprogress_header'] = 'Reset Crawler Progress';
 $string['resetprogress_warning'] = 'Warning. You are about to reset the Crawler. Are you sure you want to do this?';
+$string['resetprogress_warning_button'] = 'Reset Crawler';
 $string['robotcleanup'] = 'Robot cleanup';
 $string['robotstatus'] = 'Robot status';
 $string['seedurl'] = 'Seed URL';
