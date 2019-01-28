@@ -144,10 +144,12 @@ useridlistid
         $robot = new \tool_crawler\robot\crawler();
         $days = $robot::get_config()->recentactivity;
         $count = count($robot->get_recentcourses());
+        $recentactivitydesc = get_string('recentactivitydesc', 'tool_crawler', ['days' => $days, 'count' => $count]);
+        $recentactivitydesc = preg_replace('/(\r\n?|\n)/', '<br>', $recentactivitydesc);
+        $recentactivitydesc = htmlentities($recentactivitydesc, ENT_NOQUOTES | ENT_HTML5);
         $settings->add(new admin_setting_configtext('tool_crawler/recentactivity',
                                                     new lang_string('recentactivity',    'tool_crawler'),
-                                                    get_string('recentactivitydesc', 'tool_crawler',
-                                                    ['days' => $days, 'count' => $count]),
+                                                    $recentactivitydesc,
                                                     '1'));
 
         $settings->add(new admin_setting_configtext('tool_crawler/maxtime',
