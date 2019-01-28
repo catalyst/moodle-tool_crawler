@@ -144,6 +144,7 @@ $table->head = array(
     get_string('broken', 'tool_crawler'),
     get_string('oversize', 'tool_crawler'),
 );
+$datetimeformat = get_string('strftimerecentsecondshtml', 'tool_crawler');
 $table->data = array();
 $table->colclasses = array('', '', '', 'rightalign', 'rightalign', 'rightalign', 'rightalign', 'rightalign');
 $history = $DB->get_records('tool_crawler_history', array(), 'startcrawl DESC', '*', 0, 5);
@@ -155,8 +156,8 @@ foreach ($history as $record) {
     }
     $duration = sprintf('%02d:%02d:%02d', $delta / 60 / 60, $delta / 60 % 60, $delta % 60);
     $table->data[] = array(
-        userdate($record->startcrawl, '%h %e,&nbsp;%H:%M:%S'),
-        $record->endcrawl ? userdate($record->endcrawl, '%h %e,&nbsp;%H:%M:%S') : '-',
+        userdate($record->startcrawl, $datetimeformat),
+        $record->endcrawl ? userdate($record->endcrawl, $datetimeformat) : '-',
         $duration,
         number_format($record->cronticks),
         number_format($record->urls),

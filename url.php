@@ -90,6 +90,7 @@ function print_table($data) {
         get_string('url', 'tool_crawler'),
         get_string('mimetype', 'tool_crawler'),
     );
+    $datetimeformat = get_string('strftimerecentsecondshtml', 'tool_crawler');
     $table->data = array();
     foreach ($data as $row) {
         $text = trim($row->title);
@@ -99,7 +100,7 @@ function print_table($data) {
         $code = tool_crawler_http_code($row);
         $size = $row->filesize * 1;
         $data = array(
-            userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
+            userdate($row->lastcrawled, $datetimeformat),
             $row->text,
             str_replace(' #', '<br>#', $row->idattr),
             $code,

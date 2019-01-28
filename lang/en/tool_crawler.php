@@ -115,6 +115,7 @@ $string['settings'] = 'Settings';
 $string['size'] = 'Size';
 $string['slowurl'] = 'Slow URL';
 $string['status'] = 'Robot status';
+$string['strftimerecentsecondshtml'] = '%h %e,&nbsp;%H:%M:%S';
 $string['useraccount'] = 'User account';
 $string['unknown'] = 'Unknown';
 $string['url'] = 'URL';
