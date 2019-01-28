@@ -49,17 +49,7 @@ if ($unrecognized) {
     cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
 }
 
-$help = "Crawl a url as the robot and parse it.
-
-Useful for when a page has been corrected and you want to instantly reflect this.
-
-Options:
--h, --help      Print out this help
--u, --url       Url to crawl and process
-
-Example:
-\$sudo -u www-data php crawl-as.php --url=http://ford.com/
-";
+$help = get_string('clicrawlashelp', 'tool_crawler');
 
 if ($options['help']) {
     echo $help;
@@ -73,7 +63,7 @@ $robot = new \tool_crawler\robot\crawler();
 
 $error = $robot->is_bot_valid();
 if ($error) {
-    print "Error: $error";
+    print get_string('clierror', 'tool_crawler', $error);
     exit;
 }
 

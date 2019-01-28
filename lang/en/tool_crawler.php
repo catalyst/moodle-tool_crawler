@@ -38,6 +38,27 @@ $string['botusername'] = 'Bot username';
 $string['botusernamedesc'] = 'The username of the moodle user to crawl as';
 $string['broken'] = 'Broken links / URLs';
 $string['broken_header'] = '<p>Duplicate URLs will only be searched once.</p>';
+$string['clicrawlashelp'] = 'Crawl a url as the robot and parse it.
+
+Useful for when a page has been corrected and you want to instantly reflect this.
+
+Options:
+-h, --help      Print out this help
+-u, --url       Url to crawl and process
+
+Example:
+$sudo -u www-data php crawl-as.php --url=http://ford.com/
+';
+$string['clierror'] = 'Error: {$a}';
+$string['cliscrapeashelp'] = 'Scrape the url as the robot would see it, but do not process/queue it.
+
+Options:
+-h, --help      Print out this help
+-u, --url       Url to scrape
+
+Example:
+$sudo -u www-data php scrape-as.php --url=http://ford.com/
+';
 $string['configmissing'] = 'Config missing';
 $string['course'] = 'Course';
 $string['curcrawlstart'] = 'Current crawl started at';
