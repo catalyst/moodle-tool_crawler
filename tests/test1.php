@@ -27,7 +27,7 @@ require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/../config.php');
 
 require_login(null, false);
 
-$header = 'Hello robot!';
+$header = get_string('hellorobotheading', 'tool_crawler');
 
 $context = context_user::instance($USER->id);
 $PAGE->set_context($context);

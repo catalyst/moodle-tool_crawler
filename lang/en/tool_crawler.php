@@ -84,6 +84,7 @@ $string['found'] = 'Found';
 $string['frompage'] = 'From page';
 $string['good'] = 'Good';
 $string['hellorobot'] = 'Hello robot: \'{$a->botusername}\'';
+$string['hellorobotheading'] = 'Hello robot!';
 $string['idattr'] = 'HTML context';
 $string['incomingurls'] = 'Incoming URL\'s';
 $string['incourse'] = 'In course';
