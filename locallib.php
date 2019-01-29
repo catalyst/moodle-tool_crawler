@@ -60,3 +60,16 @@ function tool_crawler_http_code($row) {
     return $code;
 }
 
+/**
+ * Formats a number according to the current user’s locale.
+ *
+ * @param float $number Numeric value to format.
+ * @param int $decimals Number of decimals after the decimal separator. Defaults to 0.
+ * @return string String with number formatted as per user’s locale.
+ */
+function tool_crawler_numberformat(float $number, int $decimals = 0) {
+    $decsep = get_string('decsep', 'langconfig');
+    $thousandssep = get_string('thousandssep', 'langconfig');
+
+    return number_format($number, $decimals, $decsep, $thousandssep);
+}

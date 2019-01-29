@@ -23,6 +23,7 @@
  */
 require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
+require_once(__DIR__ . '/locallib.php');
 
 require_login(null, false);
 require_capability('moodle/site:config', context_system::instance());
@@ -103,28 +104,28 @@ $table->data = array(
     ),
     array(
         get_string('lastqueuesize', 'tool_crawler'),
-        number_format($oldqueuesize)
+        tool_crawler_numberformat($oldqueuesize)
     ),
     array(
         get_string('numlinks', 'tool_crawler'),
-        number_format($numlinks)
+        tool_crawler_numberformat($numlinks)
     ),
     array(
         get_string('queued', 'tool_crawler'),
-        "<a href=\"report.php?report=queued\">" . number_format($queuesize) . "</a>"
+        "<a href=\"report.php?report=queued\">" . tool_crawler_numberformat($queuesize) . "</a>"
     ),
     array(
         get_string('recent', 'tool_crawler'),
-        "<a href=\"report.php?report=recent\">" . number_format($recent) . "</a>"
+        "<a href=\"report.php?report=recent\">" . tool_crawler_numberformat($recent) . "</a>"
     ),
     array(
         get_string('broken', 'tool_crawler'),
-        "<a href=\"report.php?report=broken\">" . number_format($numpageswithurlsbroken)
-                . " / " . number_format($numurlsbroken) . "</a>"
+        "<a href=\"report.php?report=broken\">" . tool_crawler_numberformat($numpageswithurlsbroken)
+                . " / " . tool_crawler_numberformat($numurlsbroken) . "</a>"
     ),
     array(
         get_string('oversize', 'tool_crawler'),
-        "<a href=\"report.php?report=oversize\">" . number_format($oversize) . "</a>"
+        "<a href=\"report.php?report=oversize\">" . tool_crawler_numberformat($oversize) . "</a>"
     ),
 );
 
@@ -159,11 +160,11 @@ foreach ($history as $record) {
         userdate($record->startcrawl, $datetimeformat),
         $record->endcrawl ? userdate($record->endcrawl, $datetimeformat) : '-',
         $duration,
-        number_format($record->cronticks),
-        number_format($record->urls),
-        number_format($record->links),
-        number_format($record->broken),
-        number_format($record->oversize),
+        tool_crawler_numberformat($record->cronticks),
+        tool_crawler_numberformat($record->urls),
+        tool_crawler_numberformat($record->links),
+        tool_crawler_numberformat($record->broken),
+        tool_crawler_numberformat($record->oversize),
     );
 }
 
