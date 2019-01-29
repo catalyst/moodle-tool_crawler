@@ -37,6 +37,6 @@ $PAGE->set_heading($header);
 
 echo $OUTPUT->header();
 
-echo "Hello robot: '$USER->username'";
+echo get_string('hellorobot', 'tool_crawler', array('botusername' => $USER->username));
 
 echo $OUTPUT->footer();
