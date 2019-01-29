@@ -100,7 +100,7 @@ At ' . '{$a->days}' . ' day(s) of recent activity, this will include ' . '{$a->c
 $string['recent_header'] = '';
 $string['response'] = 'Response';
 $string['retentionperiod'] = 'Retention period for bad URLs';
-$string['retentionperioddesc'] = 'How many days to keep bad URLs in db.';
+$string['retentionperioddesc'] = 'How many days to keep bad URLs in database.';
 $string['retry'] = 'Retry';
 $string['resetprogress'] = 'Reset Progress';
 $string['resetprogress_header'] = 'Reset Crawler Progress';
