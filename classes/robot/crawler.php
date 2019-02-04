@@ -856,28 +856,26 @@ class crawler {
             $result->title            = curl_error($s);
             $result->contents         = '';
             $result->httpcode         = '500';
-            curl_close($s);
-            return $result;
+        } else {
+            $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
+            $headers = substr($raw, 0, $headersize);
+            $header = strtok($headers, "\n");
+            $result->httpmsg          = explode(" ", $header, 3)[2];
+
+            $ishtml = (strpos($contenttype, 'text/html') === 0); // Related to Issue #13.
+            $result->contents         = $ishtml ? substr($raw, $headersize) : '';
+            $data = $result->contents;
+
+            /* Convert it if it is anything but UTF-8 */
+            $charset = $this->detect_encoding($contenttype, $data);
+            if (is_string($charset) && strtoupper($charset) != "UTF-8") {
+                // You can change 'UTF-8' to 'UTF-8//IGNORE' to
+                // ignore conversion errors and still output something reasonable.
+                $result->contents     = iconv($charset, 'UTF-8', $result->contents);
+            }
+
+            $result->httpcode         = curl_getinfo($s, CURLINFO_HTTP_CODE);
         }
-
-        $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
-        $headers = substr($raw, 0, $headersize);
-        $header = strtok($headers, "\n");
-        $result->httpmsg          = explode(" ", $header, 3)[2];
-
-        $ishtml = (strpos($contenttype, 'text/html') === 0); // Related to Issue #13.
-        $result->contents         = $ishtml ? substr($raw, $headersize) : '';
-        $data = $result->contents;
-
-        /* Convert it if it is anything but UTF-8 */
-        $charset = $this->detect_encoding($contenttype, $data);
-        if (is_string($charset) && strtoupper($charset) != "UTF-8") {
-            // You can change 'UTF-8' to 'UTF-8//IGNORE' to
-            // ignore conversion errors and still output something reasonable.
-            $result->contents     = iconv($charset, 'UTF-8', $result->contents);
-        }
-
-        $result->httpcode         = curl_getinfo($s, CURLINFO_HTTP_CODE );
 
         curl_close($s);
         return $result;
