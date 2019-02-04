@@ -851,7 +851,6 @@ class crawler {
         }
 
         if (empty($raw)) {
-            $result->url              = $url;
             $result->httpmsg          = 'Curl Error: ' . curl_errno($s);
             $result->title            = curl_error($s);
             $result->contents         = '';
