@@ -832,9 +832,8 @@ class crawler {
 
         $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
 
-        $mimetype                 = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
-        $mimetype                 = preg_replace('/;.*/', '', $mimetype);
-        $result->mimetype         = $mimetype;
+        $contenttype              = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
+        $result->mimetype         = preg_replace('/;.*/', '', $contenttype);
 
         $result->lastcrawled      = time();
 
@@ -862,7 +861,6 @@ class crawler {
         }
         // See http://stackoverflow.com/questions/9351694/setting-php-default-encoding-to-utf-8 for more.
         unset($charset);
-        $contenttype = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
         $ishtml = (strpos($contenttype, 'text/html') === 0); // Related to Issue #13.
 
         $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
