@@ -898,8 +898,8 @@ class crawler {
 
         // 5: Default for HTML.
         if (!isset($charset)) {
-            if (strstr($contenttype, "text/html") === 0) {
-                $charset = "ISO 8859-1";
+            if (strpos($contenttype, "text/html") === 0) {
+                $charset = "ISO-8859-1";
             }
         }
 
