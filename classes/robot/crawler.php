@@ -829,28 +829,34 @@ class crawler {
         $result->url              = $url;
 
         $raw   = curl_exec($s);
+
+        $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
+
+        $mimetype                 = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
+        $mimetype                 = preg_replace('/;.*/', '', $mimetype);
+        $result->mimetype         = $mimetype;
+
+        $result->lastcrawled      = time();
+
+        $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
+
+        $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
+        if ($final != $url) {
+            $result->redirect = $final;
+            $mdlw = strlen($CFG->wwwroot);
+            if (substr ($final, 0, $mdlw) !== $CFG->wwwroot) {
+                $result->external = 1;
+            }
+        } else {
+            $result->redirect = '';
+        }
+
         if (empty($raw)) {
             $result->url              = $url;
             $result->httpmsg          = 'Curl Error: ' . curl_errno($s);
             $result->title            = curl_error($s);
             $result->contents         = '';
             $result->httpcode         = '500';
-            $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
-            $mimetype                 = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
-            $mimetype                 = preg_replace('/;.*/', '', $mimetype);
-            $result->mimetype         = $mimetype;
-            $result->lastcrawled      = time();
-            $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
-            $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
-            if ($final != $url) {
-                $result->redirect = $final;
-                $mdlw = strlen($CFG->wwwroot);
-                if (substr ($final, 0, $mdlw) !== $CFG->wwwroot) {
-                    $result->external = 1;
-                }
-            } else {
-                $result->redirect = '';
-            }
             curl_close($s);
             return $result;
         }
@@ -911,23 +917,6 @@ class crawler {
         }
 
         $result->httpcode         = curl_getinfo($s, CURLINFO_HTTP_CODE );
-        $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
-        $mimetype                 = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
-        $mimetype                 = preg_replace('/;.*/', '', $mimetype);
-        $result->mimetype         = $mimetype;
-        $result->lastcrawled      = time();
-        $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
-        $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
-
-        if ($final != $url) {
-            $result->redirect = $final;
-            $mdlw = strlen($CFG->wwwroot);
-            if (substr ($final, 0, $mdlw) !== $CFG->wwwroot) {
-                $result->external = 1;
-            }
-        } else {
-            $result->redirect = '';
-        }
 
         curl_close($s);
         return $result;
