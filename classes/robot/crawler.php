@@ -964,10 +964,13 @@ class crawler {
                                                  FROM {logstore_standard_log} log
                                                 WHERE log.timecreated > :startingtime
                                                 AND target = 'course'
-                                                AND userid <> '19156'
+                                                AND userid NOT IN (
+                                                    SELECT id FROM {user} WHERE username = :botusername
+                                                )
                                                 AND courseid <> 1
                                             ";
-        $values = ['startingtime' => $startingtimerecentactivity];
+        $botusername = isset($config->botusername) ? $config->botusername : '';
+        $values = ['startingtime' => $startingtimerecentactivity, 'botusername' => $botusername];
 
         $rs = $DB->get_recordset_sql($sql, $values);
         $recentcourses = [];
