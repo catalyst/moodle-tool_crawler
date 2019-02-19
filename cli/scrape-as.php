@@ -44,11 +44,11 @@ if ($unrecognized) {
     cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
 }
 
-$help = "Scrape the url as the robot would see it, but do not process/queue it.
+$help = "Scrape the URL as the robot would see it, but do not process/queue it.
 
 Options:
 -h, --help      Print out this help
--u, --url       Url to scrape
+-u, --url       URL to scrape
 
 Example:
 \$sudo -u www-data php scrape-as.php --url=http://ford.com/
