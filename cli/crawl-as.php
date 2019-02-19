@@ -49,13 +49,13 @@ if ($unrecognized) {
     cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
 }
 
-$help = "Crawl a url as the robot and parse it.
+$help = "Crawl a URL as the robot and parse it.
 
 Useful for when a page has been corrected and you want to instantly reflect this.
 
 Options:
 -h, --help      Print out this help
--u, --url       Url to crawl and process
+-u, --url       URL to crawl and process
 
 Example:
 \$sudo -u www-data php crawl-as.php --url=http://ford.com/
