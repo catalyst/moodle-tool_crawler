@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Perform one cron 'tick' of crawl processing
  *
- * Has limits of both how many urls to crawl
+ * Has limits of both how many URLs to crawl
  * and a soft time limit on total crawl time.
  *
  * @param boolean $verbose show verbose feedback
@@ -94,7 +94,7 @@ function tool_crawler_crawl($verbose = false) {
     $cronstop = $cronstart + $config->maxcrontime;
 
     // While we are not exceeding the maxcron time, and the queue is not empty
-    // find the next url in the queue and crawl it.
+    // find the next URL in the queue and crawl it.
     $hasmore = true;
     $hastime = true;
     while ($hasmore && $hastime) {
@@ -121,7 +121,7 @@ function tool_crawler_crawl($verbose = false) {
 }
 
 /**
- * Get summary stats about a url
+ * Get summary stats about a URL
  *
  * @param integer $courseid a course aid
  *

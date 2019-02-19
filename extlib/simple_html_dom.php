@@ -5,7 +5,7 @@
  * Contributions by:
  *     Yousuke Kumakura (Attribute filters)
  *     Vadim Voituk (Negative indexes supports of "find" method)
- *     Antcs (Constructor with automatically load contents either text or file/url)
+ *     Antcs (Constructor with automatically load contents either text or file/URL)
  *
  * all affected sections have comments starting with "PaperG"
  *
@@ -1717,5 +1717,3 @@ class simple_html_dom
     function getElementsByTagName($name, $idx=-1) {return $this->find($name, $idx);}
     function loadFile() {$args = func_get_args();$this->load_file($args);}
 }
-
-?>
