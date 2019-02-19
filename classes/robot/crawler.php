@@ -716,24 +716,6 @@ class crawler {
             }
             $seen[$href] = 1;
 
-            // If this url is external then check the ext whitelist.
-            $mdlw = strlen($CFG->wwwroot);
-            $bad = 0;
-            if (substr ($href, 0, $mdlw) === $CFG->wwwroot) {
-                $excludes = str_replace("\r", '', $config->excludemdlurl);
-            } else {
-                $excludes = str_replace("\r", '', $config->excludeexturl);
-            }
-            $excludes = explode("\n", $excludes);
-            if (count($excludes) > 0 && $excludes[0]) {
-                foreach ($excludes as $exclude) {
-                    if (strpos($href, $exclude) > 0 ) {
-                        $bad = 1;
-                        break;
-                    }
-                }
-            }
-
             // Find some context of the link, like the nearest id.
             $idattr = '';
             $walk = $e;
