@@ -27,9 +27,9 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Render a link
  *
- * @param string $url a url link
+ * @param string $url a URL link
  * @param string $label the a tag label
- * @param string $redirect The final urll if a redirect was served
+ * @param string $redirect The final URL if a redirect was served
  * @return html output
  */
 function tool_crawler_link($url, $label, $redirect = '') {

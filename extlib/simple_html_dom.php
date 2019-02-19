@@ -5,7 +5,7 @@
  * Contributions by:
  *     Yousuke Kumakura (Attribute filters)
  *     Vadim Voituk (Negative indexes supports of "find" method)
- *     Antcs (Constructor with automatically load contents either text or file/url)
+ *     Antcs (Constructor with automatically load contents either text or file/URL)
  *
  * all affected sections have comments starting with "PaperG"
  *
