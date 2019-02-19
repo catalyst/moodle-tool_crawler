@@ -700,11 +700,7 @@ class crawler {
         $seen = array();
 
         $links = $html->find('a[href]');
-        $add = array();
-        foreach ($links as $link) {
-            array_push($add, $link->attr["href"]);
-        }
-        foreach ($html->find('a[href]') as $e) {
+        foreach ($links as $e) {
             $href = $e->href;
             $href = htmlspecialchars_decode($href);
 
