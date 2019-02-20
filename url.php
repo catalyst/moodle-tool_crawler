@@ -41,7 +41,10 @@ $PAGE->set_title(get_string('urldetails', 'tool_crawler') );
 echo $OUTPUT->header();
 
 echo $OUTPUT->heading(get_string('urldetails', 'tool_crawler'));
-echo '<p>' . get_string('urldetails_help', 'tool_crawler') . '</p>';
+$urldetailshelp = get_string('urldetails_help', 'tool_crawler');
+$urldetailshelp = preg_replace('/(\r\n?|\n)/', '<br>', $urldetailshelp);
+$urldetailshelp = htmlentities($urldetailshelp, ENT_NOQUOTES | ENT_HTML5);
+echo '<p>' . $urldetailshelp . '</p>';
 
 $urlrec = $DB->get_record('tool_crawler_url', array('url' => $url));
 echo '<h2>' . tool_crawler_link($url, $urlrec->title, $urlrec->redirect) . '</h2>';

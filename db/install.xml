@@ -35,7 +35,7 @@
         <INDEX NAME="httpcode" UNIQUE="false" FIELDS="httpcode"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="tool_crawler_edge" COMMENT="Links between urls">
+    <TABLE NAME="tool_crawler_edge" COMMENT="Links between URLs">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="a" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
