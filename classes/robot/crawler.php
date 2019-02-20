@@ -132,11 +132,11 @@ class crawler {
     }
 
     /**
-     * Convert a relative url to an absolute url
+     * Convert a relative URL to an absolute URL
      *
-     * @param string $base url
-     * @param string $rel relative url
-     * @return string absolute url
+     * @param string $base URL
+     * @param string $rel relative URL
+     * @return string absolute URL
      */
     public function absolute_url($base, $rel) {
         // Return if already absolute URL.
@@ -221,7 +221,7 @@ class crawler {
     }
 
     /**
-     * Many urls are in the queue now (more will probably be added)
+     * Many URLs are in the queue now (more will probably be added)
      *
      * @return size of queue
      */
@@ -236,12 +236,12 @@ class crawler {
     }
 
     /**
-     * Adds a url to the queue for crawling
+     * Adds a URL to the queue for crawling
      *
      * @param string $baseurl
-     * @param string $url relative url
+     * @param string $url relative URL
      * @param int the course id if it is known.
-     * @return mixed the node record or if the url is invalid returns false.
+     * @return mixed the node record or if the URL is invalid returns false.
      */
     public function mark_for_crawl($baseurl, $url, $courseid = null) {
 
@@ -258,7 +258,7 @@ class crawler {
             return false;
         }
 
-        // If this url is external then check the ext whitelist.
+        // If this URL is external then check the ext whitelist.
         $mdlw = strlen($CFG->wwwroot);
         $bad = 0;
         if (substr ($url, 0, $mdlw) === $CFG->wwwroot) {
@@ -287,14 +287,14 @@ class crawler {
         // We ignore differences in hash anchors.
         $url = strtok($url, "#");
 
-        // Now we strip out any unwanted url params.
+        // Now we strip out any unwanted URL params.
         $murl = new \moodle_url($url);
         $excludes = str_replace("\r", '', self::get_config()->excludemdlparam);
         $excludes = explode("\n", $excludes);
         $murl->remove_params($excludes);
         $url = $murl->raw_out();
 
-        // Some special logic, if it looks like a course url or module url
+        // Some special logic, if it looks like a course URL or module URL
         // then avoid scraping the URL at all, if it has been excluded.
         $shortname = '';
         if (preg_match('/\/course\/(info|view).php\?id=(\d+)/', $url , $matches) ) {
@@ -377,7 +377,7 @@ class crawler {
     }
 
     /**
-     * How many urls have been processed off the queue
+     * How many URLs have been processed off the queue
      *
      * @return size of processes list
      */
@@ -407,7 +407,7 @@ class crawler {
     }
 
     /**
-     * How many urls have are broken
+     * How many URLs have are broken
      *
      * @return number
      */
@@ -422,7 +422,7 @@ class crawler {
     }
 
     /**
-     * How many urls have broken outgoing links
+     * How many URLs have broken outgoing links
      *
      * @return number
      */
@@ -438,7 +438,7 @@ class crawler {
     }
 
     /**
-     * How many urls are oversize
+     * How many URLs are oversize
      *
      * @return number
      */
@@ -452,7 +452,7 @@ class crawler {
     }
 
     /**
-     * How many urls have been processed off the previous queue
+     * How many URLs have been processed off the previous queue
      *
      * @return size of old processes list
      */
@@ -534,8 +534,8 @@ class crawler {
     /**
      * Takes a queue item and crawls it
      *
-     * It crawls a single url and then passes it off to a mime type handler
-     * to pull out the links to other urls
+     * It crawls a single URL and then passes it off to a mime type handler
+     * to pull out the links to other URLs
      *
      * @param object $node a node
      * @param boolean $verbose show debugging
@@ -547,7 +547,7 @@ class crawler {
         if ($verbose) {
             echo "Crawling $node->url ";
         }
-        // Scraping returns info about the url. Not info about the courseid and context, just the url itself.
+        // Scraping returns info about the URL. Not info about the courseid and context, just the URL itself.
         $result = $this->scrape($node->url);
         $result = (object) array_merge((array) $node, (array) $result);
 
@@ -566,14 +566,14 @@ class crawler {
 
                 // Look for new links on this page from the html.
                 // Insert new links into tool_crawler_edge, and into tool_crawler_url table.
-                // Find the course, cm, and context of where we are for the main scraped url.
+                // Find the course, cm, and context of where we are for the main scraped URL.
                 $this->parse_html($result, $result->external, $verbose);
             } else {
                 if ($verbose) {
                     echo "NOT html\n";
                 }
             }
-            // Else TODO Possibly we can infer the course purely from the url
+            // Else TODO Possibly we can infer the course purely from the URL
             // Maybe the plugin serving urls?
         } else {
             if ($verbose) {
@@ -609,8 +609,8 @@ class crawler {
      * Should only be run on internal moodle pages, ie never follow
      * links on external pages. We don't want to scrape the whole web!
      *
-     * @param object $node a url node
-     * @param boolean $external is the url ourside moodle
+     * @param object $node a URL node
+     * @param boolean $external is the URL ourside moodle
      * @param boolean $verbose show debugging
      */
     private function parse_html($node, $external, $verbose = false) {
@@ -620,7 +620,7 @@ class crawler {
 
         $raw = $node->contents;
 
-        // Strip out any data uri's - the parser doesn't like them.
+        // Strip out any data URIs - the parser doesn't like them.
         $raw = preg_replace('/"data:[^"]*?"/', '', $raw);
 
         $html = str_get_html($raw);
@@ -661,7 +661,7 @@ class crawler {
             }
         }
 
-        // Store some context about where we are, the crawled url.
+        // Store some context about where we are, the crawled URL.
         foreach ($html->find('body') as $body) {
             // Grabs the course, context, cmid from the classes in the html body section.
             $classes = explode(" ", $body->class);
@@ -707,11 +707,7 @@ class crawler {
         $seen = array();
 
         $links = $html->find('a[href]');
-        $add = array();
-        foreach ($links as $link) {
-            array_push($add, $link->attr["href"]);
-        }
-        foreach ($html->find('a[href]') as $e) {
+        foreach ($links as $e) {
             $href = $e->href;
             $href = htmlspecialchars_decode($href);
 
@@ -726,24 +722,6 @@ class crawler {
                 continue;
             }
             $seen[$href] = 1;
-
-            // If this url is external then check the ext whitelist.
-            $mdlw = strlen($CFG->wwwroot);
-            $bad = 0;
-            if (substr ($href, 0, $mdlw) === $CFG->wwwroot) {
-                $excludes = str_replace("\r", '', $config->excludemdlurl);
-            } else {
-                $excludes = str_replace("\r", '', $config->excludeexturl);
-            }
-            $excludes = explode("\n", $excludes);
-            if (count($excludes) > 0 && $excludes[0]) {
-                foreach ($excludes as $exclude) {
-                    if (strpos($href, $exclude) > 0 ) {
-                        $bad = 1;
-                        break;
-                    }
-                }
-            }
 
             // Find some context of the link, like the nearest id.
             $idattr = '';
@@ -764,20 +742,20 @@ class crawler {
     }
 
     /**
-     * Upserts a link between two nodes in the url graph.
-     * Which crawled url's html did we parse to find this link.
+     * Upserts a link between two nodes in the URL graph.
+     * Which crawled URLs html did we parse to find this link.
      *
-     * @param string $from from url
-     * @param string $url current url
+     * @param string $from from URL
+     * @param string $url current URL
      * @param string $text the link text label
      * @param string $idattr the id attribute of it or it's nearest ancestor
-     * @return the new url node or false
+     * @return the new URL node or false
      */
     private function link_from_node_to_url($from, $url, $text, $idattr) {
 
         global $DB;
 
-        // Add the node url to the queue.
+        // Add the node URL to the queue.
         $to = $this->mark_for_crawl($from->url, $url);
         if ($to === false) {
             return false;
@@ -802,11 +780,11 @@ class crawler {
     }
 
     /**
-     * Scrapes a fully qualified url and returns details about it
+     * Scrapes a fully qualified URL and returns details about it
      *
      * The format returns is ready to directly insert into the DB queue
      *
-     * @param string $url current url
+     * @param string $url current URL
      * @return the result object
      */
     public function scrape($url) {
@@ -836,42 +814,69 @@ class crawler {
         $result->url              = $url;
 
         $raw   = curl_exec($s);
+
+        $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
+
+        $contenttype              = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
+        $result->mimetype         = preg_replace('/;.*/', '', $contenttype);
+
+        $result->lastcrawled      = time();
+
+        $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
+
+        $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
+        if ($final != $url) {
+            $result->redirect = $final;
+            $mdlw = strlen($CFG->wwwroot);
+            if (substr ($final, 0, $mdlw) !== $CFG->wwwroot) {
+                $result->external = 1;
+            }
+        } else {
+            $result->redirect = '';
+        }
+
         if (empty($raw)) {
-            $result->url              = $url;
             $result->httpmsg          = 'Curl Error: ' . curl_errno($s);
             $result->title            = curl_error($s);
             $result->contents         = '';
             $result->httpcode         = '500';
-            $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
-            $mimetype                 = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
-            $mimetype                 = preg_replace('/;.*/', '', $mimetype);
-            $result->mimetype         = $mimetype;
-            $result->lastcrawled      = time();
-            $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
-            $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
-            if ($final != $url) {
-                $result->redirect = $final;
-                $mdlw = strlen($CFG->wwwroot);
-                if (substr ($final, 0, $mdlw) !== $CFG->wwwroot) {
-                    $result->external = 1;
-                }
-            } else {
-                $result->redirect = '';
-            }
-            curl_close($s);
-            return $result;
-        }
-        // See http://stackoverflow.com/questions/9351694/setting-php-default-encoding-to-utf-8 for more.
-        unset($charset);
-        $contenttype = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
-        $ishtml = (strpos($contenttype, 'text/html') === 0); // Related to Issue #13.
+        } else {
+            $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
+            $headers = substr($raw, 0, $headersize);
+            $header = strtok($headers, "\n");
+            $result->httpmsg          = explode(" ", $header, 3)[2];
 
-        $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
-        $headers = substr($raw, 0, $headersize);
-        $header = strtok($headers, "\n");
-        $result->httpmsg          = explode(" ", $header, 3)[2];
-        $result->contents         = $ishtml ? substr($raw, $headersize) : '';
-        $data = $result->contents;
+            $ishtml = (strpos($contenttype, 'text/html') === 0); // Related to Issue #13.
+            $data = $ishtml ? substr($raw, $headersize) : '';
+
+            /* Convert it if it is anything but UTF-8 */
+            $charset = $this->detect_encoding($contenttype, $data);
+            if (is_string($charset) && strtoupper($charset) != "UTF-8") {
+                // You can change 'UTF-8' to 'UTF-8//IGNORE' to
+                // ignore conversion errors and still output something reasonable.
+                $result->contents     = iconv($charset, 'UTF-8', $data);
+            } else {
+                $result->contents     = $data;
+            }
+
+            $result->httpcode         = curl_getinfo($s, CURLINFO_HTTP_CODE);
+        }
+
+        curl_close($s);
+        return $result;
+    }
+
+    /**
+     * Determines the character encoding of a document from its HTTP Content-Type header and its content.
+     *
+     * @param string $contenttype The value of the Content-Type header from the HTTP Response message.
+     * @param string $data The raw body of the document.
+     * @return string|boolean The character encoding declared (or guessed) for the document; `false` if none could be detected.
+     */
+    private function detect_encoding($contenttype, $data) {
+        // See https://stackoverflow.com/questions/9351694/setting-php-default-encoding-to-utf-8 for more.
+
+        unset($charset);
 
         /* 1: HTTP Content-Type: header */
         preg_match( '@([\w/+]+)(;\s*charset=(\S+))?@i', $contenttype, $matches );
@@ -905,39 +910,12 @@ class crawler {
 
         // 5: Default for HTML.
         if (!isset($charset)) {
-            if (strstr($contenttype, "text/html") === 0) {
-                $charset = "ISO 8859-1";
+            if (strpos($contenttype, "text/html") === 0) {
+                $charset = "ISO-8859-1";
             }
         }
 
-        /* Convert it if it is anything but UTF-8 */
-        /* You can change "UTF-8"  to "UTF-8//IGNORE" to
-           ignore conversion errors and still output something reasonable */
-        if (isset($charset) && strtoupper($charset) != "UTF-8") {
-             $result->contents  = iconv($charset, 'UTF-8', $result->contents);
-        }
-
-        $result->httpcode         = curl_getinfo($s, CURLINFO_HTTP_CODE );
-        $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
-        $mimetype                 = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
-        $mimetype                 = preg_replace('/;.*/', '', $mimetype);
-        $result->mimetype         = $mimetype;
-        $result->lastcrawled      = time();
-        $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
-        $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
-
-        if ($final != $url) {
-            $result->redirect = $final;
-            $mdlw = strlen($CFG->wwwroot);
-            if (substr ($final, 0, $mdlw) !== $CFG->wwwroot) {
-                $result->external = 1;
-            }
-        } else {
-            $result->redirect = '';
-        }
-
-        curl_close($s);
-        return $result;
+        return isset($charset) ? $charset : false;
     }
 
     /**
