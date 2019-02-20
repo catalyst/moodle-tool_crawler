@@ -807,42 +807,69 @@ class crawler {
         $result->url              = $url;
 
         $raw   = curl_exec($s);
+
+        $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
+
+        $contenttype              = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
+        $result->mimetype         = preg_replace('/;.*/', '', $contenttype);
+
+        $result->lastcrawled      = time();
+
+        $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
+
+        $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
+        if ($final != $url) {
+            $result->redirect = $final;
+            $mdlw = strlen($CFG->wwwroot);
+            if (substr ($final, 0, $mdlw) !== $CFG->wwwroot) {
+                $result->external = 1;
+            }
+        } else {
+            $result->redirect = '';
+        }
+
         if (empty($raw)) {
-            $result->url              = $url;
             $result->httpmsg          = 'Curl Error: ' . curl_errno($s);
             $result->title            = curl_error($s);
             $result->contents         = '';
             $result->httpcode         = '500';
-            $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
-            $mimetype                 = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
-            $mimetype                 = preg_replace('/;.*/', '', $mimetype);
-            $result->mimetype         = $mimetype;
-            $result->lastcrawled      = time();
-            $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
-            $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
-            if ($final != $url) {
-                $result->redirect = $final;
-                $mdlw = strlen($CFG->wwwroot);
-                if (substr ($final, 0, $mdlw) !== $CFG->wwwroot) {
-                    $result->external = 1;
-                }
-            } else {
-                $result->redirect = '';
-            }
-            curl_close($s);
-            return $result;
-        }
-        // See http://stackoverflow.com/questions/9351694/setting-php-default-encoding-to-utf-8 for more.
-        unset($charset);
-        $contenttype = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
-        $ishtml = (strpos($contenttype, 'text/html') === 0); // Related to Issue #13.
+        } else {
+            $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
+            $headers = substr($raw, 0, $headersize);
+            $header = strtok($headers, "\n");
+            $result->httpmsg          = explode(" ", $header, 3)[2];
 
-        $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
-        $headers = substr($raw, 0, $headersize);
-        $header = strtok($headers, "\n");
-        $result->httpmsg          = explode(" ", $header, 3)[2];
-        $result->contents         = $ishtml ? substr($raw, $headersize) : '';
-        $data = $result->contents;
+            $ishtml = (strpos($contenttype, 'text/html') === 0); // Related to Issue #13.
+            $data = $ishtml ? substr($raw, $headersize) : '';
+
+            /* Convert it if it is anything but UTF-8 */
+            $charset = $this->detect_encoding($contenttype, $data);
+            if (is_string($charset) && strtoupper($charset) != "UTF-8") {
+                // You can change 'UTF-8' to 'UTF-8//IGNORE' to
+                // ignore conversion errors and still output something reasonable.
+                $result->contents     = iconv($charset, 'UTF-8', $data);
+            } else {
+                $result->contents     = $data;
+            }
+
+            $result->httpcode         = curl_getinfo($s, CURLINFO_HTTP_CODE);
+        }
+
+        curl_close($s);
+        return $result;
+    }
+
+    /**
+     * Determines the character encoding of a document from its HTTP Content-Type header and its content.
+     *
+     * @param string $contenttype The value of the Content-Type header from the HTTP Response message.
+     * @param string $data The raw body of the document.
+     * @return string|boolean The character encoding declared (or guessed) for the document; `false` if none could be detected.
+     */
+    private function detect_encoding($contenttype, $data) {
+        // See https://stackoverflow.com/questions/9351694/setting-php-default-encoding-to-utf-8 for more.
+
+        unset($charset);
 
         /* 1: HTTP Content-Type: header */
         preg_match( '@([\w/+]+)(;\s*charset=(\S+))?@i', $contenttype, $matches );
@@ -881,34 +908,7 @@ class crawler {
             }
         }
 
-        /* Convert it if it is anything but UTF-8 */
-        /* You can change "UTF-8"  to "UTF-8//IGNORE" to
-           ignore conversion errors and still output something reasonable */
-        if (isset($charset) && strtoupper($charset) != "UTF-8") {
-             $result->contents  = iconv($charset, 'UTF-8', $result->contents);
-        }
-
-        $result->httpcode         = curl_getinfo($s, CURLINFO_HTTP_CODE );
-        $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
-        $mimetype                 = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
-        $mimetype                 = preg_replace('/;.*/', '', $mimetype);
-        $result->mimetype         = $mimetype;
-        $result->lastcrawled      = time();
-        $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
-        $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
-
-        if ($final != $url) {
-            $result->redirect = $final;
-            $mdlw = strlen($CFG->wwwroot);
-            if (substr ($final, 0, $mdlw) !== $CFG->wwwroot) {
-                $result->external = 1;
-            }
-        } else {
-            $result->redirect = '';
-        }
-
-        curl_close($s);
-        return $result;
+        return isset($charset) ? $charset : false;
     }
 
     /**
