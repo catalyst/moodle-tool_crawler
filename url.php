@@ -42,8 +42,8 @@ echo $OUTPUT->header();
 
 echo $OUTPUT->heading(get_string('urldetails', 'tool_crawler'));
 $urldetailshelp = get_string('urldetails_help', 'tool_crawler');
+$urldetailshelp = htmlspecialchars($urldetailshelp, ENT_NOQUOTES | ENT_HTML401);
 $urldetailshelp = preg_replace('/(\r\n?|\n)/', '<br>', $urldetailshelp);
-$urldetailshelp = htmlentities($urldetailshelp, ENT_NOQUOTES | ENT_HTML5);
 echo '<p>' . $urldetailshelp . '</p>';
 
 $urlrec = $DB->get_record('tool_crawler_url', array('url' => $url));
