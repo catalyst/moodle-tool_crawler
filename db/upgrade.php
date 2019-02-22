@@ -34,5 +34,15 @@ function xmldb_tool_crawler_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
+    if ($oldversion < 2019022000) {
+
+        core_php_time_limit::raise();
+
+        $tablename = 'tool_crawler_url';
+        $urlcolumn = $DB->get_columns($tablename)['url'];
+        $DB->replace_all_text($tablename, $urlcolumn, '&amp;', '&');
+
+        upgrade_plugin_savepoint(true, 2019022000, 'tool', 'crawler');
+    }
     return true;
 }

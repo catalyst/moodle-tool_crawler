@@ -36,10 +36,10 @@ function tool_crawler_link($url, $label, $redirect = '') {
     $html = html_writer::link(new moodle_url('url.php', array('url' => $url)), $label) .
             ' ' .
             html_writer::link($url, '↗', array('target' => 'link')) .
-            '<br><small>' . $url . '</small>';
+            '<br><small>' . htmlspecialchars($url) . '</small>';
 
     if ($redirect) {
-        $linkhtmlsnippet = html_writer::link($redirect, $redirect);
+        $linkhtmlsnippet = html_writer::link($redirect, htmlspecialchars($redirect, ENT_NOQUOTES | ENT_HTML5));
         $html .= "<br>" . get_string('redirect', 'tool_crawler', array('redirectlink' => $linkhtmlsnippet));
     }
 
