@@ -285,7 +285,7 @@ class crawler {
         $excludes = str_replace("\r", '', self::get_config()->excludemdlparam);
         $excludes = explode("\n", $excludes);
         $murl->remove_params($excludes);
-        $url = $murl->raw_out();
+        $url = $murl->raw_out(false);
 
         // Some special logic, if it looks like a course URL or module URL
         // then avoid scraping the URL at all, if it has been excluded.
