@@ -70,7 +70,8 @@ class crawler {
         if (!$botusername) {
             return get_string('configmissing', 'tool_crawler');
         }
-        if ( !$DB->get_record('user', array('username' => $botusername)) ) {
+        $botuser = $DB->get_record('user', array('username' => $botusername));
+        if ( !$botuser ) {
             return get_string('botusermissing', 'tool_crawler') .
                 ' <a href="?action=makebot">' . get_string('autocreate', 'tool_crawler') . '</a>';
         }
@@ -85,8 +86,14 @@ class crawler {
                 array('resredirect' => $result->redirect));
         }
 
-        $hello = strpos($result->contents, get_string('hellorobot', 'tool_crawler',
-                array('botusername' => self::get_config()->botusername)));
+        // When the bot successfully scraped the test page (see above), it was logged in and used its own language. So we have to
+        // retrieve the expected string in the language set for the _crawler user_, and not in the _current user’s_ language.
+        $oldforcelang = force_current_language($botuser->lang);
+        $expectedcontent = get_string('hellorobot', 'tool_crawler',
+                array('botusername' => self::get_config()->botusername));
+        force_current_language($oldforcelang);
+
+        $hello = strpos($result->contents, $expectedcontent);
         if (!$hello) {
             return get_string('bottestpagenotreturned', 'tool_crawler');
         }
@@ -830,7 +837,7 @@ class crawler {
 
         if (empty($raw)) {
             $result->httpmsg          = 'Curl Error: ' . curl_errno($s);
-            $result->title            = curl_error($s);
+            $result->title            = curl_error($s); // We do not try to translate Curl error messages.
             $result->contents         = '';
             $result->httpcode         = '500';
         } else {

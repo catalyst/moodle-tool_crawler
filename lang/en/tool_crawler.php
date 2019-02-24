@@ -38,6 +38,27 @@ $string['botusername'] = 'Bot username';
 $string['botusernamedesc'] = 'The username of the moodle user to crawl as';
 $string['broken'] = 'Broken links / URLs';
 $string['broken_header'] = '<p>Duplicate URLs will only be searched once.</p>';
+$string['clicrawlashelp'] = 'Crawl a URL as the robot and parse it.
+
+Useful for when a page has been corrected and you want to instantly reflect this.
+
+Options:
+-h, --help      Print out this help
+-u, --url       URL to crawl and process
+
+Example:
+$sudo -u www-data php crawl-as.php --url=http://ford.com/
+';
+$string['clierror'] = 'Error: {$a}';
+$string['cliscrapeashelp'] = 'Scrape the URL as the robot would see it, but do not process/queue it.
+
+Options:
+-h, --help      Print out this help
+-u, --url       URL to scrape
+
+Example:
+$sudo -u www-data php scrape-as.php --url=http://ford.com/
+';
 $string['configmissing'] = 'Config missing';
 $string['course'] = 'Course';
 $string['curcrawlstart'] = 'Current crawl started at';
@@ -48,7 +69,6 @@ $string['duration'] = 'Duration';
 $string['event:crawlstart'] = 'Link check crawl started';
 $string['event:crawlstartdesc'] = 'Link check crawl started {$a}';
 $string['eventrobotcleanupcompleted'] = 'Linkchecker robot cleanup completed';
-$string['eventrobotcleanupcompleteddesc'] = 'Linkchecker robot finished clearing old URLs from crawling history. Number of removed records: {$a->numrecsdeleted}';
 $string['eventrobotcleanupstarted'] = 'Linkchecker robot cleanup started';
 $string['excludeexturl'] = 'Exclude external URLs';
 $string['excludeexturldesc'] = 'One URL regex per line, each is matched against the full URL';
@@ -64,6 +84,7 @@ $string['found'] = 'Found';
 $string['frompage'] = 'From page';
 $string['good'] = 'Good';
 $string['hellorobot'] = 'Hello robot: \'{$a->botusername}\'';
+$string['hellorobotheading'] = 'Hello robot!';
 $string['idattr'] = 'HTML context';
 $string['incomingurls'] = 'Incoming URLs';
 $string['incourse'] = 'In course';
@@ -98,6 +119,7 @@ $string['recentactivity'] = 'Days of recent activity';
 $string['recentactivitydesc'] = 'A course is crawled only if it has been viewed in the last X days.
 At ' . '{$a->days}' . ' day(s) of recent activity, this will include ' . '{$a->count}' . ' courses total.';
 $string['recent_header'] = '';
+$string['redirect'] = 'Redirect: {$a->redirectlink}';
 $string['response'] = 'Response';
 $string['retentionperiod'] = 'Retention period for bad URLs';
 $string['retentionperioddesc'] = 'How many days to keep bad URLs in database.';
@@ -105,6 +127,7 @@ $string['retry'] = 'Retry';
 $string['resetprogress'] = 'Reset Progress';
 $string['resetprogress_header'] = 'Reset Crawler Progress';
 $string['resetprogress_warning'] = 'Warning. You are about to reset the Crawler. Are you sure you want to do this?';
+$string['resetprogress_warning_button'] = 'Reset Crawler';
 $string['robotcleanup'] = 'Robot cleanup';
 $string['robotstatus'] = 'Robot status';
 $string['seedurl'] = 'Seed URL';
@@ -113,6 +136,7 @@ $string['settings'] = 'Settings';
 $string['size'] = 'Size';
 $string['slowurl'] = 'Slow URL';
 $string['status'] = 'Robot status';
+$string['strftimerecentsecondshtml'] = '%h %e,&nbsp;%H:%M:%S';
 $string['useraccount'] = 'User account';
 $string['unknown'] = 'Unknown';
 $string['url'] = 'URL';

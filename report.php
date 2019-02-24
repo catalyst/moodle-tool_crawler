@@ -78,6 +78,8 @@ if ($retryid) {
     $robot->reset_for_recrawl($retryid);
 }
 
+$datetimeformat = get_string('strftimerecentsecondshtml', 'tool_crawler');
+
 if ($report == 'broken') {
 
     $sql = " FROM {tool_crawler_url}  b
@@ -130,7 +132,7 @@ if ($report == 'broken') {
         $data = array(
             html_writer::link(new moodle_url($baseurl, array('retryid' => $row->toid )),
                 get_string('retry', 'tool_crawler')),
-            userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
+            userdate($row->lastcrawled, $datetimeformat),
             tool_crawler_http_code($row),
             tool_crawler_link($row->target, $text, $row->redirect),
             tool_crawler_link($row->url, $row->title, $row->redirect)
@@ -184,7 +186,7 @@ if ($report == 'broken') {
             $text = get_string('notyetknown', 'tool_crawler');
         }
         $data = array(
-            userdate($row->needscrawl, '%h %e,&nbsp;%H:%M:%S'),
+            userdate($row->needscrawl, $datetimeformat),
             tool_crawler_link($row->target, $text, $row->redirect)
         );
         if (!$courseid) {
@@ -242,7 +244,7 @@ if ($report == 'broken') {
         $code = tool_crawler_http_code($row);
         $size = $row->filesize * 1;
         $data = array(
-            userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
+            userdate($row->lastcrawled, $datetimeformat),
             $code,
             display_size($size),
             tool_crawler_link($row->target, $text, $row->redirect),
@@ -310,7 +312,7 @@ if ($report == 'broken') {
             $text = get_string('missing', 'tool_crawler');
         }
         $data = array(
-            userdate($row->lastcrawled, '%h %e,&nbsp;%H:%M:%S'),
+            userdate($row->lastcrawled, $datetimeformat),
             display_size($size),
             tool_crawler_link($row->target, $text, $row->redirect),
             $row->mimetype,
