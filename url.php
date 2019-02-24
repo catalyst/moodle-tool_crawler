@@ -38,18 +38,18 @@ $PAGE->set_url($navurl);
 $PAGE->set_pagelayout('admin');
 $PAGE->set_title(get_string('urldetails', 'tool_crawler') );
 
-echo $OUTPUT->header();
+$page = $OUTPUT->header();
 
-echo $OUTPUT->heading(get_string('urldetails', 'tool_crawler'));
+$page .= $OUTPUT->heading(get_string('urldetails', 'tool_crawler'));
 $urldetailshelp = get_string('urldetails_help', 'tool_crawler');
 $urldetailshelp = htmlspecialchars($urldetailshelp, ENT_NOQUOTES | ENT_HTML401);
 $urldetailshelp = preg_replace('/(\r\n?|\n)/', '<br>', $urldetailshelp);
-echo '<p>' . $urldetailshelp . '</p>';
+$page .= '<p>' . $urldetailshelp . '</p>';
 
 $urlrec = $DB->get_record('tool_crawler_url', array('url' => $url));
-echo '<h2>' . tool_crawler_link($url, $urlrec->title, $urlrec->redirect) . '</h2>';
+$page .= '<h2>' . tool_crawler_link($url, $urlrec->title, $urlrec->redirect) . '</h2>';
 
-echo '<h3>' . get_string('outgoingurls', 'tool_crawler') . '</h3>';
+$page .= '<h3>' . get_string('outgoingurls', 'tool_crawler') . '</h3>';
 
 $data  = $DB->get_records_sql("
      SELECT concat(l.a, '-', l.b) AS id,
@@ -76,12 +76,12 @@ $data  = $DB->get_records_sql("
 
 
 /**
- * Print a nice table
+ * Generate a nice table
  *
  * @param array $data table
  * @return html output
  */
-function print_table($data) {
+function gen_table($data) {
 
     $table = new html_table();
     $table->head = array(
@@ -113,12 +113,12 @@ function print_table($data) {
         );
         $table->data[] = $data;
     }
-    echo html_writer::table($table);
+    return html_writer::table($table);
 }
 
-print_table($data);
+$page .= gen_table($data);
 
-echo '<h3>' . get_string('incomingurls', 'tool_crawler') . '</h3>';
+$page .= '<h3>' . get_string('incomingurls', 'tool_crawler') . '</h3>';
 
 $data  = $DB->get_records_sql("
      SELECT concat(l.a, '-', l.b) AS id,
@@ -143,7 +143,8 @@ $data  = $DB->get_records_sql("
    ORDER BY f.lastcrawled DESC
 ", array($url));
 
-print_table($data);
+$page .= gen_table($data);
 
-echo $OUTPUT->footer();
+$page .= $OUTPUT->footer();
 
+echo $page;
