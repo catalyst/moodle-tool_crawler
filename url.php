@@ -22,8 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
-require_once($CFG->libdir . '/adminlib.php');
-require_once('locallib.php');
+require_once(__DIR__ . '/locallib.php');
 
 $url = required_param('url', PARAM_RAW);
 echo tool_crawler_url_create_page($url);
