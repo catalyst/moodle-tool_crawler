@@ -25,56 +25,6 @@ require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once('locallib.php');
 
-require_login(null, false);
-$context = context_system::instance();
-require_capability('moodle/site:config', $context);
-
-$url = required_param('url', PARAM_RAW);
-$navurl = new moodle_url('/admin/tool/crawler/url.php', array(
-    'url' => $url
-));
-$PAGE->set_context($context);
-$PAGE->set_url($navurl);
-$PAGE->set_pagelayout('admin');
-$PAGE->set_title(get_string('urldetails', 'tool_crawler') );
-
-$page = $OUTPUT->header();
-
-$page .= $OUTPUT->heading(get_string('urldetails', 'tool_crawler'));
-$urldetailshelp = get_string('urldetails_help', 'tool_crawler');
-$urldetailshelp = htmlspecialchars($urldetailshelp, ENT_NOQUOTES | ENT_HTML401);
-$urldetailshelp = preg_replace('/(\r\n?|\n)/', '<br>', $urldetailshelp);
-$page .= '<p>' . $urldetailshelp . '</p>';
-
-$urlrec = $DB->get_record('tool_crawler_url', array('url' => $url));
-$page .= '<h2>' . tool_crawler_link($url, $urlrec->title, $urlrec->redirect) . '</h2>';
-
-$page .= '<h3>' . get_string('outgoingurls', 'tool_crawler') . '</h3>';
-
-$data  = $DB->get_records_sql("
-     SELECT concat(l.a, '-', l.b) AS id,
-            l.text,
-            l.idattr,
-            t.url target,
-            t.title,
-            t.redirect,
-            t.httpmsg,
-            t.httpcode,
-            t.filesize,
-            t.lastcrawled,
-            t.mimetype,
-            t.external,
-            t.courseid,
-            c.shortname
-       FROM {tool_crawler_edge} l
-       JOIN {tool_crawler_url} f ON f.id = l.a
-       JOIN {tool_crawler_url} t ON t.id = l.b
-  LEFT JOIN {course} c ON c.id = t.courseid
-      WHERE f.url = ?
-   ORDER BY f.lastcrawled DESC
-", array($url));
-
-
 /**
  * Generate a nice table
  *
@@ -82,7 +32,6 @@ $data  = $DB->get_records_sql("
  * @return html output
  */
 function gen_table($data) {
-
     $table = new html_table();
     $table->head = array(
         get_string('lastcrawledtime', 'tool_crawler'),
@@ -116,35 +65,96 @@ function gen_table($data) {
     return html_writer::table($table);
 }
 
-$page .= gen_table($data);
+/**
+ * Generates and returns a full HTML page with details about a URL.
+ *
+ * @param string $url The URL.
+ * @return string A HTML page about the URL.
+ */
+function create_url_page($url) {
+    global $PAGE, $OUTPUT, $DB;
 
-$page .= '<h3>' . get_string('incomingurls', 'tool_crawler') . '</h3>';
+    require_login(null, false);
+    $context = context_system::instance();
+    require_capability('moodle/site:config', $context);
 
-$data  = $DB->get_records_sql("
-     SELECT concat(l.a, '-', l.b) AS id,
-            l.text,
-            l.idattr,
-            f.url target,
-            f.title,
-            f.redirect,
-            f.httpmsg,
-            f.httpcode,
-            f.filesize,
-            f.lastcrawled,
-            f.mimetype,
-            f.external,
-            f.courseid,
-            c.shortname
-       FROM {tool_crawler_edge} l
-       JOIN {tool_crawler_url} f ON f.id = l.a
-       JOIN {tool_crawler_url} t ON t.id = l.b
-  LEFT JOIN {course} c ON c.id = f.courseid
-      WHERE t.url = ?
-   ORDER BY f.lastcrawled DESC
-", array($url));
+    $navurl = new moodle_url('/admin/tool/crawler/url.php', array(
+        'url' => $url
+    ));
+    $PAGE->set_context($context);
+    $PAGE->set_url($navurl);
+    $PAGE->set_pagelayout('admin');
+    $PAGE->set_title(get_string('urldetails', 'tool_crawler') );
 
-$page .= gen_table($data);
+    $page = $OUTPUT->header();
 
-$page .= $OUTPUT->footer();
+    $page .= $OUTPUT->heading(get_string('urldetails', 'tool_crawler'));
+    $urldetailshelp = get_string('urldetails_help', 'tool_crawler');
+    $urldetailshelp = htmlspecialchars($urldetailshelp, ENT_NOQUOTES | ENT_HTML401);
+    $urldetailshelp = preg_replace('/(\r\n?|\n)/', '<br>', $urldetailshelp);
+    $page .= '<p>' . $urldetailshelp . '</p>';
 
-echo $page;
+    $urlrec = $DB->get_record('tool_crawler_url', array('url' => $url));
+    $page .= '<h2>' . tool_crawler_link($url, $urlrec->title, $urlrec->redirect) . '</h2>';
+
+    $page .= '<h3>' . get_string('outgoingurls', 'tool_crawler') . '</h3>';
+
+    $data  = $DB->get_records_sql("
+         SELECT concat(l.a, '-', l.b) AS id,
+                l.text,
+                l.idattr,
+                t.url target,
+                t.title,
+                t.redirect,
+                t.httpmsg,
+                t.httpcode,
+                t.filesize,
+                t.lastcrawled,
+                t.mimetype,
+                t.external,
+                t.courseid,
+                c.shortname
+           FROM {tool_crawler_edge} l
+           JOIN {tool_crawler_url} f ON f.id = l.a
+           JOIN {tool_crawler_url} t ON t.id = l.b
+      LEFT JOIN {course} c ON c.id = t.courseid
+          WHERE f.url = ?
+       ORDER BY f.lastcrawled DESC
+    ", array($url));
+
+    $page .= gen_table($data);
+
+    $page .= '<h3>' . get_string('incomingurls', 'tool_crawler') . '</h3>';
+
+    $data  = $DB->get_records_sql("
+         SELECT concat(l.a, '-', l.b) AS id,
+                l.text,
+                l.idattr,
+                f.url target,
+                f.title,
+                f.redirect,
+                f.httpmsg,
+                f.httpcode,
+                f.filesize,
+                f.lastcrawled,
+                f.mimetype,
+                f.external,
+                f.courseid,
+                c.shortname
+           FROM {tool_crawler_edge} l
+           JOIN {tool_crawler_url} f ON f.id = l.a
+           JOIN {tool_crawler_url} t ON t.id = l.b
+      LEFT JOIN {course} c ON c.id = f.courseid
+          WHERE t.url = ?
+       ORDER BY f.lastcrawled DESC
+    ", array($url));
+
+    $page .= gen_table($data);
+
+    $page .= $OUTPUT->footer();
+
+    return $page;
+}
+
+$url = required_param('url', PARAM_RAW);
+echo create_url_page($url);
