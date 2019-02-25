@@ -614,6 +614,42 @@ class crawler {
     }
 
     /**
+     * Converts an HTML DOM node to a plain text form. This is done by removing script and style elements, and by replacing images
+     * with their alternative text. Can be used to clean HTML from unwanted and potentially unsafe user-provided content.
+     *
+     * @param simple_html_dom_node $node The DOM node to convert.
+     * @return string The string representation of the DOM node. May be the empty string.
+     */
+    protected static function clean_html_node_content($node) {
+        if (!$node) {
+            return '';
+        }
+
+        if ($node->nodetype !== HDOM_TYPE_ELEMENT) {
+            return self::dom_text_decode_entities($node->plaintext);
+        }
+
+        $elementname = mb_strtolower($node->tag, 'UTF-8');
+
+        $ignoredelements = array('script', 'style');
+        if (in_array($elementname, $ignoredelements)) {
+            return '';
+        } else if ($elementname == 'img') {
+            return $node->alt ? self::dom_text_decode_entities($node->alt) : '';
+        }
+
+        if (!$node->nodes) {
+            return '';
+        }
+
+        $content = '';
+        foreach ($node->nodes as $sub) {
+            $content .= self::clean_html_node_content($sub);
+        }
+        return $content;
+    }
+
+    /**
      * Given a recently crawled node, extract links to other pages
      *
      * Should only be run on internal moodle pages, ie never follow
@@ -751,10 +787,11 @@ class crawler {
                 $walk = $walk->parent;
             } while ($walk);
 
+            $text = self::clean_html_node_content($e);
             if ($verbose > 1) {
-                printf (" - Found link to: %-20s / %-50s => %-50s\n", format_string($e->innertext), $e->href, $href);
+                printf (" - Found link to: %-20s / %-50s => %-50s\n", $text, $e->href, $href);
             }
-            $this->link_from_node_to_url($node, $href, $e->innertext, $idattr);
+            $this->link_from_node_to_url($node, $href, $text, $idattr);
         }
         return $node;
     }
