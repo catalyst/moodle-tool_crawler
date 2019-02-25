@@ -633,8 +633,9 @@ class crawler {
             return;
         }
 
-        if (isset($html->find('title', 0)->plaintext)) {
-            $node->title = $html->find('title', 0)->plaintext;
+        $titlenode = $html->find('title', 0);
+        if (isset($titlenode)) {
+            $node->title = $titlenode->plaintext;
             if ($verbose) {
                 echo " - Found title of: '$node->title'\n";
             }
