@@ -738,8 +738,15 @@ class crawler {
             $idattr = '';
             $walk = $e;
             do {
-                if ($walk->id) {
-                    $idattr = '#' . $walk->id . ' ' . $idattr;
+                $id = $walk->id;
+                if (isset($id)) {
+                    $id = self::dom_text_decode_entities($id);
+                    if ($id != '') {
+                        // Ensure that no disallowed characters creep in. See HTML 5.2 about the id attribute.
+                        if (preg_match('/[ \\t\\n\\x0C\\r]/', $id) === 0) {
+                            $idattr = '#' . $id . ' ' . $idattr;
+                        }
+                    }
                 }
                 $walk = $walk->parent;
             } while ($walk);

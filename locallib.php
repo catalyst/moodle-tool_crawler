@@ -114,10 +114,11 @@ function tool_crawler_url_gen_table($data) {
         }
         $code = tool_crawler_http_code($row);
         $size = $row->filesize * 1;
+        $idattr = htmlspecialchars($row->idattr, ENT_NOQUOTES | ENT_HTML401);
         $data = array(
             userdate($row->lastcrawled, $datetimeformat),
             $row->text,
-            str_replace(' #', '<br>#', $row->idattr),
+            str_replace(' #', '<br>#', $idattr),
             $code,
             display_size($size),
             tool_crawler_link($row->target, $title, $row->redirect),
