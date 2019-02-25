@@ -181,13 +181,13 @@ if ($report == 'broken') {
     }
     $table->data = array();
     foreach ($data as $row) {
-        $text = trim($row->title);
-        if (!$text || $text == "") {
-            $text = get_string('notyetknown', 'tool_crawler');
+        $title = trim($row->title);
+        if (!$title || $title == "") {
+            $title = get_string('notyetknown', 'tool_crawler');
         }
         $data = array(
             userdate($row->needscrawl, $datetimeformat),
-            tool_crawler_link($row->target, $text, $row->redirect)
+            tool_crawler_link($row->target, $title, $row->redirect)
         );
         if (!$courseid) {
             array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
@@ -237,9 +237,9 @@ if ($report == 'broken') {
     }
     $table->data = array();
     foreach ($data as $row) {
-        $text = trim($row->title);
-        if (!$text || $text == "") {
-            $text = get_string('unknown', 'tool_crawler');
+        $title = trim($row->title);
+        if (!$title || $title == "") {
+            $title = get_string('unknown', 'tool_crawler');
         }
         $code = tool_crawler_http_code($row);
         $size = $row->filesize * 1;
@@ -247,7 +247,7 @@ if ($report == 'broken') {
             userdate($row->lastcrawled, $datetimeformat),
             $code,
             display_size($size),
-            tool_crawler_link($row->target, $text, $row->redirect),
+            tool_crawler_link($row->target, $title, $row->redirect),
             $row->mimetype,
         );
         if (!$courseid) {

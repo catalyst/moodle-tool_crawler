@@ -94,9 +94,9 @@ function tool_crawler_url_gen_table($data) {
     $datetimeformat = get_string('strftimerecentsecondshtml', 'tool_crawler');
     $table->data = array();
     foreach ($data as $row) {
-        $text = trim($row->title);
-        if (!$text || $text == "") {
-            $text = get_string('unknown', 'tool_crawler');
+        $title = trim($row->title);
+        if (!$title || $title == "") {
+            $title = get_string('unknown', 'tool_crawler');
         }
         $code = tool_crawler_http_code($row);
         $size = $row->filesize * 1;
@@ -106,7 +106,7 @@ function tool_crawler_url_gen_table($data) {
             str_replace(' #', '<br>#', $row->idattr),
             $code,
             display_size($size),
-            tool_crawler_link($row->target, $text, $row->redirect),
+            tool_crawler_link($row->target, $title, $row->redirect),
             $row->mimetype,
         );
         $table->data[] = $data;
