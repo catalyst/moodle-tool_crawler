@@ -95,7 +95,7 @@ function tool_crawler_url_gen_table($data) {
     $table->data = array();
     foreach ($data as $row) {
         $title = trim($row->title);
-        if (!$title || $title == "") {
+        if ($title == "") {
             $title = get_string('unknown', 'tool_crawler');
         }
         $code = tool_crawler_http_code($row);

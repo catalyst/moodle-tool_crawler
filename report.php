@@ -126,7 +126,7 @@ if ($report == 'broken') {
     $table->data = array();
     foreach ($data as $row) {
         $text = trim($row->text);
-        if (!$text || $text == "") {
+        if ($text == "") {
             $text = get_string('missing', 'tool_crawler');
         }
         $data = array(
@@ -182,7 +182,7 @@ if ($report == 'broken') {
     $table->data = array();
     foreach ($data as $row) {
         $title = trim($row->title);
-        if (!$title || $title == "") {
+        if ($title == "") {
             $title = get_string('notyetknown', 'tool_crawler');
         }
         $data = array(
@@ -238,7 +238,7 @@ if ($report == 'broken') {
     $table->data = array();
     foreach ($data as $row) {
         $title = trim($row->title);
-        if (!$title || $title == "") {
+        if ($title == "") {
             $title = get_string('unknown', 'tool_crawler');
         }
         $code = tool_crawler_http_code($row);
@@ -308,7 +308,7 @@ if ($report == 'broken') {
     foreach ($data as $row) {
         $size = $row->filesize * 1;
         $text = trim($row->text);
-        if (!$text || $text == "") {
+        if ($text == "") {
             $text = get_string('missing', 'tool_crawler');
         }
         $data = array(
