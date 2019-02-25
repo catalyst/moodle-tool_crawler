@@ -25,12 +25,17 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Render a link
+ * Renders a link as HTML.
  *
- * @param string $url a URL link
- * @param string $label the a tag label
- * @param string $redirect The final URL if a redirect was served
- * @return html output
+ * Outputs a link from the given link text to the URL detail page, with an added arrow linked to the link target itself. These are
+ * followed by the URL in text form (intended for the user).
+ *
+ * If a redirect link is passed, renders this as well in an additional separate line, as a link to the redirection URL.
+ *
+ * @param string $url The URL to which the link points.
+ * @param string $label The link text.
+ * @param string $redirect The final URL if a redirect was served.
+ * @return string HTML snippet which can be used in output.
  */
 function tool_crawler_link($url, $label, $redirect = '') {
     $html = html_writer::link(new moodle_url('url.php', array('url' => $url)), $label) .
