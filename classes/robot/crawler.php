@@ -602,6 +602,16 @@ class crawler {
 
     }
 
+    /**
+     * Decodes HTML character entity references in a given text and returns the text with them replaced. Intended to be used on
+     * texts obtained from simple_html_dom, because they are returned with entity references intact.
+     *
+     * @param string $text The text which may contain HTML character entity references, in UTF-8 encoding.
+     * @return string The text with all character entity references resolved, in UTF-8 encoding.
+     */
+    protected static function dom_text_decode_entities($text) {
+        return html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
 
     /**
      * Given a recently crawled node, extract links to other pages
@@ -635,7 +645,7 @@ class crawler {
 
         $titlenode = $html->find('title', 0);
         if (isset($titlenode)) {
-            $node->title = $titlenode->plaintext;
+            $node->title = self::dom_text_decode_entities($titlenode->plaintext);
             if ($verbose) {
                 echo " - Found title of: '$node->title'\n";
             }

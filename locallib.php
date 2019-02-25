@@ -32,12 +32,21 @@ defined('MOODLE_INTERNAL') || die();
  *
  * If a redirect link is passed, renders this as well in an additional separate line, as a link to the redirection URL.
  *
+ * The link text can be given either as plain text (which will then be properly escaped for HTML output) or as an HTML snippet (in
+ * which case the caller must already have ensured that everything is properly escaped if necessary).
+ *
  * @param string $url The URL to which the link points.
- * @param string $label The link text.
+ * @param string $label The link text. Can be plain text or an HTML snippet; select mode with parameter $labelishtml.
  * @param string $redirect The final URL if a redirect was served.
+ * @param string $labelishtml Whether the $label parameter contains an HTML snippet (if true) or plain text (if false). Defaults to
+ *               plain text.
  * @return string HTML snippet which can be used in output.
  */
-function tool_crawler_link($url, $label, $redirect = '') {
+function tool_crawler_link($url, $label, $redirect = '', $labelishtml = false) {
+    if (!$labelishtml) {
+        $label = htmlspecialchars($label, ENT_NOQUOTES | ENT_HTML401);
+    }
+
     $html = html_writer::link(new moodle_url('url.php', array('url' => $url)), $label) .
             ' ' .
             html_writer::link($url, '↗', array('target' => 'link')) .

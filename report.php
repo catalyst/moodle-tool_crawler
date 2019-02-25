@@ -134,7 +134,7 @@ if ($report == 'broken') {
                 get_string('retry', 'tool_crawler')),
             userdate($row->lastcrawled, $datetimeformat),
             tool_crawler_http_code($row),
-            tool_crawler_link($row->target, $text, $row->redirect),
+            tool_crawler_link($row->target, $text, $row->redirect, true),
             tool_crawler_link($row->url, $row->title, $row->redirect)
         );
         if (!$courseid) {
@@ -314,7 +314,7 @@ if ($report == 'broken') {
         $data = array(
             userdate($row->lastcrawled, $datetimeformat),
             display_size($size),
-            tool_crawler_link($row->target, $text, $row->redirect),
+            tool_crawler_link($row->target, $text, $row->redirect, true),
             $row->mimetype,
             tool_crawler_link($row->url, $row->title, $row->redirect)
         );
