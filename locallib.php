@@ -117,7 +117,7 @@ function tool_crawler_url_gen_table($data) {
         $idattr = htmlspecialchars($row->idattr, ENT_NOQUOTES | ENT_HTML401);
         $data = array(
             userdate($row->lastcrawled, $datetimeformat),
-            $row->text,
+            htmlspecialchars($row->text, ENT_NOQUOTES | ENT_HTML401),
             str_replace(' #', '<br>#', $idattr),
             $code,
             display_size($size),

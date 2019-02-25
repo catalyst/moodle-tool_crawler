@@ -128,6 +128,10 @@ if ($report == 'broken') {
         $text = trim($row->text);
         if ($text == "") {
             $text = get_string('missing', 'tool_crawler');
+            $text = htmlspecialchars($text, ENT_NOQUOTES | ENT_HTML401);
+            // May add a bit of markup here so that the user can differentiate the "missing" message from an equal link text.
+        } else {
+            $text = htmlspecialchars($text, ENT_NOQUOTES | ENT_HTML401);
         }
         $data = array(
             html_writer::link(new moodle_url($baseurl, array('retryid' => $row->toid )),
@@ -310,6 +314,10 @@ if ($report == 'broken') {
         $text = trim($row->text);
         if ($text == "") {
             $text = get_string('missing', 'tool_crawler');
+            $text = htmlspecialchars($text, ENT_NOQUOTES | ENT_HTML401);
+            // May add a bit of markup here so that the user can differentiate the "missing" message from an equal link text.
+        } else {
+            $text = htmlspecialchars($text, ENT_NOQUOTES | ENT_HTML401);
         }
         $data = array(
             userdate($row->lastcrawled, $datetimeformat),
