@@ -26,6 +26,8 @@ use tool_crawler\robot\crawler;
 
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
 
+require_once(__DIR__ . '/../../locallib.php');
+
 /**
  *  Unit tests for link crawler robot
  *
@@ -186,6 +188,71 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
         $found = $DB->record_exists('tool_crawler_url', ['id' => $nodeid]);
         self::assertFalse($found);
     }
+
+    /**
+     * Regression test for Issue #48: database must store URI without HTML-escaping, but URI must still be escaped when it is output
+     * to an HTML document.
+     */
+    public function test_uri_escaping() {
+        $baseurl = 'http://crawler.test/';
+        $relativeurl = 'course/view.php?id=1&section=2'; // The '&' character is the important part here.
+        $expectedurl = $baseurl . $relativeurl;
+        $escapedexpected = 'http://crawler.test/course/view.php?id=1&amp;section=2';
+        $node = $this->robot->mark_for_crawl($baseurl, $relativeurl);
+        self::assertEquals($expectedurl, $node->url);
+
+        $this->setAdminUser();
+        $page = tool_crawler_url_create_page($expectedurl);
+        $expectedpattern = '@' .
+                preg_quote('<h2>', '@') .
+                '.*' .
+                preg_quote('<a ', '@') .
+                '[^>]*' . // XXX: Not *100%* reliable, as '>' *might* be contained in attribute values.
+                preg_quote('href="' . $escapedexpected . '">↗</a><br><small>' . $escapedexpected . '</small>', '@') .
+                '@';
+        self::assertRegExp($expectedpattern, $page);
+    }
+
+    /**
+     * Regression test for an issue similar to Issue #48: redirection URI must be escaped when it is output to an HTML document.
+     */
+    public function test_redirection_uri_escaping() {
+        global $DB;
+
+        $url = 'http://crawler.test/course/view.php?id=1&section=2';
+        $redirecturl = 'http://crawler.test/local/extendedview/viewcourse.php?id=1&section=2'; // The '&' is the important part.
+        $escapedredirecturl = 'http://crawler.test/local/extendedview/viewcourse.php?id=1&amp;section=2';
+        $node = [
+            'url' => $url,
+            'external' => 0,
+            'createdate' => strtotime("16-05-2016 10:00:00"),
+            'lastcrawled' => strtotime("16-05-2016 11:20:00"),
+            'needscrawl' => strtotime("17-05-2017 10:00:00"),
+            'httpcode' => 200,
+            'mimetype' => 'text/html',
+            'title' => 'Crawler Test',
+            'downloadduration' => 0.23,
+            'filesize' => 44003,
+            'redirect' => $redirecturl,
+            'courseid' => 1,
+            'contextid' => 1,
+            'cmid' => null,
+            'ignoreduserid' => null,
+            'ignoredtime' => null,
+            'httpmsg' => 'OK'
+        ];
+        $DB->insert_record('tool_crawler_url', $node);
+
+        $this->setAdminUser();
+        $page = tool_crawler_url_create_page($url);
+        $expectedpattern = '@' .
+                preg_quote('<h2>', '@') .
+                '.*' .
+                preg_quote('<br>Redirect: <a href="' . $escapedredirecturl . '">' . $escapedredirecturl . '</a></h2>', '@') .
+                '@';
+        self::assertRegExp($expectedpattern, $page);
+    }
+
 }
 
 
