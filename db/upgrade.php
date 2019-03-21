@@ -34,5 +34,27 @@ function xmldb_tool_crawler_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
+    if ($oldversion < 2019022000) {
+
+        core_php_time_limit::raise();
+
+        $tablename = 'tool_crawler_url';
+        $urlcolumn = $DB->get_columns($tablename)['url'];
+        $DB->replace_all_text($tablename, $urlcolumn, '&amp;', '&');
+
+        upgrade_plugin_savepoint(true, 2019022000, 'tool', 'crawler');
+    }
+
+    if ($oldversion < 2019022200) {
+        $table = new xmldb_table('tool_crawler_url');
+        $field = new xmldb_field('errormsg', XMLDB_TYPE_TEXT, null, null, false, false, null, 'httpmsg');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2019022200, 'tool', 'crawler');
+    }
+
     return true;
 }

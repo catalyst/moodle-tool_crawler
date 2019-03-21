@@ -60,7 +60,7 @@ class robot_cleanup_started extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "Linkchecker robot started clearing old URLs from crawling history.\n";
+        return "Linkchecker robot started clearing old URLs from crawling history.";
     }
 
     /**

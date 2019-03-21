@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Perform one cron 'tick' of crawl processing
  *
- * Has limits of both how many urls to crawl
+ * Has limits of both how many URLs to crawl
  * and a soft time limit on total crawl time.
  *
  * @param boolean $verbose show verbose feedback
@@ -41,15 +41,23 @@ function tool_crawler_crawl($verbose = false) {
     $crawlstart = $config->crawlstart;
     $crawlend   = $config->crawlend;
 
-    // Check if valid, otherwise bail quickly.
+    if ($config->uselogs == 1) {
+        $recentcourses = $robot->get_recentcourses();
+    }
 
-    // If we need to start a new crawl, push the seed url into the crawl queue.
+    // If we need to start a new crawl, add new items to the queue.
     if (!$crawlstart || $crawlstart <= $crawlend) {
 
         $start = time();
         set_config('crawlstart', $start, 'tool_crawler');
-        $robot->mark_for_crawl($CFG->wwwroot.'/', $config->seedurl);
 
+        if ($config->uselogs == 1) {
+            foreach ($recentcourses as $courseid) {
+                $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
+            }
+        } else {
+            $robot->mark_for_crawl($CFG->wwwroot.'/', $config->seedurl);
+        }
         // Create a new history record.
         $history = new stdClass();
         $history->startcrawl = $start;
@@ -63,14 +71,30 @@ function tool_crawler_crawl($verbose = false) {
         $history = $DB->get_record('tool_crawler_history', array('startcrawl' => $crawlstart));
     }
 
-    // While we are not exceeding the maxcron time, and the queue is not empty
-    // find the next url in the queue and crawl it.
+    // Before beginning to process queue, add any new courses to the queue.
+    if ($config->uselogs == 1) {
 
-    // If the queue is empty then mark the crawl as ended.
+        $coursesinurltableobject = $DB->get_records_list('tool_crawler_url', 'courseid', $recentcourses, '', 'DISTINCT courseid');
+
+        $coursesinurltable = [];
+        foreach ($coursesinurltableobject as $course) {
+            array_push($coursesinurltable, $course->courseid);
+        }
+
+        foreach ($recentcourses as $courseid) {
+
+            // If a course from recent activity is not in the queue, add it.
+            if (!in_array($courseid, $coursesinurltable)) {
+                $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
+            }
+        }
+    }
 
     $cronstart = time();
     $cronstop = $cronstart + $config->maxcrontime;
 
+    // While we are not exceeding the maxcron time, and the queue is not empty
+    // find the next URL in the queue and crawl it.
     $hasmore = true;
     $hastime = true;
     while ($hasmore && $hastime) {
@@ -80,6 +104,7 @@ function tool_crawler_crawl($verbose = false) {
         set_config('crawltick', time(), 'tool_crawler');
     }
 
+    // If the queue is empty then mark the crawl as ended.
     if ($hastime) {
         // Time left over, which means the queue is empty!
         // Mark the crawl as ended.
@@ -96,11 +121,11 @@ function tool_crawler_crawl($verbose = false) {
 }
 
 /**
- * Get summary stats about a url
+ * Get summary stats about a URL
  *
  * @param integer $courseid a course aid
  *
- * @return an array of summary data
+ * @return array of summary data
  */
 function tool_crawler_summary($courseid) {
 

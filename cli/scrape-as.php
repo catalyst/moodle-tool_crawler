@@ -44,15 +44,7 @@ if ($unrecognized) {
     cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
 }
 
-$help = "Scrape the url as the robot would see it, but do not process/queue it.
-
-Options:
--h, --help      Print out this help
--u, --url       Url to scrape
-
-Example:
-\$sudo -u www-data php scrape-as.php --url=http://ford.com/
-";
+$help = get_string('cliscrapeashelp', 'tool_crawler');
 
 if ($options['help']) {
     echo $help;
@@ -63,7 +55,7 @@ $robot = new \tool_crawler\robot\crawler();
 
 $error = $robot->is_bot_valid();
 if ($error) {
-    print "Error: $error";
+    print get_string('clierror', 'tool_crawler', $error);
     exit;
 }
 
