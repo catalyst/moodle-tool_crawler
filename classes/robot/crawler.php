@@ -687,7 +687,7 @@ class crawler {
             }
         } else {
             if ($verbose) {
-                echo "Did not find a title.  \n";
+                echo "Did not find a title.\n";
             }
         }
 
@@ -731,7 +731,7 @@ class crawler {
                 // If this page does not have a course specified in it's classes, don't parse the html.
                 if ($hascourse === false) {
                     if ($verbose) {
-                        echo "No course specified in the html, stopping here. \n";
+                        echo "No course specified in the html, stopping here.\n";
                     }
                     return $node;
                 }
@@ -740,9 +740,9 @@ class crawler {
                 if (!in_array($node->courseid, $recentcourses)) {
                     if ($verbose) {
                         if ($node->courseid == 1) {
-                            echo "Ignore index.php page. \n";
+                            echo "Ignore index.php page.\n";
                         } else {
-                            echo "Course with id " . $node->courseid . " has not been viewed recently, skipping. \n";
+                            echo "Course with id " . $node->courseid . " has not been viewed recently, skipping.\n";
                         }
                     }
                     return $node;
