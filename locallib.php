@@ -53,7 +53,12 @@ function tool_crawler_link($url, $label, $redirect = '') {
  * @return html chunk
  */
 function tool_crawler_http_code($row) {
-    $msg = isset($row->httpmsg) ? $row->httpmsg : '?';
+    if (isset($row->errormsg)) {
+        $msg = get_string('fetcherror', 'tool_crawler', ['errormessage' => $row->errormsg]);
+    } else {
+        $msg = isset($row->httpmsg) ? $row->httpmsg : '?';
+    }
+
     $code = $row->httpcode;
     $cc = substr($code, 0, 1);
     $code = "$msg<br><small class='link-$cc"."xx'>$code</small>";
@@ -156,6 +161,7 @@ function tool_crawler_url_create_page($url) {
                 t.title,
                 t.redirect,
                 t.httpmsg,
+                t.errormsg,
                 t.httpcode,
                 t.filesize,
                 t.lastcrawled,
@@ -183,6 +189,7 @@ function tool_crawler_url_create_page($url) {
                 f.title,
                 f.redirect,
                 f.httpmsg,
+                f.errormsg,
                 f.httpcode,
                 f.filesize,
                 f.lastcrawled,

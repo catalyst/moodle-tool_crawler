@@ -69,7 +69,8 @@ class tool_crawler_robot_cleanup_test extends advanced_testcase {
                 'cmid' => null,
                 'ignoreduserid' => null,
                 'ignoredtime' => null,
-                'httpmsg' => 'OK'
+                'httpmsg' => 'OK',
+                'errormsg' => null
             ),
             array(
                 'url' => 'http://moodle.org/',
@@ -88,7 +89,8 @@ class tool_crawler_robot_cleanup_test extends advanced_testcase {
                 'cmid' => null,
                 'ignoreduserid' => null,
                 'ignoredtime' => null,
-                'httpmsg' => 'Moved Permanently'
+                'httpmsg' => 'Moved Permanently',
+                'errormsg' => null
             ),
             array(
                 'url' => 'http://cqu.ubox001.com/course/index.php?categoryid=1',
@@ -107,7 +109,8 @@ class tool_crawler_robot_cleanup_test extends advanced_testcase {
                 'cmid' => null,
                 'ignoreduserid' => null,
                 'ignoredtime' => null,
-                'httpmsg' => 'OK'
+                'httpmsg' => 'OK',
+                'errormsg' => null
             )
         );
 
