@@ -25,14 +25,28 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Render a link
+ * Renders a link as HTML.
  *
- * @param string $url a URL link
- * @param string $label the a tag label
- * @param string $redirect The final URL if a redirect was served
- * @return html output
+ * Outputs a link from the given link text to the URL detail page, with an added arrow linked to the link target itself. These are
+ * followed by the URL in text form (intended for the user).
+ *
+ * If a redirect link is passed, renders this as well in an additional separate line, as a link to the redirection URL.
+ *
+ * The link text can be given either as plain text (which will then be properly escaped for HTML output) or as an HTML snippet (in
+ * which case the caller must already have ensured that everything is properly escaped if necessary).
+ *
+ * @param string $url The URL to which the link points.
+ * @param string $label The link text. Can be plain text or an HTML snippet; select mode with parameter $labelishtml.
+ * @param string $redirect The final URL if a redirect was served.
+ * @param string $labelishtml Whether the $label parameter contains an HTML snippet (if true) or plain text (if false). Defaults to
+ *               plain text.
+ * @return string HTML snippet which can be used in output.
  */
-function tool_crawler_link($url, $label, $redirect = '') {
+function tool_crawler_link($url, $label, $redirect = '', $labelishtml = false) {
+    if (!$labelishtml) {
+        $label = htmlspecialchars($label, ENT_NOQUOTES | ENT_HTML401);
+    }
+
     $html = html_writer::link(new moodle_url('url.php', array('url' => $url)), $label) .
             ' ' .
             html_writer::link($url, '↗', array('target' => 'link')) .
@@ -99,19 +113,20 @@ function tool_crawler_url_gen_table($data) {
     $datetimeformat = get_string('strftimerecentsecondshtml', 'tool_crawler');
     $table->data = array();
     foreach ($data as $row) {
-        $text = trim($row->title);
-        if (!$text || $text == "") {
-            $text = get_string('unknown', 'tool_crawler');
+        $title = trim($row->title);
+        if ($title == "") {
+            $title = get_string('unknown', 'tool_crawler');
         }
         $code = tool_crawler_http_code($row);
         $size = $row->filesize * 1;
+        $idattr = htmlspecialchars($row->idattr, ENT_NOQUOTES | ENT_HTML401);
         $data = array(
             userdate($row->lastcrawled, $datetimeformat),
-            $row->text,
-            str_replace(' #', '<br>#', $row->idattr),
+            htmlspecialchars($row->text, ENT_NOQUOTES | ENT_HTML401),
+            str_replace(' #', '<br>#', $idattr),
             $code,
             display_size($size),
-            tool_crawler_link($row->target, $text, $row->redirect),
+            tool_crawler_link($row->target, $title, $row->redirect),
             $row->mimetype,
         );
         $table->data[] = $data;
