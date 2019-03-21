@@ -836,7 +836,7 @@ class crawler {
         }
 
         if (empty($raw)) {
-            $result->httpmsg          = 'Curl Error: ' . curl_errno($s);
+            $result->errormsg         = (string)curl_errno($s);
             $result->title            = curl_error($s); // We do not try to translate Curl error messages.
             $result->contents         = '';
             $result->httpcode         = '500';

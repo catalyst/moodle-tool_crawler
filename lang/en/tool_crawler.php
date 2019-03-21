@@ -80,6 +80,7 @@ $string['excludemdlurl'] = 'Exclude moodle URLs';
 $string['excludemdlurldesc'] = 'One URL regex per line, each is matched excluding the wwwroot';
 $string['excludecourses'] = 'Exclude courses';
 $string['excludecoursesdesc'] = 'One course shortcode regex per line';
+$string['fetcherror'] = 'Curl Error: {$a->errormessage}';
 $string['found'] = 'Found';
 $string['frompage'] = 'From page';
 $string['good'] = 'Good';

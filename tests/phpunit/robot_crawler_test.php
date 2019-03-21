@@ -177,7 +177,8 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
             'cmid' => null,
             'ignoreduserid' => null,
             'ignoredtime' => null,
-            'httpmsg' => 'OK'
+            'httpmsg' => 'OK',
+            'errormsg' => null
         ];
         $nodeid = $DB->insert_record('tool_crawler_url', $node);
 
@@ -239,7 +240,8 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
             'cmid' => null,
             'ignoreduserid' => null,
             'ignoredtime' => null,
-            'httpmsg' => 'OK'
+            'httpmsg' => 'OK',
+            'errormsg' => null
         ];
         $DB->insert_record('tool_crawler_url', $node);
 
