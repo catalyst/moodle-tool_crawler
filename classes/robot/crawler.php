@@ -83,7 +83,7 @@ class crawler {
         }
         if ($result->redirect) {
             return get_string('bottestpageredirected', 'tool_crawler',
-                array('resredirect' => $result->redirect));
+                array('resredirect' => htmlspecialchars($result->redirect, ENT_NOQUOTES | ENT_HTML401)));
         }
 
         // When the bot successfully scraped the test page (see above), it was logged in and used its own language. So we have to
