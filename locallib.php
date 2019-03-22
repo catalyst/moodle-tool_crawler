@@ -127,7 +127,7 @@ function tool_crawler_url_gen_table($data) {
             $code,
             display_size($size),
             tool_crawler_link($row->target, $title, $row->redirect),
-            $row->mimetype,
+            htmlspecialchars($row->mimetype, ENT_NOQUOTES | ENT_HTML401),
         );
         $table->data[] = $data;
     }
