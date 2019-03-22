@@ -143,7 +143,8 @@ if ($report == 'broken') {
             tool_crawler_link($row->url, $row->title, $row->redirect)
         );
         if (!$courseid) {
-            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
+            $escapedshortname = htmlspecialchars($row->shortname, ENT_NOQUOTES | ENT_HTML401);
+            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $escapedshortname) );
         }
         $table->data[] = $data;
     }
@@ -195,7 +196,8 @@ if ($report == 'broken') {
             tool_crawler_link($row->target, $title, $row->redirect)
         );
         if (!$courseid) {
-            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
+            $escapedshortname = htmlspecialchars($row->shortname, ENT_NOQUOTES | ENT_HTML401);
+            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $escapedshortname) );
         }
         $table->data[] = $data;
     }
@@ -257,7 +259,8 @@ if ($report == 'broken') {
             htmlspecialchars($row->mimetype, ENT_NOQUOTES | ENT_HTML401),
         );
         if (!$courseid) {
-            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
+            $escapedshortname = htmlspecialchars($row->shortname, ENT_NOQUOTES | ENT_HTML401);
+            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $escapedshortname) );
         }
         $table->data[] = $data;
     }
@@ -329,7 +332,8 @@ if ($report == 'broken') {
             tool_crawler_link($row->url, $row->title, $row->redirect)
         );
         if (!$courseid) {
-            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
+            $escapedshortname = htmlspecialchars($row->shortname, ENT_NOQUOTES | ENT_HTML401);
+            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $escapedshortname) );
         }
         $table->data[] = $data;
     }
