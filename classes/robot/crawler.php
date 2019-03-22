@@ -163,7 +163,7 @@ class crawler {
         }
 
         if ($rel && $rel[0] == '/') {
-            if ($port) {
+            if (isset($port)) {
                 $abs = $host . ':' . $port . $rel;
             } else {
                 $abs = $host . $rel;
@@ -174,7 +174,7 @@ class crawler {
             $path = preg_replace('#/[^/]*$#', '', $path);
 
             // Dirty absolute URL.
-            if ($port) {
+            if (isset($port)) {
                 $abs = $host . ':' . $port . $path . '/' . $rel;
             } else {
                 $abs = $host . $path . '/' . $rel;
