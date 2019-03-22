@@ -60,7 +60,7 @@ class crawler {
     /**
      * Checks that the bot user exists and password works etc
      *
-     * @return mixed true or a error string
+     * @return null|string On success, null. In the case of failure, an error string (which is an HTML snippet).
      */
     public function is_bot_valid() {
 
