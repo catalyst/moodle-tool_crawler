@@ -338,7 +338,7 @@ class crawler {
                 $shortname = $course->shortname;
             }
         }
-        if ($shortname) {
+        if ($shortname !== '' && $shortname !== null) {
             $bad = 0;
             $excludes = str_replace("\r", '', self::get_config()->excludecourses);
             $excludes = explode("\n", $excludes);
