@@ -72,6 +72,7 @@ function tool_crawler_http_code($row) {
     } else {
         $msg = isset($row->httpmsg) ? $row->httpmsg : '?';
     }
+    $msg = htmlspecialchars($msg, ENT_NOQUOTES | ENT_HTML401);
 
     $code = $row->httpcode;
     $cc = substr($code, 0, 1);
