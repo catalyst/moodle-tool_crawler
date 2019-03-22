@@ -166,7 +166,7 @@ function tool_crawler_url_create_page($url) {
     $urlrec = $DB->get_record('tool_crawler_url', array('url' => $url));
     $page .= '<h2>' . tool_crawler_link($url, $urlrec->title, $urlrec->redirect) . '</h2>';
 
-    $page .= '<h3>' . get_string('outgoingurls', 'tool_crawler') . '</h3>';
+    $page .= '<h3>' . htmlspecialchars(get_string('outgoingurls', 'tool_crawler'), ENT_NOQUOTES | ENT_HTML401) . '</h3>';
 
     $data  = $DB->get_records_sql("
          SELECT concat(l.a, '-', l.b) AS id,
@@ -194,7 +194,7 @@ function tool_crawler_url_create_page($url) {
 
     $page .= tool_crawler_url_gen_table($data);
 
-    $page .= '<h3>' . get_string('incomingurls', 'tool_crawler') . '</h3>';
+    $page .= '<h3>' . htmlspecialchars(get_string('incomingurls', 'tool_crawler'), ENT_NOQUOTES | ENT_HTML401) . '</h3>';
 
     $data  = $DB->get_records_sql("
          SELECT concat(l.a, '-', l.b) AS id,
