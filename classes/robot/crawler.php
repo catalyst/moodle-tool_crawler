@@ -158,27 +158,27 @@ class crawler {
         }
         $host = $parts['host'];
 
-	if (isset($parts['port'])) {
-	    $port = $parts['port'];
-	}
+        if (isset($parts['port'])) {
+            $port = $parts['port'];
+        }
 
         if ($rel && $rel[0] == '/') {
-	    if ($port) {
-		$abs = $host . ':' . $port . $rel;
-	    } else {
-		$abs = $host . $rel;
-	    }
+            if (isset($port)) {
+                $abs = $host . ':' . $port . $rel;
+            } else {
+                $abs = $host . $rel;
+            }
         } else {
 
             // Remove non-directory element from path.
             $path = preg_replace('#/[^/]*$#', '', $path);
 
             // Dirty absolute URL.
-	    if ($port) {
-		$abs = $host . ':' . $port . $path . '/' . $rel;
-	    } else {
-		$abs = $host . $path . '/' . $rel;
-	    }
+            if (isset($port)) {
+                $abs = $host . ':' . $port . $path . '/' . $rel;
+            } else {
+                $abs = $host . $path . '/' . $rel;
+            }
         }
 
         // Replace '//' or '/./' or '/foo/../' with '/' */.
