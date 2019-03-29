@@ -41,8 +41,12 @@ function tool_crawler_crawl($verbose = false) {
     $crawlstart = $config->crawlstart;
     $crawlend   = $config->crawlend;
 
-    if ($config->uselogs == 1) {
-        $recentcourses = $robot->get_recentcourses();
+    $recentcourses = [];
+    if ($config->limitcrawlmethod == LOGSTORE_LIMIT_OPTION) {
+        $recentcourses = $robot->get_recentcourses_logstore();
+    }
+    if ($config->limitcrawlmethod == ENDDATE_LIMIT_OPTION) {
+        $recentcourses = $robot->get_recentcourses_enddate();
     }
 
     // If we need to start a new crawl, add new items to the queue.
@@ -51,7 +55,7 @@ function tool_crawler_crawl($verbose = false) {
         $start = time();
         set_config('crawlstart', $start, 'tool_crawler');
 
-        if ($config->uselogs == 1) {
+        if ($config->limitcrawlmethod != NO_LIMIT_OPTION) {
             foreach ($recentcourses as $courseid) {
                 $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
             }
@@ -72,7 +76,7 @@ function tool_crawler_crawl($verbose = false) {
     }
 
     // Before beginning to process queue, add any new courses to the queue.
-    if ($config->uselogs == 1) {
+    if ($config->limitcrawlmethod != NO_LIMIT_OPTION) {
 
         $coursesinurltableobject = $DB->get_records_list('tool_crawler_url', 'courseid', $recentcourses, '', 'DISTINCT courseid');
 
