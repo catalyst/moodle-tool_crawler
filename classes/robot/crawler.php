@@ -918,16 +918,19 @@ class crawler {
             }
 
             $ishtml = (strpos($contenttype, 'text/html') === 0); // Related to Issue #13.
-            $data = $ishtml ? substr($raw, $headersize) : '';
+            if ($ishtml) {
+                $data = substr($raw, $headersize);
 
-            /* Convert it if it is anything but UTF-8 */
-            $charset = $this->detect_encoding($contenttype, $data);
-            if (is_string($charset) && strtoupper($charset) != "UTF-8") {
-                // You can change 'UTF-8' to 'UTF-8//IGNORE' to
-                // ignore conversion errors and still output something reasonable.
-                $result->contents     = iconv($charset, 'UTF-8', $data);
+                /* Convert it if it is anything but UTF-8 */
+                $charset = $this->detect_encoding($contenttype, $data);
+                if (is_string($charset) && strtoupper($charset) != "UTF-8") {
+                    // You can change 'UTF-8' to 'UTF-8//IGNORE' to
+                    // ignore conversion errors and still output something reasonable.
+                    $data = iconv($charset, 'UTF-8', $data);
+                }
+                $result->contents = $data;
             } else {
-                $result->contents     = $data;
+                $result->contents = '';
             }
 
             $result->httpcode         = curl_getinfo($s, CURLINFO_HTTP_CODE);
