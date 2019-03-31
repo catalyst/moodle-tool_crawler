@@ -906,64 +906,104 @@ class crawler {
         curl_setopt($s, CURLOPT_SSL_VERIFYHOST,  0);
         curl_setopt($s, CURLOPT_SSL_VERIFYPEER,  0);
 
+        // First, use a HEAD request to try to find out the type and length of the linked document without having to download it.
+        curl_setopt($s, CURLOPT_NOBODY,          true);
+
         $result = (object) array();
         $result->url              = $url;
 
-        $raw   = curl_exec($s);
+        $method = 'HEAD';
+        $needhttprequest = true; // Whether we have to send (a further) HTTP request.
+        while ($needhttprequest) {
+            $raw = curl_exec($s);
+            $needhttprequest = false; // Curl has been run, no new iteration necessary for now.
 
-        $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
-
-        $contenttype              = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
-        $result->mimetype         = preg_replace('/;.*/', '', $contenttype);
-
-        $result->lastcrawled      = time();
-
-        $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
-
-        $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
-        if ($final != $url) {
-            $result->redirect = $final;
-        } else {
-            $result->redirect = '';
-        }
-        $result->external = self::is_external($final);
-
-        if (empty($raw)) {
-            $result->errormsg         = (string)curl_errno($s);
-            $result->title            = curl_error($s); // We do not try to translate Curl error messages.
-            $result->contents         = '';
-            $result->httpcode         = '500';
-            $result->httpmsg          = null;
-        } else {
-            $result->errormsg = null;  // Important in case of repeated scraping in order to reset error status.
-
-            $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
-            $headers = substr($raw, 0, $headersize);
-            if (preg_match_all('@(^|[\r\n])(HTTP/[^ ]+) ([0-9]+) ([^\r\n]+|$)@', $headers, $httplines, PREG_SET_ORDER)) {
-                $result->httpmsg = array_pop($httplines)[4];
+            if ($method == 'GET') {
+                $result->filesize     = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
             } else {
-                $result->httpmsg = '';
+                $filesize             = curl_getinfo($s, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
             }
 
-            $ishtml = (strpos($contenttype, 'text/html') === 0);
-            if ($ishtml) { // Related to Issue #13.
-                // May need a significant amount of memory as the data is temporarily stored twice.
-                $data = substr($raw, $headersize);
-                unset($raw); // Allow to free memory.
+            $contenttype              = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
+            $result->mimetype         = preg_replace('/;.*/', '', $contenttype);
 
-                /* Convert it if it is anything but UTF-8 */
-                $charset = $this->detect_encoding($contenttype, $data);
-                if (is_string($charset) && strtoupper($charset) != "UTF-8") {
-                    // You can change 'UTF-8' to 'UTF-8//IGNORE' to
-                    // ignore conversion errors and still output something reasonable.
-                    $data = iconv($charset, 'UTF-8', $data);
+            $result->lastcrawled      = time();
+
+            $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
+
+            $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
+            if ($final != $url) {
+                $result->redirect = $final;
+            } else {
+                $result->redirect = '';
+            }
+            $result->external = self::is_external($final);
+
+            if (empty($raw)) {
+                $result->errormsg         = (string)curl_errno($s);
+                $result->title            = curl_error($s); // We do not try to translate Curl error messages.
+                $result->contents         = '';
+                $result->httpcode         = '500';
+                $result->httpmsg          = null;
+            } else {
+                $result->errormsg = null;  // Important in case of repeated scraping in order to reset error status.
+
+                $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
+                $headers = substr($raw, 0, $headersize);
+                if (preg_match_all('@(^|[\r\n])(HTTP/[^ ]+) ([0-9]+) ([^\r\n]+|$)@', $headers, $httplines, PREG_SET_ORDER)) {
+                    $result->httpmsg = array_pop($httplines)[4];
+                } else {
+                    $result->httpmsg = '';
                 }
-                $result->contents = $data;
-            } else {
-                $result->contents = '';
-            }
 
-            $result->httpcode         = curl_getinfo($s, CURLINFO_HTTP_CODE);
+                $ishtml = (strpos($contenttype, 'text/html') === 0);
+                $httpcode = curl_getinfo($s, CURLINFO_RESPONSE_CODE);
+
+                if ($method == 'HEAD') {
+                    $filesizeknown = (is_double($filesize) && $filesize >= 0.0);
+                    $methodnotallowed = ($httpcode == 405);
+
+                    if ($methodnotallowed || $ishtml) {
+                        // Retry with GET if HEAD is not allowed.
+                        // For all HTML documents also switch to HTTP GET and try again so that we can extract the titles.
+                        $needhttprequest = true;
+                    } else if (!$filesizeknown) {
+                        // Try to determine the size of non-HTML documents with unknown size by using HTTP GET.
+                        $needhttprequest = true;
+                    } else {
+                        // No need to download documents which are not HTML documents.
+                        $result->filesize = $filesize;
+                        $result->contents = '';
+                    }
+
+                    if ($needhttprequest) {
+                        // Switch to HTTP GET and try again.
+                        curl_setopt($s, CURLOPT_HTTPGET, true);
+                        $method = 'GET';
+                    }
+                } else {
+                    // Linked resource has been downloaded using HTTP GET.
+
+                    if ($ishtml) { // Related to Issue #13.
+                        // May need a significant amount of memory as the data is temporarily stored twice.
+                        $data = substr($raw, $headersize);
+                        unset($raw); // Allow to free memory.
+
+                        /* Convert it if it is anything but UTF-8 */
+                        $charset = $this->detect_encoding($contenttype, $data);
+                        if (is_string($charset) && strtoupper($charset) != "UTF-8") {
+                            // You can change 'UTF-8' to 'UTF-8//IGNORE' to
+                            // ignore conversion errors and still output something reasonable.
+                            $data = iconv($charset, 'UTF-8', $data);
+                        }
+                        $result->contents = $data;
+                    } else {
+                        $result->contents = '';
+                    }
+                }
+
+                $result->httpcode = $httpcode;
+            }
         }
 
         curl_close($s);
