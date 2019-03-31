@@ -894,7 +894,7 @@ class crawler {
         curl_setopt($s, CURLOPT_MAXREDIRS,       5);
         curl_setopt($s, CURLOPT_RETURNTRANSFER,  true);
         curl_setopt($s, CURLOPT_FOLLOWLOCATION,  true);
-        curl_setopt($s, CURLOPT_FRESH_CONNECT,   true);
+        curl_setopt($s, CURLOPT_FRESH_CONNECT,   false);
         curl_setopt($s, CURLOPT_HEADER,          true);
         curl_setopt($s, CURLOPT_COOKIEJAR,       $cookiefilelocation);
         curl_setopt($s, CURLOPT_COOKIEFILE,      $cookiefilelocation);
