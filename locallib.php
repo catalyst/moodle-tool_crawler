@@ -50,10 +50,10 @@ function tool_crawler_link($url, $label, $redirect = '', $labelishtml = false) {
     $html = html_writer::link(new moodle_url('url.php', array('url' => $url)), $label) .
             ' ' .
             html_writer::link($url, '↗', array('target' => 'link')) .
-            '<br><small>' . htmlspecialchars($url) . '</small>';
+            '<br><small>' . htmlspecialchars($url, ENT_NOQUOTES | ENT_HTML401) . '</small>';
 
     if ($redirect) {
-        $linkhtmlsnippet = html_writer::link($redirect, htmlspecialchars($redirect, ENT_NOQUOTES | ENT_HTML5));
+        $linkhtmlsnippet = html_writer::link($redirect, htmlspecialchars($redirect, ENT_NOQUOTES | ENT_HTML401));
         $html .= "<br>" . get_string('redirect', 'tool_crawler', array('redirectlink' => $linkhtmlsnippet));
     }
 
@@ -72,6 +72,7 @@ function tool_crawler_http_code($row) {
     } else {
         $msg = isset($row->httpmsg) ? $row->httpmsg : '?';
     }
+    $msg = htmlspecialchars($msg, ENT_NOQUOTES | ENT_HTML401);
 
     $code = $row->httpcode;
     $cc = substr($code, 0, 1);
@@ -127,7 +128,7 @@ function tool_crawler_url_gen_table($data) {
             $code,
             display_size($size),
             tool_crawler_link($row->target, $title, $row->redirect),
-            $row->mimetype,
+            htmlspecialchars($row->mimetype, ENT_NOQUOTES | ENT_HTML401),
         );
         $table->data[] = $data;
     }
@@ -166,7 +167,7 @@ function tool_crawler_url_create_page($url) {
     $urlrec = $DB->get_record('tool_crawler_url', array('url' => $url));
     $page .= '<h2>' . tool_crawler_link($url, $urlrec->title, $urlrec->redirect) . '</h2>';
 
-    $page .= '<h3>' . get_string('outgoingurls', 'tool_crawler') . '</h3>';
+    $page .= '<h3>' . htmlspecialchars(get_string('outgoingurls', 'tool_crawler'), ENT_NOQUOTES | ENT_HTML401) . '</h3>';
 
     $data  = $DB->get_records_sql("
          SELECT concat(l.a, '-', l.b) AS id,
@@ -194,7 +195,7 @@ function tool_crawler_url_create_page($url) {
 
     $page .= tool_crawler_url_gen_table($data);
 
-    $page .= '<h3>' . get_string('incomingurls', 'tool_crawler') . '</h3>';
+    $page .= '<h3>' . htmlspecialchars(get_string('incomingurls', 'tool_crawler'), ENT_NOQUOTES | ENT_HTML401) . '</h3>';
 
     $data  = $DB->get_records_sql("
          SELECT concat(l.a, '-', l.b) AS id,

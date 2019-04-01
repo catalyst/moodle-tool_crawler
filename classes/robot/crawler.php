@@ -60,7 +60,7 @@ class crawler {
     /**
      * Checks that the bot user exists and password works etc
      *
-     * @return mixed true or a error string
+     * @return null|string On success, null. In the case of failure, an error string (which is an HTML snippet).
      */
     public function is_bot_valid() {
 
@@ -83,7 +83,7 @@ class crawler {
         }
         if ($result->redirect) {
             return get_string('bottestpageredirected', 'tool_crawler',
-                array('resredirect' => $result->redirect));
+                array('resredirect' => htmlspecialchars($result->redirect, ENT_NOQUOTES | ENT_HTML401)));
         }
 
         // When the bot successfully scraped the test page (see above), it was logged in and used its own language. So we have to
@@ -338,7 +338,7 @@ class crawler {
                 $shortname = $course->shortname;
             }
         }
-        if ($shortname) {
+        if ($shortname !== '' && $shortname !== null) {
             $bad = 0;
             $excludes = str_replace("\r", '', self::get_config()->excludecourses);
             $excludes = explode("\n", $excludes);
