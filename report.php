@@ -143,7 +143,8 @@ if ($report == 'broken') {
             tool_crawler_link($row->url, $row->title, $row->redirect)
         );
         if (!$courseid) {
-            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
+            $escapedshortname = htmlspecialchars($row->shortname, ENT_NOQUOTES | ENT_HTML401);
+            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $escapedshortname) );
         }
         $table->data[] = $data;
     }
@@ -195,7 +196,8 @@ if ($report == 'broken') {
             tool_crawler_link($row->target, $title, $row->redirect)
         );
         if (!$courseid) {
-            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
+            $escapedshortname = htmlspecialchars($row->shortname, ENT_NOQUOTES | ENT_HTML401);
+            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $escapedshortname) );
         }
         $table->data[] = $data;
     }
@@ -254,10 +256,11 @@ if ($report == 'broken') {
             $code,
             display_size($size),
             tool_crawler_link($row->target, $title, $row->redirect),
-            $row->mimetype,
+            htmlspecialchars($row->mimetype, ENT_NOQUOTES | ENT_HTML401),
         );
         if (!$courseid) {
-            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
+            $escapedshortname = htmlspecialchars($row->shortname, ENT_NOQUOTES | ENT_HTML401);
+            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $escapedshortname) );
         }
         $table->data[] = $data;
     }
@@ -325,11 +328,12 @@ if ($report == 'broken') {
             userdate($row->lastcrawled, $datetimeformat),
             display_size($size),
             tool_crawler_link($row->target, $text, $row->redirect, true),
-            $row->mimetype,
+            htmlspecialchars($row->mimetype, ENT_NOQUOTES | ENT_HTML401),
             tool_crawler_link($row->url, $row->title, $row->redirect)
         );
         if (!$courseid) {
-            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $row->shortname) );
+            $escapedshortname = htmlspecialchars($row->shortname, ENT_NOQUOTES | ENT_HTML401);
+            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $escapedshortname) );
         }
         $table->data[] = $data;
     }
