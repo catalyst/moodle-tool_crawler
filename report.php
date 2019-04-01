@@ -343,7 +343,7 @@ if ($report == 'broken') {
 echo $OUTPUT->heading(get_string('numberurlsfound', 'tool_crawler',
     array(
         'reports_number' => $count,
-        'repoprt_type' => $report
+        'report_type' => $report
     )
 ));
 echo get_string($report . '_header', 'tool_crawler');
