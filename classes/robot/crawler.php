@@ -1054,16 +1054,16 @@ class crawler {
                   FROM {course} course JOIN
                   {context} context ON context.instanceid = course.id JOIN
                   {block_instances} bo ON bo.parentcontextid = context.id
-                 WHERE course.enddate > :startingtime AND course.id <> 1
+                 WHERE (course.enddate > :startingtime OR course.enddate = 0) AND course.id <> 1
                  AND context.contextlevel = 50
                  AND blockname = :blockname";
             $values = ['startingtime' => time(), 'blockname' => $config->limittoblock];
         } else {
-            // The only restriction is the courses with a future enddate
+            // The only restriction is the courses with a future enddate or no enddate set.
             $sql = "SELECT DISTINCT course.id
                   FROM {course} course JOIN
-                  {context} context ON context.instanceid = course.id JOIN
-                 WHERE course.enddate > :startingtime AND course.id <> 1
+                  {context} context ON context.instanceid = course.id
+                 WHERE (course.enddate > :startingtime OR course.enddate = 0) AND course.id <> 1
                  AND context.contextlevel = 50";
             $values = ['startingtime' => time()];
         }

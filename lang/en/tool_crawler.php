@@ -97,7 +97,7 @@ $string['linktext'] = 'Link text';
 $string['limitcrawlmethod'] = 'Limit the crawled courses';
 $string['limitcrawlmethoddesc'] = "Limit the crawled courses to a smaller subset of the total so it crawls links in those courses more often\n
 Use Log Tables: Will only crawl recently accessed courses based on the log table data.\n
-Use course enddate: Will only crawl courses that have a course enddate in the future";
+Use course enddate: Will only crawl courses that have a course enddate in the future, or not set";
 $string['limittoblock'] = 'Must have block';
 $string['limittoblockdesc'] = 'Only crawl courses that have this block included on their course/view page.';
 $string['maxcrontime'] = 'Cron run limit';
