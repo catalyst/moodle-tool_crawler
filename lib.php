@@ -75,25 +75,6 @@ function tool_crawler_crawl($verbose = false) {
         $history = $DB->get_record('tool_crawler_history', array('startcrawl' => $crawlstart));
     }
 
-    // Before beginning to process queue, add any new courses to the queue.
-    if ($config->limitcrawlmethod != NO_LIMIT_OPTION) {
-
-        $coursesinurltableobject = $DB->get_records_list('tool_crawler_url', 'courseid', $recentcourses, '', 'DISTINCT courseid');
-
-        $coursesinurltable = [];
-        foreach ($coursesinurltableobject as $course) {
-            array_push($coursesinurltable, $course->courseid);
-        }
-
-        foreach ($recentcourses as $courseid) {
-
-            // If a course from recent activity is not in the queue, add it.
-            if (!in_array($courseid, $coursesinurltable)) {
-                $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
-            }
-        }
-    }
-
     $cronstart = time();
     $cronstop = $cronstart + $config->maxcrontime;
 
