@@ -499,30 +499,20 @@ class crawler {
             $recentcourses = $this->recentcourses;
         }
 
-        $cronstart = time();
-        $cronstop = $cronstart + $config->maxcrontime;
-        $hasmore = true;
-        $hastime = true;
-        // Iterate through queue items until we find a valid one that we want to crawl.
-        while ($hasmore && $hastime) {
-
-            if ($config->limitcrawlmethod === NO_LIMIT_OPTION) {
-                // Grab the first item from the queue.
-                $node = $DB->get_record_sql('SELECT *
+        if ($config->limitcrawlmethod === NO_LIMIT_OPTION) {
+            // Grab the first item from the queue.
+            $node = $DB->get_record_sql('SELECT *
                                          FROM {tool_crawler_url}
                                         WHERE lastcrawled IS NULL
                                            OR lastcrawled < needscrawl
                                      ORDER BY needscrawl ASC, id ASC
                                         LIMIT 1
                                     ');
-            } else {
-                // We are limiting the scope of the crawl so we get a queue item that is a recent course.
-                $select = 'courseid = ? AND (lastcrawled < needscrawl OR lastcrawled IS NULL)';
-                $node = $DB->get_records_select('tool_crawler_url', $select, $recentcourses, 'needscrawl ASC, id ASC', '*', 0, 1);
-            }
-
-            $hastime = time() < $cronstop;
-            set_config('crawltick', time(), 'tool_crawler');
+        } else {
+            // We are limiting the scope of the crawl so we get a queue item that is a recent course.
+            $select = '(courseid = ? OR courseid = NULL) AND (lastcrawled < needscrawl OR lastcrawled IS NULL)';
+            $node = $DB->get_records_select('tool_crawler_url', $select, $recentcourses, 'needscrawl ASC, id ASC', '*', 0, 1);
+            $node = reset($node);
         }
 
         if (isset($node) && $node !== false) {
