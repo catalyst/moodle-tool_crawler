@@ -910,8 +910,11 @@ class crawler {
         } else {
             $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
             $headers = substr($raw, 0, $headersize);
-            $header = strtok($headers, "\n");
-            $result->httpmsg          = explode(" ", $header, 3)[2];
+            if (preg_match_all('@(^|[\r\n])(HTTP/[^ ]+) ([0-9]+) ([^\r\n]+|$)@', $headers, $httplines, PREG_SET_ORDER)) {
+                $result->httpmsg = array_pop($httplines)[4];
+            } else {
+                $result->httpmsg = '';
+            }
 
             $ishtml = (strpos($contenttype, 'text/html') === 0); // Related to Issue #13.
             $data = $ishtml ? substr($raw, $headersize) : '';
