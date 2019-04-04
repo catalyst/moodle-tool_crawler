@@ -917,8 +917,8 @@ class crawler {
                 $result->httpmsg = '';
             }
 
-            $ishtml = (strpos($contenttype, 'text/html') === 0); // Related to Issue #13.
-            if ($ishtml) {
+            $ishtml = (strpos($contenttype, 'text/html') === 0);
+            if ($ishtml) { // Related to Issue #13.
                 $data = substr($raw, $headersize);
 
                 /* Convert it if it is anything but UTF-8 */
