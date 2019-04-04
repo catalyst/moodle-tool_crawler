@@ -913,6 +913,11 @@ class crawler {
             $raw = curl_exec($s);
             $needhttprequest = false; // Curl has been run, no new iteration necessary for now.
 
+            // NOTE: information that can be queried by curl_getinfo is cached if the handle is reused. According to the PHP
+            // documentation for curl_getinfo, the data _may_ be overwritten by subsequent curl queries. Testing has shown that at
+            // least Content-Type and Content-Length are not affected by excessive caching. If they were, we would have to ensure
+            // that we get _fresh_ data on the second call to curl_exec and curl_getinfo.
+
             if ($method == 'GET') {
                 $result->filesize     = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
             } else {
