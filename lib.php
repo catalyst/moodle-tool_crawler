@@ -38,6 +38,7 @@ function tool_crawler_crawl($verbose = false) {
 
     $robot = new \tool_crawler\robot\crawler();
     $config = $robot::get_config();
+    $verbose = $config->verbosemode == "1" ? true : false;
     $crawlstart = $config->crawlstart;
     $crawlend   = $config->crawlend;
 

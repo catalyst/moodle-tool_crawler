@@ -155,6 +155,8 @@ $string['uselogsdesc'] = 'If enabled, only crawl links that are part of courses 
 $string['useragent'] = 'Bot user agent string';
 $string['useragentdesc'] = 'The user agent name to use in the HTTP headers, without a version. The version of this plugin is automatically appended.';
 $string['usecourseenddate'] = 'Use course enddate';
+$string['verbosemode'] = 'Enable verbose mode';
+$string['verbosemodedesc'] = 'Show detailed information in the cron log about each URL crawled';
 $string['whenqueued'] = 'When queued';
 /*
  * Privacy provider (GDPR)

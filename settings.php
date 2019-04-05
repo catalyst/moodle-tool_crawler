@@ -187,6 +187,10 @@ useridlistid
                                                     new lang_string('retentionperioddesc',    'tool_crawler'),
                                                     2620800,
                                                     $options));
+        $settings->add(new admin_setting_configcheckbox('tool_crawler/verbosemode',
+                                                    new lang_string('verbosemode', 'tool_crawler'),
+                                                    new lang_string('verbosemodedesc', 'tool_crawler'),
+                                                    false));
     }
 }
 
