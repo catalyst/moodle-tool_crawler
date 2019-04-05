@@ -941,6 +941,13 @@ class crawler {
             return strlen($header);
         });
 
+        $abortdownload = false;
+        curl_setopt($s, CURLOPT_NOPROGRESS, false);
+        curl_setopt($s, CURLOPT_PROGRESSFUNCTION,
+                function($resource, $expecteddownbytes, $downbytes, $expectedupbytes, $upbytes) use (&$abortdownload) {
+            return $abortdownload ? 1 : 0;
+        });
+
         // First, use a HEAD request to try to find out the type and length of the linked document without having to download it.
         curl_setopt($s, CURLOPT_NOBODY,          true);
 
@@ -1060,6 +1067,7 @@ class crawler {
 
                         $chunks = array();
                         $firstheaderline = true;
+                        $abortdownload = false;
                     }
                 } else {
                     // Linked resource has been downloaded using HTTP GET.
