@@ -31,6 +31,12 @@ require_once($CFG->dirroot.'/admin/tool/crawler/extlib/simple_html_dom.php');
 require_once($CFG->dirroot.'/user/lib.php');
 
 /**
+ * How many bytes to download at most per linked HTML document.
+ * Due to the way downloading works, a few more bytes may actually be downloaded.
+ */
+define('TOOL_CRAWLER_DOWNLOAD_LIMIT', 262144);
+
+/**
  * tool_crawler
  *
  * @package    tool_crawler
@@ -959,9 +965,14 @@ class crawler {
             return strlen($header);
         });
 
+        $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT;
         curl_setopt($s, CURLOPT_NOPROGRESS, false);
         curl_setopt($s, CURLOPT_PROGRESSFUNCTION,
-                function($resource, $expecteddownbytes, $downbytes, $expectedupbytes, $upbytes) use (&$abortdownload) {
+                function($resource, $expecteddownbytes, $downbytes, $expectedupbytes, $upbytes) use (&$abortdownload, &$sizelimit) {
+            if ($downbytes > $sizelimit) {
+                $abortdownload = true;
+            }
+
             return $abortdownload ? 1 : 0;
         });
 
