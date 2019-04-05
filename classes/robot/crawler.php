@@ -492,28 +492,15 @@ class crawler {
     public function process_queue($verbose = false) {
 
         global $DB;
-        $config = $this::get_config();
 
-        $recentcourses = [];
-        if (isset($this->recentcourses)) {
-            $recentcourses = $this->recentcourses;
-        }
-
-        if ($config->limitcrawlmethod === NO_LIMIT_OPTION) {
-            // Grab the first item from the queue.
-            $node = $DB->get_record_sql('SELECT *
-                                         FROM {tool_crawler_url}
-                                        WHERE lastcrawled IS NULL
-                                           OR lastcrawled < needscrawl
-                                     ORDER BY needscrawl ASC, id ASC
-                                        LIMIT 1
-                                    ');
-        } else {
-            // We are limiting the scope of the crawl so we get a queue item that is a recent course.
-            $select = '(courseid = ? OR courseid = NULL) AND (lastcrawled < needscrawl OR lastcrawled IS NULL)';
-            $node = $DB->get_records_select('tool_crawler_url', $select, $recentcourses, 'needscrawl ASC, id ASC', '*', 0, 1);
-            $node = reset($node);
-        }
+        // Grab the first item from the queue.
+        $node = $DB->get_record_sql('SELECT *
+                                     FROM {tool_crawler_url}
+                                    WHERE lastcrawled IS NULL
+                                       OR lastcrawled < needscrawl
+                                 ORDER BY needscrawl ASC, id ASC
+                                    LIMIT 1
+                                ');
 
         if (isset($node) && $node !== false) {
             $this->crawl($node, $verbose);
@@ -720,7 +707,7 @@ class crawler {
                 }
             }
 
-            if ($config->limitcrawlmethod != NO_LIMIT_OPTION) {
+            if (isset($node->courseid) && $config->limitcrawlmethod != NO_LIMIT_OPTION) {
                 // If this page does not have a course specified in it's classes, don't parse the html.
                 if ($hascourse === false) {
                     if ($verbose) {
@@ -728,9 +715,13 @@ class crawler {
                     }
                     return $node;
                 }
-                // If this course has not been viewed recently, then don't continue on to parse the html.
-                $recentcourses = $this->get_recentcourses_logstore();
-                if (!in_array($node->courseid, $recentcourses)) {
+                // If this course is not in our crawl scope, then don't continue on to parse the html.
+                if ($config->limitcrawlmethod == LOGSTORE_LIMIT_OPTION) {
+                    $recentcourses = $this->get_recentcourses_logstore();
+                } else {
+                    $recentcourses = $this->get_recentcourses_enddate();
+                }
+                if (!in_array($node->courseid, $recentcourses) || $node->courseid == 1) {
                     if ($verbose) {
                         if ($node->courseid == 1) {
                             echo "Ignore index.php page.\n";
