@@ -31,7 +31,7 @@ require_once($CFG->dirroot.'/admin/tool/crawler/extlib/simple_html_dom.php');
 require_once($CFG->dirroot.'/user/lib.php');
 
 /**
- * How many bytes to download at most per linked HTML document.
+ * How many bytes to download at most per linked HTML document stored on external hosts.
  * Due to the way downloading works, a few more bytes may actually be downloaded.
  */
 define('TOOL_CRAWLER_DOWNLOAD_LIMIT', 262144);
@@ -968,8 +968,24 @@ class crawler {
         $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT;
         curl_setopt($s, CURLOPT_NOPROGRESS, false);
         curl_setopt($s, CURLOPT_PROGRESSFUNCTION,
-                function($resource, $expecteddownbytes, $downbytes, $expectedupbytes, $upbytes) use (&$abortdownload, &$sizelimit) {
-            if ($downbytes > $sizelimit) {
+                function($resource, $expecteddownbytes, $downbytes, $expectedupbytes, $upbytes)
+                    use (&$abortdownload, &$sizelimit, &$targetisexternal) {
+            // Do not enforce size limit for internal resources.
+            if ($targetisexternal !== null) {
+                // We have already reached the target resource and can utilize the cached computed value from the write callback
+                // function.
+                $external = $targetisexternal;
+            } else {
+                // We may still be processing a redirect.
+                // XXX: the result from is_external could be cached to avoid wasting cycles. To implement that cache, we would have
+                // to recompute a new value only each time after a new Location header has been seen in the header function and has
+                // become effective.
+                // For now, be lazy and ask curl again for the current resource URI.
+                $effectiveuri = curl_getinfo($resource, CURLINFO_EFFECTIVE_URL);
+                $external = self::is_external($effectiveuri);
+            }
+
+            if ($external && $downbytes > $sizelimit) {
                 $abortdownload = true;
             }
 
