@@ -38,6 +38,22 @@ require_once($CFG->dirroot.'/user/lib.php');
 define('TOOL_CRAWLER_DOWNLOAD_LIMIT', 262144);
 
 /**
+ * How many bytes do download at most per redirecting resource on an external host.
+ * Due to the way downloading works, a few more byte may actually be downloaded.
+ *
+ * This value is used when an HTTP redirection happens because the connection should be kept open (mostly to save time). In case of
+ * a redirection, we allow for larger redirection bodies than the usual download limit for external documents. Reason for this is
+ * that we do not extract the title element from the first part of the HTML document, but we download (and trash) the entire
+ * resource in order to be able to use the redirection following logic from curl.
+ *
+ * The question about this and the details for the behavior of curl with pre-HTTP/2 servers are archived in thread
+ * <https://curl.haxx.se/mail/lib-2019-04/0012.html>.
+ *
+ * Should be larger than TOOL_CRAWLER_DOWNLOAD_LIMIT.
+ */
+define('TOOL_CRAWLER_REDIRECTION_DOWNLOAD_LIMIT', 1572864);
+
+/**
  * tool_crawler
  *
  * @package    tool_crawler
@@ -910,13 +926,16 @@ class crawler {
         curl_setopt($s, CURLOPT_SSL_VERIFYHOST,  0);
         curl_setopt($s, CURLOPT_SSL_VERIFYPEER,  0);
 
+        $sizelimit = TOOL_CRAWLER_REDIRECTION_DOWNLOAD_LIMIT; // Assume at first that we will be redirected.
         $abortdownload = false;
 
         $chunks = array();
         $targetisexternal = null; // Cache for whether target resource is external.
         $targetishtml = null; // Cache for whether target resource is an HTML document.
         curl_setopt($s, CURLOPT_WRITEFUNCTION, function($hdl, $content)
-                use (&$chunks, &$targetisexternal, &$targetishtml, &$abortdownload) {
+                use (&$chunks, &$sizelimit, &$targetisexternal, &$targetishtml, &$abortdownload) {
+            $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT; // Target resource reached, switch to non-redirection limit.
+
             if ($targetisexternal === null) {
                 $effectiveuri = curl_getinfo($hdl, CURLINFO_EFFECTIVE_URL);
                 $targetisexternal = self::is_external($effectiveuri);
@@ -970,7 +989,6 @@ class crawler {
             return strlen($header);
         });
 
-        $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT;
         curl_setopt($s, CURLOPT_NOPROGRESS, false);
         curl_setopt($s, CURLOPT_PROGRESSFUNCTION,
                 function($resource, $expecteddownbytes, $downbytes, $expectedupbytes, $upbytes)
@@ -1114,6 +1132,7 @@ class crawler {
                         curl_setopt($s, CURLOPT_HTTPGET, true);
                         $method = 'GET';
 
+                        $sizelimit = TOOL_CRAWLER_REDIRECTION_DOWNLOAD_LIMIT; // Assume at first that we will be redirected.
                         $chunks = array();
                         $firstheaderline = true;
                         $targetisexternal = null;
