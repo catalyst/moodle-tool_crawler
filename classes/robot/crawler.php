@@ -191,6 +191,23 @@ class crawler {
         return $scheme.'://'.$abs;
     }
 
+    /**
+     * Returns whether a given URI is external. A URI is external if and only if it does not belong to this Moodle installation.
+     *
+     * @param string $url The URI to test.
+     * @return boolean Whether the URI is external.
+     */
+    public static function is_external($url) {
+        global $CFG;
+
+        if ($url === $CFG->wwwroot) {
+            return false;
+        }
+
+        $mdlw = strlen($CFG->wwwroot);
+        return (strncmp($url, $CFG->wwwroot . '/', $mdlw + 1) != 0);
+    }
+
 
     /**
      * Reset a node to be recrawled
@@ -271,10 +288,9 @@ class crawler {
             return false;
         }
 
-        // If this URL is external then check the ext whitelist.
-        $mdlw = strlen($CFG->wwwroot);
         $bad = 0;
-        if (substr ($url, 0, $mdlw) === $CFG->wwwroot) {
+        // If this URL is external then check the ext whitelist.
+        if (!self::is_external($url)) {
             $excludes = str_replace("\r", '', self::get_config()->excludemdlurl);
         } else {
             $excludes = str_replace("\r", '', self::get_config()->excludeexturl);
@@ -368,7 +384,7 @@ class crawler {
             $node = (object) array();
             $node->createdate = time();
             $node->url        = $url;
-            $node->external   = strpos($url, $CFG->wwwroot) === 0 ? 0 : 1;
+            $node->external   = self::is_external($url);
             $node->needscrawl = time();
 
             if (isset($courseid)) {
@@ -895,10 +911,7 @@ class crawler {
         $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
         if ($final != $url) {
             $result->redirect = $final;
-            $mdlw = strlen($CFG->wwwroot);
-            if (substr ($final, 0, $mdlw) !== $CFG->wwwroot) {
-                $result->external = 1;
-            }
+            $result->external = self::is_external($final);
         } else {
             $result->redirect = '';
         }
@@ -1001,8 +1014,7 @@ class crawler {
      * @return boolean
      */
     public function should_be_authenticated($url) {
-        global $CFG;
-        if ( strpos($url, $CFG->wwwroot.'/') === 0 || $url === $CFG->wwwroot ) {
+        if (!self::is_external($url)) {
             return true;
         }
         return false;
