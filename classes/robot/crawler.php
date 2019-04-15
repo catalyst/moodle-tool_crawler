@@ -899,8 +899,31 @@ class crawler {
         curl_setopt($s, CURLOPT_SSL_VERIFYHOST,  0);
         curl_setopt($s, CURLOPT_SSL_VERIFYPEER,  0);
 
+        $abortdownload = false;
+
         $chunks = array();
-        curl_setopt($s, CURLOPT_WRITEFUNCTION, function($hdl, $content) use (&$chunks) {
+        $targetisexternal = null; // Cache for whether target resource is external.
+        $targetishtml = null; // Cache for whether target resource is an HTML document.
+        curl_setopt($s, CURLOPT_WRITEFUNCTION, function($hdl, $content)
+                use (&$chunks, &$targetisexternal, &$targetishtml, &$abortdownload) {
+            if ($targetisexternal === null) {
+                $effectiveuri = curl_getinfo($hdl, CURLINFO_EFFECTIVE_URL);
+                $targetisexternal = self::is_external($effectiveuri);
+            }
+
+            if ($targetishtml === null) {
+                $contenttype = curl_getinfo($hdl, CURLINFO_CONTENT_TYPE);
+                $targetishtml = (strpos($contenttype, 'text/html') === 0);
+            }
+
+            // Variables $targetisexternal and $targetishtml are not going to change anymore as we have reached the target resource.
+
+            if ($targetisexternal && !$targetishtml) {
+                // Not body of a redirection, external document, not HTML. ⇒ Abort transfer because we neither need nor can
+                // understand the body.
+                $abortdownload = true;
+            }
+
             $chunks[] = $content;
             return strlen($content);
         });
@@ -936,7 +959,6 @@ class crawler {
             return strlen($header);
         });
 
-        $abortdownload = false;
         curl_setopt($s, CURLOPT_NOPROGRESS, false);
         curl_setopt($s, CURLOPT_PROGRESSFUNCTION,
                 function($resource, $expecteddownbytes, $downbytes, $expectedupbytes, $upbytes) use (&$abortdownload) {
@@ -1062,6 +1084,8 @@ class crawler {
 
                         $chunks = array();
                         $firstheaderline = true;
+                        $targetisexternal = null;
+                        $targetishtml = null;
                         $abortdownload = false;
                     }
                 } else {
