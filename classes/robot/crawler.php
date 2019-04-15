@@ -981,11 +981,37 @@ class crawler {
             $result->external = self::is_external($final);
 
             if (!$success) {
-                $result->errormsg         = (string)$errno;
-                $result->title            = curl_error($s); // We do not try to translate Curl error messages.
-                $result->contents         = '';
-                $result->httpcode         = '500';
-                $result->httpmsg          = null;
+                // Whether we have started reading the body of the target resource.
+                $bodystarted = count($chunks) > 0;
+
+                if ($method == 'GET' && $contenttoolarge && $bodystarted) {
+                    // We have cancelled the download _during final body parsing_, because the resource was too large.
+                    // Can only happen on external resources.
+
+                    // If the resource is an HTML document:
+                    // The document title can even be extracted by simple_html_dom from a partially received HTML document.
+                    // Title extraction will only be attempted by the caller if the final HTTP status-code signals success.
+                    // TODO: use $chunks to get the data received so far.
+
+                    // TODO: store the size of the resource if we know it from the Content-Length header field.
+
+                    $result->errormsg         = null;  // Important in case of repeated scraping in order to reset error status.
+                    // TODO: set $result->httpcode to the HTTP status-code from the final response.
+                    // TODO: store HTTP reason-phrase.
+                } else {
+                    // There has been a download error; or we have aborted the download _during header parsing_, because a header
+                    // was too large; or we have aborted the download _during parsing of a non-final body_, because that body was
+                    // too large – the latter can (only) happen on redirections.
+                    // If we abort a download before parsing the final body (any of the two cases), this is an error which must be
+                    // reported to the user. Same as for download errors, we use HTTP status code 500, but the case can be clearly
+                    // identified by the stored curl error code and message which is (the message for) CURLE_ABORTED_BY_CALLBACK.
+
+                    $result->errormsg         = (string)$errno;
+                    $result->title            = curl_error($s); // We do not try to translate Curl error messages.
+                    $result->contents         = '';
+                    $result->httpcode         = '500';
+                    $result->httpmsg          = null;
+                }
             } else {
                 $result->errormsg = null;  // Important in case of repeated scraping in order to reset error status.
                 $result->httpmsg = $httpmsg;
