@@ -1001,7 +1001,7 @@ class crawler {
 
                     $result->errormsg         = null;  // Important in case of repeated scraping in order to reset error status.
                     // TODO: set $result->httpcode to the HTTP status-code from the final response.
-                    // TODO: store HTTP reason-phrase.
+                    $result->httpmsg          = $httpmsg;
                 } else {
                     // There has been a download error; or we have aborted the download _during header parsing_, because a header
                     // was too large; or we have aborted the download _during parsing of a non-final body_, because that body was
