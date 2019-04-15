@@ -985,6 +985,8 @@ class crawler {
             }
             $result->external = self::is_external($final);
 
+            $httpcode = curl_getinfo($s, CURLINFO_RESPONSE_CODE);
+
             if (!$success) {
                 // Whether we have started reading the body of the target resource.
                 // The way of detecting this is safe for our purpose because none of our abort conditions are triggered with a body
@@ -1005,7 +1007,7 @@ class crawler {
                     // TODO: store the size of the resource if we know it from the Content-Length header field.
 
                     $result->errormsg         = null;  // Important in case of repeated scraping in order to reset error status.
-                    // TODO: set $result->httpcode to the HTTP status-code from the final response.
+                    $result->httpcode         = $httpcode;
                     $result->httpmsg          = $httpmsg;
                 } else {
                     // There has been a download error; or we have aborted the download _during header parsing_, because a header
@@ -1026,7 +1028,6 @@ class crawler {
                 $result->httpmsg = $httpmsg;
 
                 $ishtml = (strpos($contenttype, 'text/html') === 0);
-                $httpcode = curl_getinfo($s, CURLINFO_RESPONSE_CODE);
 
                 if ($method == 'HEAD') {
                     $filesizeknown = (is_double($filesize) && $filesize >= 0.0);
