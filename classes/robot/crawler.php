@@ -892,7 +892,6 @@ class crawler {
         }
         curl_setopt($s, CURLOPT_USERAGENT,       $config->useragent . '/' . $config->version . ' (' . $CFG->wwwroot . ')');
         curl_setopt($s, CURLOPT_MAXREDIRS,       5);
-        curl_setopt($s, CURLOPT_RETURNTRANSFER,  true);
         curl_setopt($s, CURLOPT_FOLLOWLOCATION,  true);
         curl_setopt($s, CURLOPT_FRESH_CONNECT,   false);
         curl_setopt($s, CURLOPT_HEADER,          true);
@@ -900,6 +899,12 @@ class crawler {
         curl_setopt($s, CURLOPT_COOKIEFILE,      $cookiefilelocation);
         curl_setopt($s, CURLOPT_SSL_VERIFYHOST,  0);
         curl_setopt($s, CURLOPT_SSL_VERIFYPEER,  0);
+
+        $chunks = array();
+        curl_setopt($s, CURLOPT_WRITEFUNCTION, function($hdl, $content) use (&$chunks) {
+            $chunks[] = $content;
+            return strlen($content);
+        });
 
         // First, use a HEAD request to try to find out the type and length of the linked document without having to download it.
         curl_setopt($s, CURLOPT_NOBODY,          true);
@@ -948,6 +953,10 @@ class crawler {
             } else {
                 $result->errormsg = null;  // Important in case of repeated scraping in order to reset error status.
 
+                // May need a significant amount of memory as the data is temporarily stored twice.
+                $raw = implode($chunks);
+                unset($chunks); // Allow to free memory.
+
                 $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
                 $headers = substr($raw, 0, $headersize);
                 if (preg_match_all('@(^|[\r\n])(HTTP/[^ ]+) ([0-9]+) ([^\r\n]+|$)@', $headers, $httplines, PREG_SET_ORDER)) {
@@ -980,6 +989,8 @@ class crawler {
                         // Switch to HTTP GET and try again.
                         curl_setopt($s, CURLOPT_HTTPGET, true);
                         $method = 'GET';
+
+                        $chunks = array();
                     }
                 } else {
                     // Linked resource has been downloaded using HTTP GET.
