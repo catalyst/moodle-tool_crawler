@@ -980,6 +980,8 @@ class crawler {
             }
             $result->external = self::is_external($final);
 
+            $ishtml = (strpos($contenttype, 'text/html') === 0);
+
             $httpcode = curl_getinfo($s, CURLINFO_RESPONSE_CODE);
 
             if (!$success) {
@@ -994,10 +996,17 @@ class crawler {
                     // We have cancelled the download _during final body parsing_, because the resource was too large.
                     // Can only happen on external resources.
 
-                    // If the resource is an HTML document:
-                    // The document title can even be extracted by simple_html_dom from a partially received HTML document.
-                    // Title extraction will only be attempted by the caller if the final HTTP status-code signals success.
-                    // TODO: use $chunks to get the data received so far.
+                    if ($ishtml) { // Also related to issue #13.
+                        // The document title can even be extracted by simple_html_dom from a partially received HTML document.
+                        // Title extraction will only be attempted by the caller if the final HTTP status-code signals success.
+
+                        // May need a significant amount of memory as the data is temporarily stored twice.
+                        $result->contents = implode($chunks);
+                        unset($chunks); // Allow to free memory.
+                    } else {
+                        // Nothing special to do here. Length has already been saved.
+                        $result->contents = '';
+                    }
 
                     $result->filesize         = $filesize;
 
@@ -1021,8 +1030,6 @@ class crawler {
             } else {
                 $result->errormsg = null;  // Important in case of repeated scraping in order to reset error status.
                 $result->httpmsg = $httpmsg;
-
-                $ishtml = (strpos($contenttype, 'text/html') === 0);
 
                 if ($method == 'HEAD') {
                     $filesizeknown = (is_double($filesize) && $filesize >= 0.0);
