@@ -923,10 +923,16 @@ class crawler {
             // least Content-Type and Content-Length are not affected by excessive caching. If they were, we would have to ensure
             // that we get _fresh_ data on the second call to curl_exec and curl_getinfo.
 
-            if ($method == 'GET') {
+            $errno = curl_errno($s);
+            $contenttoolarge = $errno === CURLE_ABORTED_BY_CALLBACK;
+
+            if ($method == 'GET' && !$contenttoolarge) {
                 $result->filesize     = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
             } else {
                 $filesize             = curl_getinfo($s, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+                if (!is_double($filesize)) {
+                    $filesize = -1.0;
+                }
             }
 
             $contenttype              = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
@@ -945,7 +951,7 @@ class crawler {
             $result->external = self::is_external($final);
 
             if (!$success) {
-                $result->errormsg         = (string)curl_errno($s);
+                $result->errormsg         = (string)$errno;
                 $result->title            = curl_error($s); // We do not try to translate Curl error messages.
                 $result->contents         = '';
                 $result->httpcode         = '500';
