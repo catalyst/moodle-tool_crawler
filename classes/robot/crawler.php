@@ -912,11 +912,17 @@ class crawler {
         $firstheaderline = true;
 
         $httpmsg = '';
+        // We may receive HTTP trailers in the header function. An HTTP client can tell the server whether it will accept trailers
+        // by using the TE header field. However, RFC 7230 does not forbid servers to send trailers if the client does not like
+        // them; it also does not REQUIRE servers to send a Trailer header field. The RFC only contains SHOULD NOT/SHOULD rules for
+        // that (see sections 4.1.2 and 4.4).
         curl_setopt($s, CURLOPT_HEADERFUNCTION, function($hdl, $header) use (&$firstheaderline, &$httpmsg) {
             if ($header === "\r\n") {
                 $firstheaderline = true;
             } else {
                 if ($firstheaderline) {
+                    // This code path will erroneously be triggered in the case of trailers. Not a big problem, especially not in
+                    // the case of well-formed trailers. But we will then reset $httpmsg a bit too early.
                     if (preg_match('@^HTTP/[^ ]+ ([0-9]+) ([^\r\n]*)@', $header, $headerparts)) { // HTTP status-line.
                         $httpmsg = $headerparts[2];
                     } else {
