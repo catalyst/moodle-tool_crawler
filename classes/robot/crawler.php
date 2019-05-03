@@ -1151,13 +1151,20 @@ class crawler {
             return $abortdownload ? 1 : 0;
         });
 
-        // First, use a HEAD request to try to find out the type and length of the linked document without having to download it.
-        curl_setopt($s, CURLOPT_NOBODY,          true);
+        if ($config->usehead == '1') {
+            // First, use a HEAD request to try to find out the type and length of the linked document without having to download
+            // it.
+            curl_setopt($s, CURLOPT_NOBODY, true);
+            $method = 'HEAD';
+        } else {
+            // Configuration tells us not to use HTTP HEAD, so directly start with a GET request.
+            curl_setopt($s, CURLOPT_HTTPGET, true);
+            $method = 'GET';
+        }
 
         $result = (object) array();
         $result->url              = $url;
 
-        $method = 'HEAD';
         $needhttprequest = true; // Whether we have to send (a further) HTTP request.
         while ($needhttprequest) {
             // Curl seems to store the current URI at each redirection, so reset the value before each request.
