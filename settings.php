@@ -167,6 +167,11 @@ useridlistid
                                                     new lang_string('bigfilesizedesc',   'tool_crawler'),
                                                     '1' ));
 
+        $settings->add(new admin_setting_configcheckbox('tool_crawler/usehead',
+                                                    new lang_string('usehead',           'tool_crawler'),
+                                                    new lang_string('useheaddesc',       'tool_crawler'),
+                                                    '0' ));
+
         $options = array(
             86400 => new lang_string('secondstotime86400'),
             604800 => new lang_string('secondstotime604800'),
