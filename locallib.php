@@ -181,14 +181,10 @@ function tool_crawler_url_create_page($url) {
                 t.httpcode,
                 t.filesize,
                 t.lastcrawled,
-                t.mimetype,
-                t.external,
-                t.courseid,
-                c.shortname
+                t.mimetype
            FROM {tool_crawler_edge} l
            JOIN {tool_crawler_url} f ON f.id = l.a
            JOIN {tool_crawler_url} t ON t.id = l.b
-      LEFT JOIN {course} c ON c.id = t.courseid
           WHERE f.url = ?
        ORDER BY f.lastcrawled DESC
     ", array($url));
@@ -209,14 +205,10 @@ function tool_crawler_url_create_page($url) {
                 f.httpcode,
                 f.filesize,
                 f.lastcrawled,
-                f.mimetype,
-                f.external,
-                f.courseid,
-                c.shortname
+                f.mimetype
            FROM {tool_crawler_edge} l
            JOIN {tool_crawler_url} f ON f.id = l.a
            JOIN {tool_crawler_url} t ON t.id = l.b
-      LEFT JOIN {course} c ON c.id = f.courseid
           WHERE t.url = ?
        ORDER BY f.lastcrawled DESC
     ", array($url));
