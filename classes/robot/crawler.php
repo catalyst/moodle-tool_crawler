@@ -253,7 +253,8 @@ class crawler {
      * @param string $baseurl
      * @param string $url relative URL
      * @param int the course id if it is known.
-     * @return mixed the node record or if the URL is invalid returns false.
+     * @return object|boolean The node record if the resource pointed to by the URL can and should be considered; or `false` if the
+     *     URL is invalid or excluded.
      */
     public function mark_for_crawl($baseurl, $url, $courseid = null) {
 
