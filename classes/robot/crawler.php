@@ -915,7 +915,7 @@ class crawler {
         $method = 'HEAD';
         $needhttprequest = true; // Whether we have to send (a further) HTTP request.
         while ($needhttprequest) {
-            $raw = curl_exec($s);
+            $success = curl_exec($s);
             $needhttprequest = false; // Curl has been run, no new iteration necessary for now.
 
             // NOTE: information that can be queried by curl_getinfo is cached if the handle is reused. According to the PHP
@@ -944,7 +944,7 @@ class crawler {
             }
             $result->external = self::is_external($final);
 
-            if (empty($raw)) {
+            if (!$success) {
                 $result->errormsg         = (string)curl_errno($s);
                 $result->title            = curl_error($s); // We do not try to translate Curl error messages.
                 $result->contents         = '';
