@@ -997,6 +997,7 @@ class crawler {
 
                     if ($ishtml) { // Related to Issue #13.
                         $data = substr($raw, $headersize);
+                        unset($raw); // Allow to free memory.
 
                         /* Convert it if it is anything but UTF-8 */
                         $charset = $this->detect_encoding($contenttype, $data);
