@@ -943,7 +943,9 @@ class crawler {
 
             $ishtml = (strpos($contenttype, 'text/html') === 0);
             if ($ishtml) { // Related to Issue #13.
+                // May need a significant amount of memory as the data is temporarily stored twice.
                 $data = substr($raw, $headersize);
+                unset($raw); // Allow to free memory.
 
                 /* Convert it if it is anything but UTF-8 */
                 $charset = $this->detect_encoding($contenttype, $data);
