@@ -989,10 +989,6 @@ class crawler {
                 $result->errormsg = null;  // Important in case of repeated scraping in order to reset error status.
                 $result->httpmsg = $httpmsg;
 
-                // May need a significant amount of memory as the data is temporarily stored twice.
-                $raw = implode($chunks);
-                unset($chunks); // Allow to free memory.
-
                 $ishtml = (strpos($contenttype, 'text/html') === 0);
                 $httpcode = curl_getinfo($s, CURLINFO_RESPONSE_CODE);
 
@@ -1026,8 +1022,8 @@ class crawler {
 
                     if ($ishtml) { // Related to Issue #13.
                         // May need a significant amount of memory as the data is temporarily stored twice.
-                        $data = $raw;
-                        unset($raw); // Allow to free memory.
+                        $data = implode($chunks);
+                        unset($chunks); // Allow to free memory.
 
                         /* Convert it if it is anything but UTF-8 */
                         $charset = $this->detect_encoding($contenttype, $data);
