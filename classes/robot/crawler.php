@@ -982,6 +982,10 @@ class crawler {
 
             if (!$success) {
                 // Whether we have started reading the body of the target resource.
+                // The way of detecting this is safe for our purpose because none of our abort conditions are triggered with a body
+                // which has a length of zero octets. This renders it unnecessary to watch HTTP status-lines (for redirections) and
+                // to implement the same redirection logic as curl uses. (The only condition that would abort during the final
+                // response is triggered by an overlong header – which is not yet in the final body, ergo properly handled.)
                 $bodystarted = count($chunks) > 0;
 
                 if ($method == 'GET' && $contenttoolarge && $bodystarted) {
