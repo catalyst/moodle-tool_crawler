@@ -899,7 +899,6 @@ class crawler {
         curl_setopt($s, CURLOPT_MAXREDIRS,       5);
         curl_setopt($s, CURLOPT_FOLLOWLOCATION,  true);
         curl_setopt($s, CURLOPT_FRESH_CONNECT,   false);
-        curl_setopt($s, CURLOPT_HEADER,          true);
         curl_setopt($s, CURLOPT_COOKIEJAR,       $cookiefilelocation);
         curl_setopt($s, CURLOPT_COOKIEFILE,      $cookiefilelocation);
         curl_setopt($s, CURLOPT_SSL_VERIFYHOST,  0);
@@ -909,6 +908,31 @@ class crawler {
         curl_setopt($s, CURLOPT_WRITEFUNCTION, function($hdl, $content) use (&$chunks) {
             $chunks[] = $content;
             return strlen($content);
+        });
+
+        // Whether the next header line which we read will be the HTTP status-line.
+        // We cannot make this a static variable in the header callback function (closure) because we need to reset it to true
+        // before the second call to curl_exec (for the GET request), in case we have aborted reading of responses to our first
+        // request (the HEAD request).
+        $firstheaderline = true;
+
+        $httpmsg = '';
+        curl_setopt($s, CURLOPT_HEADERFUNCTION, function($hdl, $header) use (&$firstheaderline, &$httpmsg) {
+            if ($header === "\r\n") {
+                $firstheaderline = true;
+            } else {
+                if ($firstheaderline) {
+                    if (preg_match('@^HTTP/[^ ]+ ([0-9]+) ([^\r\n]*)@', $header, $headerparts)) { // HTTP status-line.
+                        $httpmsg = $headerparts[2];
+                    } else {
+                        $httpmsg = '';
+                    }
+                }
+
+                $firstheaderline = false;
+            }
+
+            return strlen($header);
         });
 
         // First, use a HEAD request to try to find out the type and length of the linked document without having to download it.
@@ -963,18 +987,11 @@ class crawler {
                 $result->httpmsg          = null;
             } else {
                 $result->errormsg = null;  // Important in case of repeated scraping in order to reset error status.
+                $result->httpmsg = $httpmsg;
 
                 // May need a significant amount of memory as the data is temporarily stored twice.
                 $raw = implode($chunks);
                 unset($chunks); // Allow to free memory.
-
-                $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
-                $headers = substr($raw, 0, $headersize);
-                if (preg_match_all('@(^|[\r\n])(HTTP/[^ ]+) ([0-9]+) ([^\r\n]+|$)@', $headers, $httplines, PREG_SET_ORDER)) {
-                    $result->httpmsg = array_pop($httplines)[4];
-                } else {
-                    $result->httpmsg = '';
-                }
 
                 $ishtml = (strpos($contenttype, 'text/html') === 0);
                 $httpcode = curl_getinfo($s, CURLINFO_RESPONSE_CODE);
@@ -1002,13 +1019,14 @@ class crawler {
                         $method = 'GET';
 
                         $chunks = array();
+                        $firstheaderline = true;
                     }
                 } else {
                     // Linked resource has been downloaded using HTTP GET.
 
                     if ($ishtml) { // Related to Issue #13.
                         // May need a significant amount of memory as the data is temporarily stored twice.
-                        $data = substr($raw, $headersize);
+                        $data = $raw;
                         unset($raw); // Allow to free memory.
 
                         /* Convert it if it is anything but UTF-8 */
