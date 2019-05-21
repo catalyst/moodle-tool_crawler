@@ -907,7 +907,6 @@ class crawler {
         $config = self::get_config();
 
         $s = curl_init();
-        curl_setopt($s, CURLOPT_URL,             $url);
         curl_setopt($s, CURLOPT_TIMEOUT,         $config->maxtime);
         if ( $this->should_be_authenticated($url) ) {
             curl_setopt($s, CURLOPT_USERPWD,     $config->botusername . ':' . $config->botpassword);
@@ -1019,6 +1018,12 @@ class crawler {
         $method = 'HEAD';
         $needhttprequest = true; // Whether we have to send (a further) HTTP request.
         while ($needhttprequest) {
+            // Curl seems to store the current URI at each redirection, so reset the value before each request.
+            // Otherwise we would use the last URI after a temporary redirect, which is wrong. Re-requesting a resource starting
+            // from the beginning should always work, even in the case that there have only been permanent redirects in the
+            // responses to the HEAD request.
+            curl_setopt($s, CURLOPT_URL, $url);
+
             $success = curl_exec($s);
             $needhttprequest = false; // Curl has been run, no new iteration necessary for now.
 
