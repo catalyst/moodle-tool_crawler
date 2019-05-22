@@ -1041,13 +1041,14 @@ class crawler {
             $contenttoolarge = $errno === CURLE_ABORTED_BY_CALLBACK;
 
             if ($method == 'GET' && !$contenttoolarge) {
-                $result->filesize     = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
+                $filesize             = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
             } else {
                 $filesize             = curl_getinfo($s, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
                 if (!is_double($filesize)) {
                     $filesize = -1.0;
                 }
             }
+            $result->filesize         = $filesize;
 
             $contenttype              = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
             $result->mimetype         = preg_replace('/;.*/', '', $contenttype);
@@ -1092,8 +1093,6 @@ class crawler {
                         $result->contents = '';
                     }
 
-                    $result->filesize         = $filesize;
-
                     $result->errormsg         = null;  // Important in case of repeated scraping in order to reset error status.
                     $result->httpcode         = $httpcode;
                     $result->httpmsg          = $httpmsg;
@@ -1128,7 +1127,6 @@ class crawler {
                         $needhttprequest = true;
                     } else {
                         // No need to download documents which are not HTML documents.
-                        $result->filesize = $filesize;
                         $result->contents = '';
                     }
 
