@@ -1004,7 +1004,7 @@ class crawler {
                     // Title extraction will only be attempted by the caller if the final HTTP status-code signals success.
                     // TODO: use $chunks to get the data received so far.
 
-                    // TODO: store the size of the resource if we know it from the Content-Length header field.
+                    $result->filesize         = $filesize;
 
                     $result->errormsg         = null;  // Important in case of repeated scraping in order to reset error status.
                     $result->httpcode         = $httpcode;
