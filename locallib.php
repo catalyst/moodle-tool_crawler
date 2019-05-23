@@ -127,6 +127,9 @@ function tool_crawler_numberformat(float $number, int $decimals = 0) {
  * Produces a filter for SQL queries which will limit a query to big links. The two parts of the filter are returned in an
  * associative array.
  *
+ * NB: resources with an unknown size will pass the filter as “maybe big”. However, resources which are shorter than the configured
+ * big file size, but have an inexact length stored will not be returned marked as big.
+ *
  * @param string $tablealias Name to which the `tool_crawler_url` table is aliased in the final SQL statement. If empty or `null`,
  *                           the columns will be referenced without an explicit table name.
  *
@@ -143,11 +146,16 @@ function tool_crawler_sql_oversize_filter($tablealias = null) {
     }
 
     $where = "( ${tbl}filesize > ?
+             OR ( ${tbl}filesize IS NULL
+                  AND ${tbl}lastcrawled IS NOT NULL
+                )
+             OR ${tbl}filesizestatus = ?
               )";
 
     $bigfilesize = get_config('tool_crawler', 'bigfilesize');
     $params = array(
             $bigfilesize * 1000000,
+            TOOL_CRAWLER_FILESIZE_UNKNOWN,
             );
 
     return array(
