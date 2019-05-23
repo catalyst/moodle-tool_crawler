@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(__DIR__ . '/../constants.php');
+
 /**
  * Upgrade script
  *
@@ -54,6 +56,28 @@ function xmldb_tool_crawler_upgrade($oldversion) {
         }
 
         upgrade_plugin_savepoint(true, 2019022200, 'tool', 'crawler');
+    }
+
+    if ($oldversion < 2019052300) {
+        $table = new xmldb_table('tool_crawler_url');
+        $field = new xmldb_field('filesizestatus', XMLDB_TYPE_INTEGER, 1, null, false, false, TOOL_CRAWLER_FILESIZE_EXACT,
+                'filesize');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Reset DEFAULT value which has been set for the field above (but do not change the newly-set values in the columns back).
+        // add_field will have made the DBMS add the field *and* physically set the column to its default value in all rows. We do
+        // not like to keep the default value for the column, but we like to have NULL back as default, so we need a second database
+        // operation.
+        // We could have also achieved this with a non-DEFAULT add_field operation followed by a real UPDATE of all rows, but this
+        // has the drawback that we might unnecessarily re-execute the expensive UPDATE if things broke before the savepoint. This
+        // would often not be a big deal, but it would waste database resources.
+        $field->setDefault(null);
+        $dbman->change_field_default($table, $field);
+
+        upgrade_plugin_savepoint(true, 2019052300, 'tool', 'crawler');
     }
 
     return true;
