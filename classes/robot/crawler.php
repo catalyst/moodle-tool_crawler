@@ -907,6 +907,87 @@ class crawler {
     }
 
     /**
+     * Does its best to find out the size of the requested resource after a Curl download call has returned. Stores the size, and
+     * whether the size is exact, a minimum, or unknown.
+     *
+     * Uses, among others, the value of the `Content-Length` header field (if present in the HTTP response).
+     *
+     * This function does not return a value. Instead, it modifies the result object passed to it; namely properties `filesize` and
+     * `filesizestatus` of that object.
+     *
+     * @param resource $curlhandle   The handle used by Curl.
+     * @param   string $method       The string `GET` or `HEAD`, describing the method that has been used.
+     * @param     bool $success      Whether the call to `curl_exec` has been successful.
+     * @param     bool $bodystarted  Whether we have begun reading the HTTP body with the target document (i.e., headers completed).
+     * @param   object $result       The result object.
+     */
+    private static function determine_filesize($curlhandle, $method, $success, $bodystarted, $result) {
+        if ($method == 'GET') {
+            if ($success) {
+                // Successful full download.
+                // We know the resource size.
+
+                $result->filesize = curl_getinfo($curlhandle, CURLINFO_SIZE_DOWNLOAD);
+                $result->filesizestatus = TOOL_CRAWLER_FILESIZE_EXACT;
+            } else {
+                if ($bodystarted) {
+                    // The download has been aborted after reading the HTTP body with the target resource was commenced.
+                    // Either _we_ have aborted the download (because we do not need more of the target document).
+                    // Or there has been an _error_ which led to the download being stopped.
+                    // In both cases, we take into consideration the Content-Length header _and_ the number of bytes received so
+                    // far.
+
+                    $contentlength = curl_getinfo($curlhandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+                    if (!is_double($contentlength) || $contentlength < 0.0) {
+                        // Content-Length is unusable, rely on number of downloaded bytes exclusively.
+
+                        $downloaded = curl_getinfo($curlhandle, CURLINFO_SIZE_DOWNLOAD);
+                        if (!is_double($downloaded) || $downloaded < 0.0) {
+                            // Neither Content-Length nor download size is usable.
+                            $result->filesize = null;
+                            $result->filesizestatus = TOOL_CRAWLER_FILESIZE_UNKNOWN;
+                        } else {
+                            // We can (only) use the number of downloaded bytes.
+                            $result->filesize = $downloaded;
+                            $result->filesizestatus = TOOL_CRAWLER_FILESIZE_ATLEAST;
+                        }
+                    } else {
+                        // Content-Length is usable.
+                        // Curl stops the download after Content-Length bytes, no need to cover the case that we have downloaded
+                        // more bytes.
+                        // Even if the download is incomplete, we know the exact size. So always use Content-Length.
+                        $result->filesize = $contentlength;
+                        $result->filesizestatus = TOOL_CRAWLER_FILESIZE_EXACT;
+                    }
+                } else {
+                    // The download has been aborted before the HTTP body of the target has been reached.
+                    $result->filesize = null;
+                    $result->filesizestatus = TOOL_CRAWLER_FILESIZE_UNKNOWN;
+                }
+            }
+        } else {
+            // We are processing the response to a HEAD request.
+
+            if ($success) {
+                // Response has been fully processed.
+                $filesize = curl_getinfo($curlhandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+                if (!is_double($filesize) || $filesize < 0.0) {
+                    $result->filesize = null;
+                    $result->filesizestatus = TOOL_CRAWLER_FILESIZE_UNKNOWN;
+                    // This will cause a GET request in a moment, as we try to get more details.
+                } else {
+                    $result->filesize = $filesize;
+                    $result->filesizestatus = TOOL_CRAWLER_FILESIZE_EXACT;
+                }
+            } else {
+                // The download has been aborted before the header for the target resource has been (fully) read.
+                $result->filesize = null;
+                $result->filesizestatus = TOOL_CRAWLER_FILESIZE_UNKNOWN;
+            }
+        }
+    }
+
+    /**
      * Scrapes a fully qualified URL and returns details about it
      *
      * The format returns is ready to directly insert into the DB queue
@@ -1067,15 +1148,7 @@ class crawler {
             // response is triggered by an overlong header – which is not yet in the final body, ergo properly handled.)
             $bodystarted = count($chunks) > 0;
 
-            if ($method == 'GET' && !$downloadaborted) {
-                $filesize             = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
-            } else {
-                $filesize             = curl_getinfo($s, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-                if (!is_double($filesize)) {
-                    $filesize = -1.0;
-                }
-            }
-            $result->filesize         = $filesize;
+            self::determine_filesize($s, $method, $success, $bodystarted, $result);
 
             $contenttype              = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
             $result->mimetype         = preg_replace('/;.*/', '', $contenttype);
@@ -1135,7 +1208,9 @@ class crawler {
                 $result->httpmsg = $httpmsg;
 
                 if ($method == 'HEAD') {
-                    $filesizeknown = (is_double($filesize) && $filesize >= 0.0);
+                    // Here, filesizestatus has not been read from the database, so it still is an integer and has not been
+                    // converted to string. We may use ‚===‘ in comparisons.
+                    $filesizeknown = ($result->filesizestatus === TOOL_CRAWLER_FILESIZE_EXACT);
                     $methodnotallowed = ($httpcode == 405);
 
                     if ($methodnotallowed || $ishtml) {
