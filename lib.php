@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(__DIR__ . '/constants.php');
+
 /**
  * Perform one cron 'tick' of crawl processing
  *
