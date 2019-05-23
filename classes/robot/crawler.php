@@ -54,6 +54,16 @@ define('TOOL_CRAWLER_DOWNLOAD_LIMIT', 262144);
 define('TOOL_CRAWLER_REDIRECTION_DOWNLOAD_LIMIT', 1572864);
 
 /**
+ * How many bytes to download at most per HTTP header.
+ * Due to the way downloading works, a few more bytes may actually be downloaded.
+ *
+ * Curl documents that it processes no headers longer than 100 KiB, but testing (with curl-7.65.0) has shown that this is not
+ * enforced in the PHP code. So implement an own limit (and make it 16 KiB, which should be enough by far, see
+ * <https://stackoverflow.com/q/686217> (2019-05-23)).
+ */
+define('TOOL_CRAWLER_HEADER_LIMIT', 16 * 1024);
+
+/**
  * tool_crawler
  *
  * @package    tool_crawler
@@ -964,13 +974,18 @@ class crawler {
         $firstheaderline = true;
 
         $httpmsg = '';
+        $headersize = 0;
         // We may receive HTTP trailers in the header function. An HTTP client can tell the server whether it will accept trailers
         // by using the TE header field. However, RFC 7230 does not forbid servers to send trailers if the client does not like
         // them; it also does not REQUIRE servers to send a Trailer header field. The RFC only contains SHOULD NOT/SHOULD rules for
         // that (see sections 4.1.2 and 4.4).
-        curl_setopt($s, CURLOPT_HEADERFUNCTION, function($hdl, $header) use (&$firstheaderline, &$httpmsg) {
+        curl_setopt($s, CURLOPT_HEADERFUNCTION,
+                function($hdl, $header) use (&$firstheaderline, &$httpmsg, &$headersize, &$abortdownload) {
+            $len = strlen($header);
+
             if ($header === "\r\n") {
                 $firstheaderline = true;
+                $headersize = 0;
             } else {
                 if ($firstheaderline) {
                     // This code path will erroneously be triggered in the case of trailers. Not a big problem, especially not in
@@ -983,9 +998,15 @@ class crawler {
                 }
 
                 $firstheaderline = false;
+
+                $headersize += $len;
+                if ($headersize > TOOL_CRAWLER_HEADER_LIMIT) {
+                    // Header too long.
+                    $abortdownload = true;
+                }
             }
 
-            return strlen($header);
+            return $len;
         });
 
         curl_setopt($s, CURLOPT_NOPROGRESS, false);
@@ -1138,6 +1159,7 @@ class crawler {
                         $sizelimit = TOOL_CRAWLER_REDIRECTION_DOWNLOAD_LIMIT; // Assume at first that we will be redirected.
                         $chunks = array();
                         $firstheaderline = true;
+                        $headersize = 0;
                         $targetisexternal = null;
                         $targetishtml = null;
                         $abortdownload = false;
