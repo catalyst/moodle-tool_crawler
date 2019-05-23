@@ -84,6 +84,7 @@ $string['fetcherror'] = 'Curl Error: {$a->errormessage}';
 $string['found'] = 'Found';
 $string['frompage'] = 'From page';
 $string['good'] = 'Good';
+$string['greaterthansize'] = '> {$a->size}';
 $string['hellorobot'] = 'Hello robot: \'{$a->botusername}\'';
 $string['hellorobotheading'] = 'Hello robot!';
 $string['idattr'] = 'HTML context';
