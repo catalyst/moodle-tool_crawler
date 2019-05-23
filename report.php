@@ -283,6 +283,7 @@ if ($report == 'broken') {
                                           c.shortname
                                           $sql
                                  ORDER BY b.filesize DESC,
+                                          b.filesizestatus DESC,
                                           l.text,
                                           a.id",
                                           $opts,
