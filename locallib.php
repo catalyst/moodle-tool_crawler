@@ -70,7 +70,7 @@ function tool_crawler_http_code($row) {
     if (isset($row->errormsg) && !is_null($row->errormsg)) {
         $msg = get_string('fetcherror', 'tool_crawler', ['errormessage' => $row->errormsg]);
     } else {
-        $msg = isset($row->httpmsg) && !is_null($row->httpmsg) ? $row->httpmsg : '?';
+        $msg = isset($row->httpmsg) && !is_null($row->httpmsg) ? $row->httpmsg : get_string('symbolforunknown', 'tool_crawler');
     }
     $msg = htmlspecialchars($msg, ENT_NOQUOTES | ENT_HTML401);
 
@@ -93,7 +93,7 @@ function tool_crawler_displaysize($sizeinfo) {
     // Do not compare filesizestatus with ‚===‘ because the object from the database contains the int as string.
     if (!is_null($sizeinfo->filesizestatus) && $sizeinfo->filesizestatus == TOOL_CRAWLER_FILESIZE_UNKNOWN) {
         // Have tried to find out size, but still unknown due to aborted download.
-        $size = '?';
+        $size = get_string('symbolforunknown', 'tool_crawler');
     } else if (is_null($sizeinfo->filesize) || is_null($sizeinfo->filesizestatus)) {
         // Size unknown due to some error, or status of size unknown.
         $size = '';
