@@ -1112,6 +1112,13 @@ class crawler {
             $errno = curl_errno($s);
             $downloadaborted = $errno === CURLE_ABORTED_BY_CALLBACK;
 
+            // Whether we have started reading the body of the target resource.
+            // The way of detecting this is safe for our purpose because none of our abort conditions are triggered with a body
+            // which has a length of zero octets. This renders it unnecessary to watch HTTP status-lines (for redirections) and
+            // to implement the same redirection logic as curl uses. (The only condition that would abort during the final
+            // response is triggered by an overlong header – which is not yet in the final body, ergo properly handled.)
+            $bodystarted = count($chunks) > 0;
+
             if ($method == 'GET' && !$downloadaborted) {
                 $filesize             = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
             } else {
@@ -1142,13 +1149,6 @@ class crawler {
             $httpcode = curl_getinfo($s, CURLINFO_RESPONSE_CODE);
 
             if (!$success) {
-                // Whether we have started reading the body of the target resource.
-                // The way of detecting this is safe for our purpose because none of our abort conditions are triggered with a body
-                // which has a length of zero octets. This renders it unnecessary to watch HTTP status-lines (for redirections) and
-                // to implement the same redirection logic as curl uses. (The only condition that would abort during the final
-                // response is triggered by an overlong header – which is not yet in the final body, ergo properly handled.)
-                $bodystarted = count($chunks) > 0;
-
                 if ($method == 'GET' && $downloadaborted && $bodystarted) {
                     // We have cancelled the download _during final body parsing_, because the resource was too large.
                     // Can only happen on external resources.
