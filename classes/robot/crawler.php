@@ -1059,9 +1059,9 @@ class crawler {
             // that we get _fresh_ data on the second call to curl_exec and curl_getinfo.
 
             $errno = curl_errno($s);
-            $contenttoolarge = $errno === CURLE_ABORTED_BY_CALLBACK;
+            $downloadaborted = $errno === CURLE_ABORTED_BY_CALLBACK;
 
-            if ($method == 'GET' && !$contenttoolarge) {
+            if ($method == 'GET' && !$downloadaborted) {
                 $filesize             = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
             } else {
                 $filesize             = curl_getinfo($s, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
@@ -1098,7 +1098,7 @@ class crawler {
                 // response is triggered by an overlong header – which is not yet in the final body, ergo properly handled.)
                 $bodystarted = count($chunks) > 0;
 
-                if ($method == 'GET' && $contenttoolarge && $bodystarted) {
+                if ($method == 'GET' && $downloadaborted && $bodystarted) {
                     // We have cancelled the download _during final body parsing_, because the resource was too large.
                     // Can only happen on external resources.
 
