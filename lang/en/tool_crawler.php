@@ -101,6 +101,19 @@ $string['maxtime'] = 'Max execution time';
 $string['maxtimedesc'] = 'The timeout (in seconds) for each crawl request.';
 $string['mimetype'] = 'Media type';
 $string['missing'] = 'Missing';
+$string['networkstrain'] = 'Extent of using networking resources';
+$string['networkstraindesc'] = '<p>To which amount to exhaust networking resources in order to increase the accuracy of the generated reports.</p>
+<dl>
+<dt>reasonable:</dt> <dd>Reasonable setting for the web. May cause a few report entries with unknown document length, but saves the environment. <strong>Recommended setting if you do not know what to select.</strong></dd>
+<dt>resolute:</dt>   <dd>More aggressive way of determining resource lengths (download the document if its length is not given in the HTTP header). Information about big files may become incomplete if you raise the size of big files (see above).</dd>
+<dt>excessive:</dt>  <dd>Always determine exact lengths of all documents at the expense of <strong>lots</strong> of networking resources. May be useful for some installations, but usually selecting this option is not recommended.</dd>
+<dt>wasteful:</dt>   <dd>Always determine exact lengths of all documents and HTML document titles by all means, even if this means to <strong>severely overdo</strong> consumption of networking resources and pollution of our environment. This is the default setting, only to be compatible with existing installations. Please change it if you can!</dd>
+</dl>
+<p>The default value for this option is “wasteful”, which mostly resembles crawler behaviour as of releases 2018070200 and earlier, before introduction of this option. It is highly recommended to change this to “reasonable” on production systems, which will conserve lots of resources while still covering all reasonable cases.</p>';
+$string['networkstrainexcessive'] = 'excessive';
+$string['networkstrainreasonable'] = 'reasonable';
+$string['networkstrainresolute'] = 'resolute';
+$string['networkstrainwasteful'] = 'wasteful';
 $string['neverfinished'] = 'Never finished';
 $string['neverrun'] = 'Never run';
 $string['no'] = 'No';
