@@ -50,3 +50,39 @@ define('TOOL_CRAWLER_FILESIZE_ATLEAST', 1);
  * Value for the `filesizestatus` column in the database table.
  */
 define('TOOL_CRAWLER_FILESIZE_UNKNOWN', 2);
+
+/**
+ * Do not consume more networking resources than necessary to retrieve information about the size of most linked resources. Abort
+ * the download of external HTML documents after a (quite big) initial part, which is usually large enough to extract the document
+ * title. For non-HTML documents, rely on the HTTP `Content-Length` header if present; and if not, report the size as unknown.
+ *
+ * Value for the `networkstrain` configuration setting.
+ */
+define('TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE', 'reasonable');
+
+/**
+ * Invest a significant amount of networking resources when attempting to detect the sizes of linked external documents. This is
+ * done by downloading external documents up to the configured big file size limit, but only if their length is not known from the
+ * HTTP `Content-Length` header.
+ *
+ * Value for the `networkstrain` configuration setting.
+ */
+define('TOOL_CRAWLER_NETWORKSTRAIN_RESOLUTE', 'resolute');
+
+/**
+ * Consume a giant amount of networking resources when following links in order to find the exact target resource sizes. If their
+ * size is not previously known from the HTTP `Content-Length` header, fully download non-HTML documents and external HTML
+ * documents, in order to determine it. This also means that there is enough of the document text available so that the document
+ * title can be extracted from each and every HTML document (if it has one and is properly formatted).
+ *
+ * Value for the `networkstrain` configuration setting.
+ */
+define('TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE', 'excessive');
+
+/**
+ * Liberally waste networking resources when scraping links. Act like for `TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE`; but in addition to
+ * that always fully download all HTML documents.
+ *
+ * Value for the `networkstrain` configuration setting.
+ */
+define('TOOL_CRAWLER_NETWORKSTRAIN_WASTEFUL', 'wasteful');
