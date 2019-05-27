@@ -875,15 +875,15 @@ class crawler {
 
         global $CFG;
         $cookiefilelocation = $CFG->dataroot . '/tool_crawler_cookies.txt';
+        $config = self::get_config();
 
         $s = curl_init();
         curl_setopt($s, CURLOPT_URL,             $url);
-        curl_setopt($s, CURLOPT_TIMEOUT, self::get_config()->maxtime);
+        curl_setopt($s, CURLOPT_TIMEOUT,         $config->maxtime);
         if ( $this->should_be_authenticated($url) ) {
-            curl_setopt($s, CURLOPT_USERPWD,         self::get_config()->botusername.':'.self::get_config()->botpassword);
+            curl_setopt($s, CURLOPT_USERPWD,     $config->botusername . ':' . $config->botpassword);
         }
-        curl_setopt($s, CURLOPT_USERAGENT,
-            self::get_config()->useragent . '/' . self::get_config()->version . ' ('.$CFG->wwwroot.')' );
+        curl_setopt($s, CURLOPT_USERAGENT,       $config->useragent . '/' . $config->version . ' (' . $CFG->wwwroot . ')');
         curl_setopt($s, CURLOPT_MAXREDIRS,       5);
         curl_setopt($s, CURLOPT_RETURNTRANSFER,  true);
         curl_setopt($s, CURLOPT_FOLLOWLOCATION,  true);
