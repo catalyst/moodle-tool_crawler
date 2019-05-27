@@ -1269,11 +1269,12 @@ class crawler {
                         // Retry with GET if HEAD is not allowed.
                         // For all HTML documents also switch to HTTP GET and try again so that we can extract the titles.
                         $needhttprequest = true;
-                    } else if (!$filesizeknown) {
+                    } else if (!$filesizeknown && $config->networkstrain != TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
+                        // Configuration is set to be more exact with regards to remote document size.
                         // Try to determine the size of non-HTML documents with unknown size by using HTTP GET.
                         $needhttprequest = true;
                     } else {
-                        // No need to download documents which are not HTML documents.
+                        // No need to download documents which are not HTML documents or which we do not like to GET.
                         $result->contents = '';
                     }
 
