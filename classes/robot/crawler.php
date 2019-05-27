@@ -1027,6 +1027,9 @@ class crawler {
             // Target resource reached, switch to non-redirection size limit.
             if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
                 $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT;
+            } else if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_WASTEFUL) {
+                // Always fully download if not aborted by other conditions (like: Content-Length known for non-HTML documents).
+                $sizelimit = -1; // No size limit.
             } else {
                 $sizelimit = $config->bigfilesize * 1000000;
             }
@@ -1056,6 +1059,17 @@ class crawler {
                     // Not body of a redirection, not HTML. Or HTML and the user is not interested in being overly exact. ⇒ Abort
                     // transfer because we neither need nor can understand the body.
                     $abortdownload = true;
+                } else if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE) {
+                    $sizelimit = -1; // No size limit.
+                }
+            } else {
+                // Target resource is an HTML document.
+                // Internal transfers will never be aborted. When downloading external documents, the size limit, which is set by
+                // this function, will be applied.
+                // Disable the size limit for higher network strain settings under certain conditions. The “excessive” level fully
+                // downloads external resources _if their length is not known_ from Content-Type.
+                if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE && !$targetlengthknown) {
+                    $sizelimit = -1; // No size limit.
                 }
             }
 
@@ -1124,7 +1138,7 @@ class crawler {
                 $external = self::is_external($effectiveuri);
             }
 
-            if ($external && $downbytes > $sizelimit) {
+            if ($external && $sizelimit != -1 && $downbytes > $sizelimit) {
                 $abortdownload = true;
             }
 
