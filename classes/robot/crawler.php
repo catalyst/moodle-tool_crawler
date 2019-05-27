@@ -27,6 +27,7 @@ namespace tool_crawler\robot;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/admin/tool/crawler/lib.php');
+require_once($CFG->dirroot.'/admin/tool/crawler/locallib.php');
 require_once($CFG->dirroot.'/admin/tool/crawler/extlib/simple_html_dom.php');
 require_once($CFG->dirroot.'/user/lib.php');
 
@@ -474,10 +475,13 @@ class crawler {
     public function get_num_oversize() {
         global $DB;
 
+        $oversizesqlfilter = tool_crawler_sql_oversize_filter();
+
         return $DB->get_field_sql("
                 SELECT COUNT(*)
                   FROM {tool_crawler_url}
-                 WHERE filesize > ?", array(self::get_config()->bigfilesize * 1000000));
+                 WHERE {$oversizesqlfilter['wherecondition']}
+                ", $oversizesqlfilter['params']);
     }
 
     /**
