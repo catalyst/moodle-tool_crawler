@@ -1064,6 +1064,12 @@ class crawler {
                 }
             } else {
                 // Target resource is an HTML document.
+
+                // XXX: could abort the download as soon as we have received enough of the document to retrieve its title. This is
+                // *very* difficult to implement: need to take into account document encodings and all kinds of HTML-specific
+                // things. If you *really* want this, better change the code so that it directly streams the data from the network
+                // into an HTML parser.
+
                 // Internal transfers will never be aborted. When downloading external documents, the size limit, which is set by
                 // this function, will be applied.
                 // Disable the size limit for higher network strain settings under certain conditions. The “excessive” level fully
