@@ -46,8 +46,6 @@ $baseurl = new moodle_url('/admin/tool/crawler/report.php', array(
     'course' => $courseid
 ));
 
-$config = get_config('tool_crawler');
-
 if ($courseid) {
     // If course then this is an a course editor report.
     $course = get_course($courseid);
@@ -261,15 +259,16 @@ if ($report == 'broken') {
 
 } else if ($report == 'oversize') {
 
+    $oversizesqlfilter = tool_crawler_sql_oversize_filter('b');
+
     $sql = " FROM {tool_crawler_url} b
        LEFT JOIN {tool_crawler_edge} l ON l.b = b.id
        LEFT JOIN {tool_crawler_url}  a ON l.a = a.id
        LEFT JOIN {course} c ON c.id = a.courseid
-           WHERE b.filesize > ?
+           WHERE {$oversizesqlfilter['wherecondition']}
                  $sqlfilter";
 
-    $bigfilesize = $config->bigfilesize;
-    $opts = array($bigfilesize * 1000000);
+    $opts = $oversizesqlfilter['params'];
     $data  = $DB->get_records_sql("SELECT concat(b.id, '-', a.id, '-', l.id) id,
                                           b.url target,
                                           b.filesize,
