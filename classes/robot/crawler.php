@@ -1076,8 +1076,13 @@ class crawler {
         $targetishtml = null; // Cache for whether target resource is an HTML document.
         $targetlengthknown = null; // Cache for whether target resource length is known.
         curl_setopt($s, CURLOPT_WRITEFUNCTION, function($hdl, $content)
-                use (&$chunks, &$sizelimit, &$targetisexternal, &$targetishtml, &$targetlengthknown, &$abortdownload) {
-            $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT; // Target resource reached, switch to non-redirection limit.
+                use (&$chunks, &$sizelimit, &$targetisexternal, &$targetishtml, &$targetlengthknown, &$config, &$abortdownload) {
+            // Target resource reached, switch to non-redirection size limit.
+            if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
+                $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT;
+            } else {
+                $sizelimit = $config->bigfilesize * 1000000;
+            }
 
             if ($targetisexternal === null) {
                 $effectiveuri = curl_getinfo($hdl, CURLINFO_EFFECTIVE_URL);
@@ -1097,10 +1102,14 @@ class crawler {
             // Variables $targetisexternal, $targetishtml, and $targetlengthknown are not going to change anymore as we have reached
             // the target resource.
 
-            if ($targetisexternal && !$targetishtml) {
-                // Not body of a redirection, external document, not HTML. ⇒ Abort transfer because we neither need nor can
-                // understand the body.
-                $abortdownload = true;
+            if (!$targetishtml) {
+                // Ignore $targetisexternal. If the document is internal, you had better configure your web server to send
+                // Content-Length with non-HTML documents.
+                if ($targetlengthknown || $config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
+                    // Not body of a redirection, not HTML. Or HTML and the user is not interested in being overly exact. ⇒ Abort
+                    // transfer because we neither need nor can understand the body.
+                    $abortdownload = true;
+                }
             }
 
             $chunks[] = $content;
