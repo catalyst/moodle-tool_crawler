@@ -1074,8 +1074,9 @@ class crawler {
         $chunks = array();
         $targetisexternal = null; // Cache for whether target resource is external.
         $targetishtml = null; // Cache for whether target resource is an HTML document.
+        $targetlengthknown = null; // Cache for whether target resource length is known.
         curl_setopt($s, CURLOPT_WRITEFUNCTION, function($hdl, $content)
-                use (&$chunks, &$sizelimit, &$targetisexternal, &$targetishtml, &$abortdownload) {
+                use (&$chunks, &$sizelimit, &$targetisexternal, &$targetishtml, &$targetlengthknown, &$abortdownload) {
             $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT; // Target resource reached, switch to non-redirection limit.
 
             if ($targetisexternal === null) {
@@ -1088,7 +1089,13 @@ class crawler {
                 $targetishtml = (strpos($contenttype, 'text/html') === 0);
             }
 
-            // Variables $targetisexternal and $targetishtml are not going to change anymore as we have reached the target resource.
+            if ($targetlengthknown === null) {
+                $contentlength = curl_getinfo($hdl, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+                $targetlengthknown = (is_double($contentlength) && $contentlength >= 0.0);
+            }
+
+            // Variables $targetisexternal, $targetishtml, and $targetlengthknown are not going to change anymore as we have reached
+            // the target resource.
 
             if ($targetisexternal && !$targetishtml) {
                 // Not body of a redirection, external document, not HTML. ⇒ Abort transfer because we neither need nor can
