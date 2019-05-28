@@ -181,6 +181,11 @@ useridlistid
                                                     new lang_string('retentionperioddesc',    'tool_crawler'),
                                                     2620800,
                                                     $options));
+
+        $settings->add(new admin_setting_configcheckbox('tool_crawler/disablebot',
+                                                        new lang_string('disablebot',         'tool_crawler'),
+                                                        new lang_string('disablebotdesc',     'tool_crawler'),
+                                                        '0' ));
     }
 }
 
