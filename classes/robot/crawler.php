@@ -576,6 +576,13 @@ class crawler {
         if ($verbose) {
             echo "Crawling $node->url ";
         }
+
+        // Function scrape writes to the title property only if there has been a download error. The title may be set by function
+        // parse_html later. If it is not, we do not have a valid title. In order to have the _proper_ title (set or null) stored in
+        // the database in the end in case of recrawls, we must clear the existing title here (only to maybe re-add it in a few
+        // fractions of a second).
+        $node->title = null;
+
         // Scraping returns info about the URL. Not info about the courseid and context, just the URL itself.
         $result = $this->scrape($node->url);
         $result = (object) array_merge((array) $node, (array) $result);
