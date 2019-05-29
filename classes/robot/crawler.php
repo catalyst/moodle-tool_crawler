@@ -929,6 +929,8 @@ class crawler {
             $result->contents         = '';
             $result->httpcode         = '500';
         } else {
+            $result->errormsg = null;  // Important in case of repeated scraping in order to reset error status.
+
             $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
             $headers = substr($raw, 0, $headersize);
             if (preg_match_all('@(^|[\r\n])(HTTP/[^ ]+) ([0-9]+) ([^\r\n]+|$)@', $headers, $httplines, PREG_SET_ORDER)) {

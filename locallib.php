@@ -67,7 +67,7 @@ function tool_crawler_link($url, $label, $redirect = '', $labelishtml = false) {
  * @return html chunk
  */
 function tool_crawler_http_code($row) {
-    if (isset($row->errormsg)) {
+    if (isset($row->errormsg) && !is_null($row->errormsg)) {
         $msg = get_string('fetcherror', 'tool_crawler', ['errormessage' => $row->errormsg]);
     } else {
         $msg = isset($row->httpmsg) ? $row->httpmsg : '?';
