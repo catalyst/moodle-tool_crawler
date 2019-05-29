@@ -928,6 +928,7 @@ class crawler {
             $result->title            = curl_error($s); // We do not try to translate Curl error messages.
             $result->contents         = '';
             $result->httpcode         = '500';
+            $result->httpmsg          = null;
         } else {
             $result->errormsg = null;  // Important in case of repeated scraping in order to reset error status.
 
