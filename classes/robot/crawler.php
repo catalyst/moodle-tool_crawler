@@ -911,10 +911,10 @@ class crawler {
         $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
         if ($final != $url) {
             $result->redirect = $final;
-            $result->external = self::is_external($final);
         } else {
             $result->redirect = '';
         }
+        $result->external = self::is_external($final);
 
         if (empty($raw)) {
             $result->errormsg         = (string)curl_errno($s);
