@@ -111,8 +111,6 @@ if ($report == 'broken') {
 
     $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
 
-    $mdlw = strlen($CFG->wwwroot);
-
     $table = new html_table();
     $table->head = array(
         '',
@@ -173,8 +171,6 @@ if ($report == 'broken') {
 
     $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
 
-    $mdlw = strlen($CFG->wwwroot);
-
     $table = new html_table();
 
     $table->head = array(
@@ -229,8 +225,6 @@ if ($report == 'broken') {
                                           $perpage);
 
     $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
-
-    $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
     $table->head = array(
@@ -296,8 +290,6 @@ if ($report == 'broken') {
                                           $perpage);
 
     $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
-
-    $mdlw = strlen($CFG->wwwroot);
 
     $table = new html_table();
 
