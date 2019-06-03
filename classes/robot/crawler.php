@@ -191,6 +191,23 @@ class crawler {
         return $scheme.'://'.$abs;
     }
 
+    /**
+     * Returns whether a given URI is external. A URI is external if and only if it does not belong to this Moodle installation.
+     *
+     * @param string $url The URI to test.
+     * @return boolean Whether the URI is external.
+     */
+    public static function is_external($url) {
+        global $CFG;
+
+        if ($url === $CFG->wwwroot) {
+            return false;
+        }
+
+        $mdlw = strlen($CFG->wwwroot);
+        return (strncmp($url, $CFG->wwwroot . '/', $mdlw + 1) != 0);
+    }
+
 
     /**
      * Reset a node to be recrawled
@@ -253,7 +270,8 @@ class crawler {
      * @param string $baseurl
      * @param string $url relative URL
      * @param int the course id if it is known.
-     * @return mixed the node record or if the URL is invalid returns false.
+     * @return object|boolean The node record if the resource pointed to by the URL can and should be considered; or `false` if the
+     *     URL is invalid or excluded.
      */
     public function mark_for_crawl($baseurl, $url, $courseid = null) {
 
@@ -270,10 +288,9 @@ class crawler {
             return false;
         }
 
-        // If this URL is external then check the ext whitelist.
-        $mdlw = strlen($CFG->wwwroot);
         $bad = 0;
-        if (substr ($url, 0, $mdlw) === $CFG->wwwroot) {
+        // If this URL is external then check the ext whitelist.
+        if (!self::is_external($url)) {
             $excludes = str_replace("\r", '', self::get_config()->excludemdlurl);
         } else {
             $excludes = str_replace("\r", '', self::get_config()->excludeexturl);
@@ -367,7 +384,7 @@ class crawler {
             $node = (object) array();
             $node->createdate = time();
             $node->url        = $url;
-            $node->external   = strpos($url, $CFG->wwwroot) === 0 ? 0 : 1;
+            $node->external   = self::is_external($url);
             $node->needscrawl = time();
 
             if (isset($courseid)) {
@@ -858,15 +875,15 @@ class crawler {
 
         global $CFG;
         $cookiefilelocation = $CFG->dataroot . '/tool_crawler_cookies.txt';
+        $config = self::get_config();
 
         $s = curl_init();
         curl_setopt($s, CURLOPT_URL,             $url);
-        curl_setopt($s, CURLOPT_TIMEOUT, self::get_config()->maxtime);
+        curl_setopt($s, CURLOPT_TIMEOUT,         $config->maxtime);
         if ( $this->should_be_authenticated($url) ) {
-            curl_setopt($s, CURLOPT_USERPWD,         self::get_config()->botusername.':'.self::get_config()->botpassword);
+            curl_setopt($s, CURLOPT_USERPWD,     $config->botusername . ':' . $config->botpassword);
         }
-        curl_setopt($s, CURLOPT_USERAGENT,
-            self::get_config()->useragent . '/' . self::get_config()->version . ' ('.$CFG->wwwroot.')' );
+        curl_setopt($s, CURLOPT_USERAGENT,       $config->useragent . '/' . $config->version . ' (' . $CFG->wwwroot . ')');
         curl_setopt($s, CURLOPT_MAXREDIRS,       5);
         curl_setopt($s, CURLOPT_RETURNTRANSFER,  true);
         curl_setopt($s, CURLOPT_FOLLOWLOCATION,  true);
@@ -894,13 +911,10 @@ class crawler {
         $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
         if ($final != $url) {
             $result->redirect = $final;
-            $mdlw = strlen($CFG->wwwroot);
-            if (substr ($final, 0, $mdlw) !== $CFG->wwwroot) {
-                $result->external = 1;
-            }
         } else {
             $result->redirect = '';
         }
+        $result->external = self::is_external($final);
 
         if (empty($raw)) {
             $result->errormsg         = (string)curl_errno($s);
@@ -916,17 +930,20 @@ class crawler {
                 $result->httpmsg = '';
             }
 
-            $ishtml = (strpos($contenttype, 'text/html') === 0); // Related to Issue #13.
-            $data = $ishtml ? substr($raw, $headersize) : '';
+            $ishtml = (strpos($contenttype, 'text/html') === 0);
+            if ($ishtml) { // Related to Issue #13.
+                $data = substr($raw, $headersize);
 
-            /* Convert it if it is anything but UTF-8 */
-            $charset = $this->detect_encoding($contenttype, $data);
-            if (is_string($charset) && strtoupper($charset) != "UTF-8") {
-                // You can change 'UTF-8' to 'UTF-8//IGNORE' to
-                // ignore conversion errors and still output something reasonable.
-                $result->contents     = iconv($charset, 'UTF-8', $data);
+                /* Convert it if it is anything but UTF-8 */
+                $charset = $this->detect_encoding($contenttype, $data);
+                if (is_string($charset) && strtoupper($charset) != "UTF-8") {
+                    // You can change 'UTF-8' to 'UTF-8//IGNORE' to
+                    // ignore conversion errors and still output something reasonable.
+                    $data = iconv($charset, 'UTF-8', $data);
+                }
+                $result->contents = $data;
             } else {
-                $result->contents     = $data;
+                $result->contents = '';
             }
 
             $result->httpcode         = curl_getinfo($s, CURLINFO_HTTP_CODE);
@@ -997,8 +1014,7 @@ class crawler {
      * @return boolean
      */
     public function should_be_authenticated($url) {
-        global $CFG;
-        if ( strpos($url, $CFG->wwwroot.'/') === 0 || $url === $CFG->wwwroot ) {
+        if (!self::is_external($url)) {
             return true;
         }
         return false;
