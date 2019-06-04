@@ -988,12 +988,70 @@ class crawler {
     }
 
     /**
-     * Scrapes a fully qualified URL and returns details about it
+     * Scrapes a fully qualified URL and returns details about it.
      *
-     * The format returns is ready to directly insert into the DB queue
+     * The returned object has thus format (properties) that it is ready to be directly inserted into the crawler URL table in the
+     * database.
      *
-     * @param string $url current URL
-     * @return the result object
+     * @param string $url HTTP/HTTPS URI of the resource which is to be retrieved from the web.
+     * @return object The result object.
+     */
+    /* Implementation-specific notes, currently not part of the API:
+     *
+     * This function implements an HTTP client built on Curl. In the usual case, when everything runs smoothly, it uses keep-alive
+     * connections when possible.(*) It issues HEAD requests in order to find out about the media type and length of the resource.
+     * If the target resource is an HTML document, uses a GET request to retrieve it, and extracts and stores the document title. In
+     * case of errors, these are recorded in the returned result object.
+     *
+     * (*) XXX: future possible extension: reuse Curl handles across function calls so that we can reuse a handle for more than one
+     * request. This will be beneficial when loading lots of resources from a single web server (in most cases, the own Moodle web
+     * server) as initializing a TCP connection takes quite some time.
+     *
+     * The amount of transmitted data is marginally increased by the additional HEAD request and response(s). The time needed to
+     * handle URIs may also increase slightly. As a result of using HEAD first, followed by a possible GET, the number of requests
+     * to the server is often doubled. But the needed time is not, due to keep-alive connections, so this is neglegible. Big
+     * resources are not downloaded at all or are not entirely downloaded. Main purpose of this is to avoid starting a download of a
+     * non-HTML document of which the size is alredy known after HEAD processing. This is a common case on the web.
+     *
+     * If the queried web server is not a general-purpose web server (see RFC 7231 section 4.1
+     * <https://tools.ietf.org/html/rfc7231#section-4.1>), it possibly does not support HEAD, but only understands GET. The server
+     * will signal this in the response with 405 Method Not Allowed. If this happens, this function switches to GET.
+     *
+     * For security reasons, if the server does not tell about the resource media type, this function does _not_ employ content
+     * sniffing to find out whether the referenced representation is an HTML document. Instead, it assumes the media type to be
+     * "application/octet-stream" (which means that it ignores the content of the document). See RFC 7231 section 3.1.1.5
+     * <https://tools.ietf.org/html/rfc7231#section-3.1.1.5>.
+     *
+     * The download size is almost always limited: this function employs TOOL_CRAWLER_HEADER_LIMIT as size limit for each of the
+     * HTTP headers (NB: not header-fields). External resources are usually not downloaded in full, but at most
+     * TOOL_CRAWLER_DOWNLOAD_LIMIT octets are retrieved. This is normally enough by far to extract the title of external HTML
+     * documents.
+     *
+     * When redirections are followed, the size of the HTTP bodies (e.g. documents informing about the redirection) is limited, too,
+     * with TOOL_CRAWLER_REDIRECTION_DOWNLOAD_LIMIT as the maximum allowed size.
+     *
+     * There is normally no need to fully download non-HTML resources, even if their size cannot be determined from the headers. The
+     * function will store fuzzy sizes as well because even incomplete information can be useful in reports. Sizes can either be
+     * unknown, or be Sizes can either be unknown, or be exact, or be inexact, but a lower bound (in case of aborted downloads).
+     *
+     * In most cases, it is sufficient for the average web out there and for average crawler report users to report external
+     * non-HTML documents as having an unknown size if the web server has not provided any. In order to accommodate to other users’
+     * wishes, this function allows to be configured: some details of how aggressive this function tries to determine resource
+     * lengths and HTML document titles can be adjusted by the configuration settings of the plugin; see the API documentation
+     * comments for TOOL_CRAWLER_NETWORKSTRAIN_*.
+     *
+     * While _external_ documents do not need to be fully retrieved, _HTML documents_ which are located _on the own Moodle web
+     * server_ are always fully retrieved and parsed. This is necessary so that their links can be followed.
+     *
+     * The code of this function has to consider at least the following things that can happen (possibly combined):
+     *   * curl_exec() signals an error,
+     *   * 405 Method Not Allowed in response to HEAD request,
+     *   * oversize header,
+     *   * oversize body in response to GET request,
+     *   * HTTP redirection,
+     *   * transfer is aborted by this function itself,
+     *   * resource is located on an _external_ host,
+     *   * redirection points to an external host, but the target resource is located on our web server again.
      */
     public function scrape($url) {
 
