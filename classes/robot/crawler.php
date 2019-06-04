@@ -1030,10 +1030,15 @@ class crawler {
      * When redirections are followed, the size of the HTTP bodies (e.g. documents informing about the redirection) is limited, too,
      * with TOOL_CRAWLER_REDIRECTION_DOWNLOAD_LIMIT as the maximum allowed size.
      *
-     * There is normally no need to fully download non-HTML resources, even if their size cannot be determined from the headers.
+     * There is normally no need to fully download non-HTML resources, even if their size cannot be determined from the headers. The
+     * function will store fuzzy sizes as well because even incomplete information can be useful in reports. Sizes can either be
+     * unknown; or be exact; or be inexact, but a lower bound (in case of aborted downloads).
      *
      * In most cases, it is sufficient for the average web out there and for average users of crawler reports to report external
-     * non-HTML documents as having an unknown size if the web server has not provided any.
+     * non-HTML documents as having an unknown size if the web server has not provided any. In order to accommodate to other users’
+     * wishes, this function allows to be configured: some details of how aggressive this function tries to determine resource
+     * lengths and HTML document titles can be adjusted by the configuration settings of the plugin; see the API documentation
+     * comments for TOOL_CRAWLER_NETWORKSTRAIN_*.
      *
      * While _external_ documents do not need to be fully retrieved, _HTML documents_ which are located _on the own Moodle web
      * server_ are always fully retrieved and parsed. This is necessary so that their links can be followed.
