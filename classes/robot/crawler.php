@@ -1031,8 +1031,8 @@ class crawler {
         // by using the TE header field. However, RFC 7230 does not forbid servers to send trailers if the client does not like
         // them; it also does not REQUIRE servers to send a Trailer header field. The RFC only contains SHOULD NOT/SHOULD rules for
         // that (see sections 4.1.2 and 4.4).
-        curl_setopt($s, CURLOPT_HEADERFUNCTION,
-                function($hdl, $header) use (&$firstheaderline, &$httpmsg, &$headersize, &$abortdownload) {
+        curl_setopt($s, CURLOPT_HEADERFUNCTION, function($hdl, $header)
+                use (&$firstheaderline, &$httpmsg, &$headersize, &$abortdownload) {
             $len = strlen($header);
 
             if ($header === "\r\n") {
@@ -1062,9 +1062,8 @@ class crawler {
         });
 
         curl_setopt($s, CURLOPT_NOPROGRESS, false);
-        curl_setopt($s, CURLOPT_PROGRESSFUNCTION,
-                function($resource, $expecteddownbytes, $downbytes, $expectedupbytes, $upbytes)
-                    use (&$abortdownload, &$sizelimit, &$targetisexternal) {
+        curl_setopt($s, CURLOPT_PROGRESSFUNCTION, function($resource, $expecteddownbytes, $downbytes, $expectedupbytes, $upbytes)
+                use (&$abortdownload, &$sizelimit, &$targetisexternal) {
             // Do not enforce size limit for internal resources.
             if ($targetisexternal !== null) {
                 // We have already reached the target resource and can utilize the cached computed value from the write callback
