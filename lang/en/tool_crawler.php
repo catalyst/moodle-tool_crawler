@@ -94,6 +94,12 @@ $string['lastcrawlend'] = 'Last crawl ended at';
 $string['lastcrawlproc'] = 'Last crawl process';
 $string['lastqueuesize'] = 'Last queue size';
 $string['linktext'] = 'Link text';
+$string['limitcrawlmethod'] = 'Limit the crawled courses';
+$string['limitcrawlmethoddesc'] = "Limit the crawled courses to a smaller subset of the total so it crawls links in those courses more often\n
+Use Log Tables: Will only crawl recently accessed courses based on the log table data.\n
+Use course enddate: Will only crawl courses that have a course enddate in the future, or not set";
+$string['limittoblock'] = 'Must have block';
+$string['limittoblockdesc'] = 'Only crawl courses that have this block included on their course/view page.';
 $string['maxcrontime'] = 'Cron run limit';
 $string['maxcrontimedesc'] = 'The crawler will keep crawling until this limit (in seconds) is hit on each cron tick.';
 $string['maxtime'] = 'Max execution time';
@@ -117,7 +123,7 @@ $string['queued'] = 'Queued URLs';
 $string['queued_header'] = '<p>The title and course are only known if the URL has been seen on a previous crawl.</p>';
 $string['recent'] = 'Recently crawled URLs';
 $string['recentactivity'] = 'Days of recent activity';
-$string['recentactivitydesc'] = 'A course is crawled only if it has been viewed in the last X days.
+$string['recentactivitydesc'] = '(Use Log Tables setting must be enabled) A course is crawled only if it has been viewed in the last X days.
 At ' . '{$a->days}' . ' day(s) of recent activity, this will include ' . '{$a->count}' . ' courses total.';
 $string['recent_header'] = '';
 $string['redirect'] = 'Redirect: {$a->redirectlink}';
@@ -148,6 +154,9 @@ $string['uselogs'] = 'Use log tables';
 $string['uselogsdesc'] = 'If enabled, only crawl links that are part of courses with recent activity. Uses table mdl_logstore_standard_log.';
 $string['useragent'] = 'Bot user agent string';
 $string['useragentdesc'] = 'The user agent name to use in the HTTP headers, without a version. The version of this plugin is automatically appended.';
+$string['usecourseenddate'] = 'Use course enddate';
+$string['verbosemode'] = 'Enable verbose mode';
+$string['verbosemodedesc'] = 'Show detailed information in the cron log about each URL crawled';
 $string['whenqueued'] = 'When queued';
 /*
  * Privacy provider (GDPR)

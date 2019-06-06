@@ -132,18 +132,19 @@ useridlistid
                                                     "" ));
 
         $options = array(
-            0 => new lang_string('no'),
-            1 => new lang_string('yes'),
+            0 => new lang_string('no', 'tool_crawler'),
+            1 => new lang_string('uselogs', 'tool_crawler'),
+            2 => new lang_string('usecourseenddate', 'tool_crawler'),
         );
-        $settings->add(new admin_setting_configselect('tool_crawler/uselogs',
-                                                      new lang_string('uselogs',        'tool_crawler'),
-                                                      new lang_string('uselogsdesc',    'tool_crawler'),
+        $settings->add(new admin_setting_configselect('tool_crawler/limitcrawlmethod',
+                                                      new lang_string('limitcrawlmethod',        'tool_crawler'),
+                                                      new lang_string('limitcrawlmethoddesc',    'tool_crawler'),
                                                       0,
                                                       $options));
 
         $robot = new \tool_crawler\robot\crawler();
         $days = $robot::get_config()->recentactivity;
-        $count = count($robot->get_recentcourses());
+        $count = count($robot->get_recentcourses_logstore());
         $recentactivitydesc = get_string('recentactivitydesc', 'tool_crawler', ['days' => $days, 'count' => $count]);
         $recentactivitydesc = htmlspecialchars($recentactivitydesc, ENT_NOQUOTES | ENT_HTML401);
         $recentactivitydesc = preg_replace('/(\r\n?|\n)/', '<br>', $recentactivitydesc);
@@ -151,6 +152,11 @@ useridlistid
                                                     new lang_string('recentactivity',    'tool_crawler'),
                                                     $recentactivitydesc,
                                                     '1'));
+
+        $settings->add(new admin_setting_configtext('tool_crawler/limittoblock',
+                                                    new lang_string('limittoblock',    'tool_crawler'),
+                                                    new lang_string('limittoblockdesc',    'tool_crawler'),
+                                                    ''));
 
         $settings->add(new admin_setting_configtext('tool_crawler/maxtime',
                                                     new lang_string('maxtime',           'tool_crawler'),
@@ -181,6 +187,10 @@ useridlistid
                                                     new lang_string('retentionperioddesc',    'tool_crawler'),
                                                     2620800,
                                                     $options));
+        $settings->add(new admin_setting_configcheckbox('tool_crawler/verbosemode',
+                                                    new lang_string('verbosemode', 'tool_crawler'),
+                                                    new lang_string('verbosemodedesc', 'tool_crawler'),
+                                                    false));
     }
 }
 

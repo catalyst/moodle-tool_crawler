@@ -38,11 +38,16 @@ function tool_crawler_crawl($verbose = false) {
 
     $robot = new \tool_crawler\robot\crawler();
     $config = $robot::get_config();
+    $verbose = $config->verbosemode == "1" ? true : false;
     $crawlstart = $config->crawlstart;
     $crawlend   = $config->crawlend;
 
-    if ($config->uselogs == 1) {
-        $recentcourses = $robot->get_recentcourses();
+    $recentcourses = [];
+    if ($config->limitcrawlmethod == LOGSTORE_LIMIT_OPTION) {
+        $recentcourses = $robot->get_recentcourses_logstore();
+    }
+    if ($config->limitcrawlmethod == ENDDATE_LIMIT_OPTION) {
+        $recentcourses = $robot->get_recentcourses_enddate();
     }
 
     // If we need to start a new crawl, add new items to the queue.
@@ -51,7 +56,7 @@ function tool_crawler_crawl($verbose = false) {
         $start = time();
         set_config('crawlstart', $start, 'tool_crawler');
 
-        if ($config->uselogs == 1) {
+        if ($config->limitcrawlmethod != NO_LIMIT_OPTION) {
             foreach ($recentcourses as $courseid) {
                 $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
             }
@@ -69,25 +74,6 @@ function tool_crawler_crawl($verbose = false) {
         $history->id = $DB->insert_record('tool_crawler_history', $history);
     } else {
         $history = $DB->get_record('tool_crawler_history', array('startcrawl' => $crawlstart));
-    }
-
-    // Before beginning to process queue, add any new courses to the queue.
-    if ($config->uselogs == 1) {
-
-        $coursesinurltableobject = $DB->get_records_list('tool_crawler_url', 'courseid', $recentcourses, '', 'DISTINCT courseid');
-
-        $coursesinurltable = [];
-        foreach ($coursesinurltableobject as $course) {
-            array_push($coursesinurltable, $course->courseid);
-        }
-
-        foreach ($recentcourses as $courseid) {
-
-            // If a course from recent activity is not in the queue, add it.
-            if (!in_array($courseid, $coursesinurltable)) {
-                $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
-            }
-        }
     }
 
     $cronstart = time();

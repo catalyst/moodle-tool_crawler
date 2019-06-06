@@ -30,6 +30,10 @@ require_once($CFG->dirroot.'/admin/tool/crawler/lib.php');
 require_once($CFG->dirroot.'/admin/tool/crawler/extlib/simple_html_dom.php');
 require_once($CFG->dirroot.'/user/lib.php');
 
+define('NO_LIMIT_OPTION', 0);
+define('LOGSTORE_LIMIT_OPTION', 1);
+define('ENDDATE_LIMIT_OPTION', 2);
+
 /**
  * tool_crawler
  *
@@ -505,51 +509,15 @@ class crawler {
     public function process_queue($verbose = false) {
 
         global $DB;
-        $config = $this::get_config();
 
-        if ($config->uselogs == 1) {
-            $recentcourses = $this->get_recentcourses();
-        }
-
-        // Iterate through the queue until we find an item that is a recent course, or the time runs out.
-        $cronstart = time();
-        $cronstop = $cronstart + $config->maxcrontime;
-        $hasmore = true;
-        $hastime = true;
-        while ($hasmore && $hastime) {
-            // Grab the first item from the queue.
-            $node = $DB->get_record_sql('SELECT *
-                                         FROM {tool_crawler_url}
-                                        WHERE lastcrawled IS NULL
-                                           OR lastcrawled < needscrawl
-                                     ORDER BY needscrawl ASC, id ASC
-                                        LIMIT 1
-                                    ');
-
-            if ($config->uselogs == 1) {
-
-                if (isset($node->courseid)) {
-
-                    // If the course id is not in recent courses, remove it from the queue.
-                    if (!in_array($node->courseid, $recentcourses)) {
-
-                        // Will not show up in queue, but still keeps the data
-                        // in case the course becomes recently active in the future.
-                        $node->needscrawl = $node->lastcrawled;
-                        $DB->update_record('tool_crawler_url', $node);
-                    } else {
-                        break;
-                    }
-                } else {
-                    break;
-                }
-            } else {
-                break;
-            }
-
-            $hastime = time() < $cronstop;
-            set_config('crawltick', time(), 'tool_crawler');
-        }
+        // Grab the first item from the queue.
+        $node = $DB->get_record_sql('SELECT *
+                                     FROM {tool_crawler_url}
+                                    WHERE lastcrawled IS NULL
+                                       OR lastcrawled < needscrawl
+                                 ORDER BY needscrawl ASC, id ASC
+                                    LIMIT 1
+                                ');
 
         if (isset($node) && $node !== false) {
             $this->crawl($node, $verbose);
@@ -756,7 +724,7 @@ class crawler {
                 }
             }
 
-            if ($config->uselogs == 1) {
+            if (isset($node->courseid) && $config->limitcrawlmethod != NO_LIMIT_OPTION) {
                 // If this page does not have a course specified in it's classes, don't parse the html.
                 if ($hascourse === false) {
                     if ($verbose) {
@@ -764,9 +732,13 @@ class crawler {
                     }
                     return $node;
                 }
-                // If this course has not been viewed recently, then don't continue on to parse the html.
-                $recentcourses = $this->get_recentcourses();
-                if (!in_array($node->courseid, $recentcourses)) {
+                // If this course is not in our crawl scope, then don't continue on to parse the html.
+                if ($config->limitcrawlmethod == LOGSTORE_LIMIT_OPTION) {
+                    $recentcourses = $this->get_recentcourses_logstore();
+                } else {
+                    $recentcourses = $this->get_recentcourses_enddate();
+                }
+                if (!in_array($node->courseid, $recentcourses) || $node->courseid == 1) {
                     if ($verbose) {
                         if ($node->courseid == 1) {
                             echo "Ignore index.php page.\n";
@@ -1023,15 +995,36 @@ class crawler {
     /**
      * Grabs the recent courses.
      *
-     * @return array
+     * @return array of course id's
      */
-    public function get_recentcourses() {
+    public function get_recentcourses_logstore() {
         global $DB;
         $config = self::get_config();
-
+        if (isset($this->recentcourses)) {
+            return $this->recentcourses;
+        }
         $startingtimerecentactivity = strtotime("-$config->recentactivity days", time());
-
-        $sql = "SELECT DISTINCT log.courseid
+        if (isset($config->limittoblock) && $config->limittoblock != "") {
+            // Include the restriction of only selecting courses with the block
+            $sql = "SELECT DISTINCT log.courseid
+                                                 FROM {logstore_standard_log} log
+                                                 JOIN {context} context ON context.instanceid = log.courseid
+                                                 JOIN {block_instances} bo ON bo.parentcontextid = context.id
+                                                WHERE log.timecreated > :startingtime
+                                                AND log.target = 'course'
+                                                AND userid NOT IN (
+                                                    SELECT id FROM {user} WHERE username = :botusername
+                                                )
+                                                AND log.courseid <> 1
+                                                AND context.contextlevel = 50
+                                                AND blockname = :blockname";
+            $botusername = isset($config->botusername) ? $config->botusername : '';
+            $values = ['startingtime' => $startingtimerecentactivity,
+                       'botusername' => $botusername,
+                       'blockname' => $config->limittoblock];
+        } else {
+            // The only restriction is courses accessed after the recent activity start time
+            $sql = "SELECT DISTINCT log.courseid
                                                  FROM {logstore_standard_log} log
                                                 WHERE log.timecreated > :startingtime
                                                 AND target = 'course'
@@ -1040,8 +1033,9 @@ class crawler {
                                                 )
                                                 AND courseid <> 1
                                             ";
-        $botusername = isset($config->botusername) ? $config->botusername : '';
-        $values = ['startingtime' => $startingtimerecentactivity, 'botusername' => $botusername];
+            $botusername = isset($config->botusername) ? $config->botusername : '';
+            $values = ['startingtime' => $startingtimerecentactivity, 'botusername' => $botusername];
+        }
 
         $rs = $DB->get_recordset_sql($sql, $values);
         $recentcourses = [];
@@ -1049,7 +1043,49 @@ class crawler {
             array_push($recentcourses, $record->courseid);
         }
         $rs->close();
+        $this->recentcourses = $recentcourses;
+        return $recentcourses;
+    }
 
+    /**
+     * Grabs the recent courses based on their enddate being in the future.
+     *
+     * @return array of course id's
+     */
+    public function get_recentcourses_enddate() {
+        global $DB;
+        $config = self::get_config();
+        if (isset($this->recentcourses)) {
+            return $this->recentcourses;
+        }
+        // Include the restriction of only selecting courses with the block
+        if (isset($config->limittoblock) && $config->limittoblock != "") {
+            $sql = "SELECT DISTINCT course.id
+                  FROM {course} course JOIN
+                  {context} context ON context.instanceid = course.id JOIN
+                  {block_instances} bo ON bo.parentcontextid = context.id
+                 WHERE (course.enddate > :startingtime OR course.enddate = 0) AND course.id <> 1
+                 AND context.contextlevel = 50
+                 AND blockname = :blockname";
+            $values = ['startingtime' => time(), 'blockname' => $config->limittoblock];
+        } else {
+            // The only restriction is the courses with a future enddate or no enddate set.
+            $sql = "SELECT DISTINCT course.id
+                  FROM {course} course JOIN
+                  {context} context ON context.instanceid = course.id
+                 WHERE (course.enddate > :startingtime OR course.enddate = 0) AND course.id <> 1
+                 AND context.contextlevel = 50";
+            $values = ['startingtime' => time()];
+        }
+
+        $rs = $DB->get_recordset_sql($sql, $values);
+        $recentcourses = [];
+        foreach ($rs as $record) {
+            array_push($recentcourses, $record->id);
+        }
+        $rs->close();
+
+        $this->recentcourses = $recentcourses;
         return $recentcourses;
     }
 }
