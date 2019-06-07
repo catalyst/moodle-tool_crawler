@@ -1011,7 +1011,7 @@ class crawler {
      * handle URIs may also increase slightly. As a result of using HEAD first, followed by a possible GET, the number of requests
      * to the server is often doubled. But the needed time is not, due to keep-alive connections, so this is neglegible. Big
      * resources are not downloaded at all or are not entirely downloaded. Main purpose of this is to avoid starting a download of a
-     * non-HTML document of which the size is alredy known after HEAD processing. This is a common case on the web.
+     * non-HTML document of which the size is already known after HEAD processing. This is a common case on the web.
      *
      * If the queried web server is not a general-purpose web server (see RFC 7231 section 4.1
      * <https://tools.ietf.org/html/rfc7231#section-4.1>), it possibly does not support HEAD, but only understands GET. The server
@@ -1032,7 +1032,7 @@ class crawler {
      *
      * There is normally no need to fully download non-HTML resources, even if their size cannot be determined from the headers. The
      * function will store fuzzy sizes as well because even incomplete information can be useful in reports. Sizes can either be
-     * unknown, or be Sizes can either be unknown, or be exact, or be inexact, but a lower bound (in case of aborted downloads).
+     * unknown; or be exact; or be inexact, but a lower bound (in case of aborted downloads).
      *
      * In most cases, it is sufficient for the average web out there and for average crawler report users to report external
      * non-HTML documents as having an unknown size if the web server has not provided any. In order to accommodate to other users’
