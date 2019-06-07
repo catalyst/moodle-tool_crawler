@@ -1,6 +1,4 @@
-<a href="https://travis-ci.org/central-queensland-uni/moodle-tool_crawler">
-<img src="https://api.travis-ci.org/central-queensland-uni/moodle-tool_crawler.svg?branch=master">
-</a>
+[![Build Status](https://travis-ci.org/catalyst/moodle-tool_crawler.svg?branch=master)](https://travis-ci.org/catalyst/moodle-tool_crawler)
 
 # What is this?
 
