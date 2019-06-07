@@ -16,6 +16,9 @@ addons:
   firefox: "35.0.1"
   postgresql: "9.4"
 
+services:
+  - mysql
+
 env:
   - DB=pgsql MOODLE_BRANCH=MOODLE_36_STABLE CI_PLUGIN=2
   - DB=mysqli MOODLE_BRANCH=MOODLE_36_STABLE CI_PLUGIN=2
