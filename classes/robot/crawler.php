@@ -875,12 +875,13 @@ class crawler {
     }
 
     /**
-     * Scrapes a fully qualified URL and returns details about it
+     * Scrapes a fully qualified URL and returns details about it.
      *
-     * The format returns is ready to directly insert into the DB queue
+     * The returned object has thus format (properties) that it is ready to be directly inserted into the crawler URL table in the
+     * database.
      *
-     * @param string $url current URL
-     * @return the result object
+     * @param string $url HTTP/HTTPS URI of the resource which is to be retrieved from the web.
+     * @return object The result object.
      */
     public function scrape($url) {
 
@@ -946,7 +947,9 @@ class crawler {
 
             $ishtml = (strpos($contenttype, 'text/html') === 0);
             if ($ishtml) { // Related to Issue #13.
+                // May need a significant amount of memory as the data is temporarily stored twice.
                 $data = substr($raw, $headersize);
+                unset($raw); // Allow to free memory.
 
                 /* Convert it if it is anything but UTF-8 */
                 $charset = $this->detect_encoding($contenttype, $data);
