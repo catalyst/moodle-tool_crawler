@@ -50,6 +50,10 @@ class robot_cleanup extends \core\task\scheduled_task {
     public function execute($currenttime = null) {
         global $DB;
 
+        if (\tool_crawler\robot\crawler::get_config()->disablebot === '1') {
+            return;
+        }
+
         if (!$currenttime) {
             $currenttime = time();
         }
