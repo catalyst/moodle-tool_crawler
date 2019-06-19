@@ -49,6 +49,10 @@ class crawl_task extends \core\task\scheduled_task {
      * Execute task
      */
     public function execute() {
+        if (\tool_crawler\robot\crawler::get_config()->disablebot === '1') {
+            return;
+        }
+
         tool_crawler_crawl();
     }
 }
