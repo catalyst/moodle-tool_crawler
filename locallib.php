@@ -70,7 +70,7 @@ function tool_crawler_http_code($row) {
     if (isset($row->errormsg) && !is_null($row->errormsg)) {
         $msg = get_string('fetcherror', 'tool_crawler', ['errormessage' => $row->errormsg]);
     } else {
-        $msg = isset($row->httpmsg) && !is_null($row->httpmsg) ? $row->httpmsg : '?';
+        $msg = isset($row->httpmsg) && !is_null($row->httpmsg) ? $row->httpmsg : get_string('symbolforunknown', 'tool_crawler');
     }
     $msg = htmlspecialchars($msg, ENT_NOQUOTES | ENT_HTML401);
 
@@ -92,6 +92,39 @@ function tool_crawler_numberformat(float $number, int $decimals = 0) {
     $thousandssep = get_string('thousandssep', 'langconfig');
 
     return number_format($number, $decimals, $decsep, $thousandssep);
+}
+
+/**
+ * Produces a filter for SQL queries which will limit a query to big links. The two parts of the filter are returned in an
+ * associative array.
+ *
+ * @param string $tablealias Name to which the `tool_crawler_url` table is aliased in the final SQL statement. If empty or `null`,
+ *                           the columns will be referenced without an explicit table name.
+ *
+ * @return array Associative array with entries for `wherecondition` and `params`. The value for `wherecondition` is a string which
+ *               can be added to a `WHERE` clause in SQL; the condition, if non-empty, already has (round) brackets around it to
+ *               allow for combination with other conditions. The value for `params` is an array with entries forming the SQL
+ *               parameters that should be used in the query.
+ */
+function tool_crawler_sql_oversize_filter($tablealias = null) {
+    if (is_string($tablealias) && $tablealias !== '') {
+        $tbl = $tablealias . '.';
+    } else {
+        $tbl = '';
+    }
+
+    $where = "( ${tbl}filesize > ?
+              )";
+
+    $bigfilesize = get_config('tool_crawler', 'bigfilesize');
+    $params = array(
+            $bigfilesize * 1000000,
+            );
+
+    return array(
+        'wherecondition' => $where,
+        'params' => $params,
+    );
 }
 
 /**
