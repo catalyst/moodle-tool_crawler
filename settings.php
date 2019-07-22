@@ -172,6 +172,21 @@ useridlistid
                                                     new lang_string('useheaddesc',       'tool_crawler'),
                                                     '0' ));
 
+        $options = array();
+        foreach (array(
+                    TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE,
+                    TOOL_CRAWLER_NETWORKSTRAIN_RESOLUTE,
+                    TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE,
+                    TOOL_CRAWLER_NETWORKSTRAIN_WASTEFUL,
+                ) as $option) {
+            $options[$option] = new lang_string('networkstrain' . $option, 'tool_crawler');
+        }
+        $settings->add(new admin_setting_configselect('tool_crawler/networkstrain',
+                                                    new lang_string('networkstrain',          'tool_crawler'),
+                                                    new lang_string('networkstraindesc',      'tool_crawler'),
+                                                    TOOL_CRAWLER_NETWORKSTRAIN_WASTEFUL,
+                                                    $options));
+
         $options = array(
             86400 => new lang_string('secondstotime86400'),
             604800 => new lang_string('secondstotime604800'),
@@ -193,5 +208,3 @@ useridlistid
                                                         '0' ));
     }
 }
-
-

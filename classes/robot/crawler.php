@@ -907,6 +907,87 @@ class crawler {
     }
 
     /**
+     * Does its best to find out the size of the requested resource after a Curl download call has returned. Stores the size, and
+     * whether the size is exact, a minimum, or unknown.
+     *
+     * Uses, among others, the value of the `Content-Length` header field (if present in the HTTP response).
+     *
+     * This function does not return a value. Instead, it modifies the result object passed to it; namely properties `filesize` and
+     * `filesizestatus` of that object.
+     *
+     * @param resource $curlhandle   The handle used by Curl.
+     * @param   string $method       The string `GET` or `HEAD`, describing the method that has been used.
+     * @param     bool $success      Whether the call to `curl_exec` has been successful.
+     * @param     bool $bodystarted  Whether we have begun reading the HTTP body with the target document (i.e., headers completed).
+     * @param   object $result       The result object.
+     */
+    private static function determine_filesize($curlhandle, $method, $success, $bodystarted, $result) {
+        if ($method == 'GET') {
+            if ($success) {
+                // Successful full download.
+                // We know the resource size.
+
+                $result->filesize = curl_getinfo($curlhandle, CURLINFO_SIZE_DOWNLOAD);
+                $result->filesizestatus = TOOL_CRAWLER_FILESIZE_EXACT;
+            } else {
+                if ($bodystarted) {
+                    // The download has been aborted after reading the HTTP body with the target resource was commenced.
+                    // Either _we_ have aborted the download (because we do not need more of the target document).
+                    // Or there has been an _error_ which led to the download being stopped.
+                    // In both cases, we take into consideration the Content-Length header _and_ the number of bytes received so
+                    // far.
+
+                    $contentlength = curl_getinfo($curlhandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+                    if (!is_double($contentlength) || $contentlength < 0.0) {
+                        // Content-Length is unusable, rely on number of downloaded bytes exclusively.
+
+                        $downloaded = curl_getinfo($curlhandle, CURLINFO_SIZE_DOWNLOAD);
+                        if (!is_double($downloaded) || $downloaded < 0.0) {
+                            // Neither Content-Length nor download size is usable.
+                            $result->filesize = null;
+                            $result->filesizestatus = TOOL_CRAWLER_FILESIZE_UNKNOWN;
+                        } else {
+                            // We can (only) use the number of downloaded bytes.
+                            $result->filesize = $downloaded;
+                            $result->filesizestatus = TOOL_CRAWLER_FILESIZE_ATLEAST;
+                        }
+                    } else {
+                        // Content-Length is usable.
+                        // Curl stops the download after Content-Length bytes, no need to cover the case that we have downloaded
+                        // more bytes.
+                        // Even if the download is incomplete, we know the exact size. So always use Content-Length.
+                        $result->filesize = $contentlength;
+                        $result->filesizestatus = TOOL_CRAWLER_FILESIZE_EXACT;
+                    }
+                } else {
+                    // The download has been aborted before the HTTP body of the target has been reached.
+                    $result->filesize = null;
+                    $result->filesizestatus = TOOL_CRAWLER_FILESIZE_UNKNOWN;
+                }
+            }
+        } else {
+            // We are processing the response to a HEAD request.
+
+            if ($success) {
+                // Response has been fully processed.
+                $filesize = curl_getinfo($curlhandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+                if (!is_double($filesize) || $filesize < 0.0) {
+                    $result->filesize = null;
+                    $result->filesizestatus = TOOL_CRAWLER_FILESIZE_UNKNOWN;
+                    // This will cause a GET request in a moment, as we try to get more details.
+                } else {
+                    $result->filesize = $filesize;
+                    $result->filesizestatus = TOOL_CRAWLER_FILESIZE_EXACT;
+                }
+            } else {
+                // The download has been aborted before the header for the target resource has been (fully) read.
+                $result->filesize = null;
+                $result->filesizestatus = TOOL_CRAWLER_FILESIZE_UNKNOWN;
+            }
+        }
+    }
+
+    /**
      * Scrapes a fully qualified URL and returns details about it.
      *
      * The returned object has thus format (properties) that it is ready to be directly inserted into the crawler URL table in the
@@ -949,10 +1030,15 @@ class crawler {
      * When redirections are followed, the size of the HTTP bodies (e.g. documents informing about the redirection) is limited, too,
      * with TOOL_CRAWLER_REDIRECTION_DOWNLOAD_LIMIT as the maximum allowed size.
      *
-     * There is normally no need to fully download non-HTML resources, even if their size cannot be determined from the headers.
+     * There is normally no need to fully download non-HTML resources, even if their size cannot be determined from the headers. The
+     * function will store fuzzy sizes as well because even incomplete information can be useful in reports. Sizes can either be
+     * unknown; or be exact; or be inexact, but a lower bound (in case of aborted downloads).
      *
      * In most cases, it is sufficient for the average web out there and for average users of crawler reports to report external
-     * non-HTML documents as having an unknown size if the web server has not provided any.
+     * non-HTML documents as having an unknown size if the web server has not provided any. In order to accommodate to other users’
+     * wishes, this function allows to be configured: some details of how aggressive this function tries to determine resource
+     * lengths and HTML document titles can be adjusted by the configuration settings of the plugin; see the API documentation
+     * comments for TOOL_CRAWLER_NETWORKSTRAIN_*.
      *
      * While _external_ documents do not need to be fully retrieved, _HTML documents_ which are located _on the own Moodle web
      * server_ are always fully retrieved and parsed. This is necessary so that their links can be followed.
@@ -993,9 +1079,18 @@ class crawler {
         $chunks = array();
         $targetisexternal = null; // Cache for whether target resource is external.
         $targetishtml = null; // Cache for whether target resource is an HTML document.
+        $targetlengthknown = null; // Cache for whether target resource length is known.
         curl_setopt($s, CURLOPT_WRITEFUNCTION, function($hdl, $content)
-                use (&$chunks, &$sizelimit, &$targetisexternal, &$targetishtml, &$abortdownload) {
-            $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT; // Target resource reached, switch to non-redirection limit.
+                use (&$chunks, &$sizelimit, &$targetisexternal, &$targetishtml, &$targetlengthknown, &$config, &$abortdownload) {
+            // Target resource reached, switch to non-redirection size limit.
+            if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
+                $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT;
+            } else if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_WASTEFUL) {
+                // Always fully download if not aborted by other conditions (like: Content-Length known for non-HTML documents).
+                $sizelimit = -1; // No size limit.
+            } else {
+                $sizelimit = $config->bigfilesize * 1000000;
+            }
 
             if ($targetisexternal === null) {
                 $effectiveuri = curl_getinfo($hdl, CURLINFO_EFFECTIVE_URL);
@@ -1007,12 +1102,39 @@ class crawler {
                 $targetishtml = (strpos($contenttype, 'text/html') === 0);
             }
 
-            // Variables $targetisexternal and $targetishtml are not going to change anymore as we have reached the target resource.
+            if ($targetlengthknown === null) {
+                $contentlength = curl_getinfo($hdl, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+                $targetlengthknown = (is_double($contentlength) && $contentlength >= 0.0);
+            }
 
-            if ($targetisexternal && !$targetishtml) {
-                // Not body of a redirection, external document, not HTML. ⇒ Abort transfer because we neither need nor can
-                // understand the body.
-                $abortdownload = true;
+            // Variables $targetisexternal, $targetishtml, and $targetlengthknown are not going to change anymore as we have reached
+            // the target resource.
+
+            if (!$targetishtml) {
+                // Ignore $targetisexternal. If the document is internal, you had better configure your web server to send
+                // Content-Length with non-HTML documents.
+                if ($targetlengthknown || $config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
+                    // Not body of a redirection, not HTML. Or HTML and the user is not interested in being overly exact. ⇒ Abort
+                    // transfer because we neither need nor can understand the body.
+                    $abortdownload = true;
+                } else if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE) {
+                    $sizelimit = -1; // No size limit.
+                }
+            } else {
+                // Target resource is an HTML document.
+
+                // XXX: could abort the download as soon as we have received enough of the document to retrieve its title. This is
+                // *very* difficult to implement: need to take into account document encodings and all kinds of HTML-specific
+                // things. If you *really* want this, better change the code so that it directly streams the data from the network
+                // into an HTML parser.
+
+                // Internal transfers will never be aborted. When downloading external documents, the size limit, which is set by
+                // this function, will be applied.
+                // Disable the size limit for higher network strain settings under certain conditions. The “excessive” level fully
+                // downloads external resources _if their length is not known_ from Content-Type.
+                if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE && !$targetlengthknown) {
+                    $sizelimit = -1; // No size limit.
+                }
             }
 
             $chunks[] = $content;
@@ -1079,7 +1201,7 @@ class crawler {
                 $external = self::is_external($effectiveuri);
             }
 
-            if ($external && $downbytes > $sizelimit) {
+            if ($external && $sizelimit != -1 && $downbytes > $sizelimit) {
                 $abortdownload = true;
             }
 
@@ -1119,15 +1241,14 @@ class crawler {
             $errno = curl_errno($s);
             $downloadaborted = $errno === CURLE_ABORTED_BY_CALLBACK;
 
-            if ($method == 'GET' && !$downloadaborted) {
-                $filesize             = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
-            } else {
-                $filesize             = curl_getinfo($s, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-                if (!is_double($filesize)) {
-                    $filesize = -1.0;
-                }
-            }
-            $result->filesize         = $filesize;
+            // Whether we have started reading the body of the target resource.
+            // The way of detecting this is safe for our purpose because none of our abort conditions are triggered with a body
+            // which has a length of zero octets. This renders it unnecessary to watch HTTP status-lines (for redirections) and
+            // to implement the same redirection logic as curl uses. (The only condition that would abort during the final
+            // response is triggered by an overlong header – which is not yet in the final body, ergo properly handled.)
+            $bodystarted = count($chunks) > 0;
+
+            self::determine_filesize($s, $method, $success, $bodystarted, $result);
 
             $contenttype              = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
             $result->mimetype         = preg_replace('/;.*/', '', $contenttype);
@@ -1149,13 +1270,6 @@ class crawler {
             $httpcode = curl_getinfo($s, CURLINFO_RESPONSE_CODE);
 
             if (!$success) {
-                // Whether we have started reading the body of the target resource.
-                // The way of detecting this is safe for our purpose because none of our abort conditions are triggered with a body
-                // which has a length of zero octets. This renders it unnecessary to watch HTTP status-lines (for redirections) and
-                // to implement the same redirection logic as curl uses. (The only condition that would abort during the final
-                // response is triggered by an overlong header – which is not yet in the final body, ergo properly handled.)
-                $bodystarted = count($chunks) > 0;
-
                 if ($method == 'GET' && $downloadaborted && $bodystarted) {
                     // We have cancelled the download _during final body parsing_, because the resource was too large.
                     // Can only happen on external resources.
@@ -1194,18 +1308,21 @@ class crawler {
                 $result->httpmsg = $httpmsg;
 
                 if ($method == 'HEAD') {
-                    $filesizeknown = (is_double($filesize) && $filesize >= 0.0);
+                    // Here, filesizestatus has not been read from the database, so it still is an integer and has not been
+                    // converted to string. We may use ‚===‘ in comparisons.
+                    $filesizeknown = ($result->filesizestatus === TOOL_CRAWLER_FILESIZE_EXACT);
                     $methodnotallowed = ($httpcode == 405);
 
                     if ($methodnotallowed || $ishtml) {
                         // Retry with GET if HEAD is not allowed.
                         // For all HTML documents also switch to HTTP GET and try again so that we can extract the titles.
                         $needhttprequest = true;
-                    } else if (!$filesizeknown) {
+                    } else if (!$filesizeknown && $config->networkstrain != TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
+                        // Configuration is set to be more exact with regards to remote document size.
                         // Try to determine the size of non-HTML documents with unknown size by using HTTP GET.
                         $needhttprequest = true;
                     } else {
-                        // No need to download documents which are not HTML documents.
+                        // No need to download documents which are not HTML documents or which we do not like to GET.
                         $result->contents = '';
                     }
 
