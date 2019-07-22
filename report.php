@@ -208,6 +208,7 @@ if ($report == 'broken') {
                                           b.url target,
                                           b.lastcrawled,
                                           b.filesize,
+                                          b.filesizestatus,
                                           b.httpcode,
                                           b.httpmsg,
                                           b.errormsg,
@@ -242,11 +243,10 @@ if ($report == 'broken') {
             $title = get_string('unknown', 'tool_crawler');
         }
         $code = tool_crawler_http_code($row);
-        $size = $row->filesize * 1;
         $data = array(
             userdate($row->lastcrawled, $datetimeformat),
             $code,
-            display_size($size),
+            htmlspecialchars(tool_crawler_displaysize($row), ENT_NOQUOTES | ENT_HTML401),
             tool_crawler_link($row->target, $title, $row->redirect),
             htmlspecialchars($row->mimetype, ENT_NOQUOTES | ENT_HTML401),
         );
@@ -272,6 +272,7 @@ if ($report == 'broken') {
     $data  = $DB->get_records_sql("SELECT concat(b.id, '-', a.id, '-', l.id) id,
                                           b.url target,
                                           b.filesize,
+                                          b.filesizestatus,
                                           b.lastcrawled,
                                           b.mimetype,
                                           l.text,
@@ -282,6 +283,7 @@ if ($report == 'broken') {
                                           c.shortname
                                           $sql
                                  ORDER BY b.filesize DESC,
+                                          b.filesizestatus DESC,
                                           l.text,
                                           a.id",
                                           $opts,
@@ -306,7 +308,6 @@ if ($report == 'broken') {
 
     $table->data = array();
     foreach ($data as $row) {
-        $size = $row->filesize * 1;
         $text = trim($row->text);
         if ($text == "") {
             $text = get_string('missing', 'tool_crawler');
@@ -317,7 +318,7 @@ if ($report == 'broken') {
         }
         $data = array(
             userdate($row->lastcrawled, $datetimeformat),
-            display_size($size),
+            htmlspecialchars(tool_crawler_displaysize($row), ENT_NOQUOTES | ENT_HTML401),
             tool_crawler_link($row->target, $text, $row->redirect, true),
             htmlspecialchars($row->mimetype, ENT_NOQUOTES | ENT_HTML401),
             tool_crawler_link($row->url, $row->title, $row->redirect)

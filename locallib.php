@@ -81,6 +81,35 @@ function tool_crawler_http_code($row) {
 }
 
 /**
+ * Formats information about a resource size for being presented to the user. This includes annotation about whether the size is
+ * known or whether it may be inexact. This also includes locale-specific conversions and formatting if applicable.
+ *
+ * @param object $sizeinfo An object with at least the two properties `filesize` and `filesizestatus`. The latter must use one of
+ *               the `TOOL_CRAWLER_FILESIZE_*` constants defined in `lib.php`. This object is usually a row obtained from the
+ *               database.
+ * @return string The formatted size string which can be shown to the user.
+ */
+function tool_crawler_displaysize($sizeinfo) {
+    // Do not compare filesizestatus with ‚===‘ because the object from the database contains the int as string.
+    if (!is_null($sizeinfo->filesizestatus) && $sizeinfo->filesizestatus == TOOL_CRAWLER_FILESIZE_UNKNOWN) {
+        // Have tried to find out size, but still unknown due to aborted download.
+        $size = get_string('symbolforunknown', 'tool_crawler');
+    } else if (is_null($sizeinfo->filesize) || is_null($sizeinfo->filesizestatus)) {
+        // Size unknown due to some error, or status of size unknown.
+        $size = '';
+    } else {
+        // Something (or everything) is known about the resource size.
+        $size = $sizeinfo->filesize * 1;
+        $size = display_size($size);
+        if ($sizeinfo->filesizestatus == TOOL_CRAWLER_FILESIZE_ATLEAST) {
+            $size = get_string('greaterthansize', 'tool_crawler', ['size' => $size]);
+        }
+    }
+
+    return $size;
+}
+
+/**
  * Formats a number according to the current user’s locale.
  *
  * @param float $number Numeric value to format.
@@ -98,6 +127,9 @@ function tool_crawler_numberformat(float $number, int $decimals = 0) {
  * Produces a filter for SQL queries which will limit a query to big links. The two parts of the filter are returned in an
  * associative array.
  *
+ * NB: resources with an unknown size will pass the filter as “maybe big”. However, resources which are shorter than the configured
+ * big file size, but have an inexact length stored will not be returned marked as big.
+ *
  * @param string $tablealias Name to which the `tool_crawler_url` table is aliased in the final SQL statement. If empty or `null`,
  *                           the columns will be referenced without an explicit table name.
  *
@@ -114,11 +146,16 @@ function tool_crawler_sql_oversize_filter($tablealias = null) {
     }
 
     $where = "( ${tbl}filesize > ?
+             OR ( ${tbl}filesize IS NULL
+                  AND ${tbl}lastcrawled IS NOT NULL
+                )
+             OR ${tbl}filesizestatus = ?
               )";
 
     $bigfilesize = get_config('tool_crawler', 'bigfilesize');
     $params = array(
             $bigfilesize * 1000000,
+            TOOL_CRAWLER_FILESIZE_UNKNOWN,
             );
 
     return array(
@@ -152,14 +189,13 @@ function tool_crawler_url_gen_table($data) {
             $title = get_string('unknown', 'tool_crawler');
         }
         $code = tool_crawler_http_code($row);
-        $size = $row->filesize * 1;
         $idattr = htmlspecialchars($row->idattr, ENT_NOQUOTES | ENT_HTML401);
         $data = array(
             userdate($row->lastcrawled, $datetimeformat),
             htmlspecialchars($row->text, ENT_NOQUOTES | ENT_HTML401),
             str_replace(' #', '<br>#', $idattr),
             $code,
-            display_size($size),
+            htmlspecialchars(tool_crawler_displaysize($row), ENT_NOQUOTES | ENT_HTML401),
             tool_crawler_link($row->target, $title, $row->redirect),
             htmlspecialchars($row->mimetype, ENT_NOQUOTES | ENT_HTML401),
         );
@@ -213,6 +249,7 @@ function tool_crawler_url_create_page($url) {
                 t.errormsg,
                 t.httpcode,
                 t.filesize,
+                t.filesizestatus,
                 t.lastcrawled,
                 t.mimetype
            FROM {tool_crawler_edge} l
@@ -237,6 +274,7 @@ function tool_crawler_url_create_page($url) {
                 f.errormsg,
                 f.httpcode,
                 f.filesize,
+                f.filesizestatus,
                 f.lastcrawled,
                 f.mimetype
            FROM {tool_crawler_edge} l
