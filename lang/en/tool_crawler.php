@@ -155,6 +155,10 @@ $string['slowurl'] = 'Slow URL';
 $string['status'] = 'Robot status';
 $string['strftimerecentsecondshtml'] = '%h %e,&nbsp;%H:%M:%S';
 $string['symbolforunknown'] = '?';
+$string['usehead'] = 'Enable HTTP HEAD requests';
+$string['useheaddesc'] = '<p>Try HTTP HEAD requests first when scraping links, before falling back to HTTP GET requests. This normally saves time and network transmissions on the average web.</p>
+<p>If this option is disabled, HTTP HEAD requests will not be sent; the crawler will only use HTTP GET requests. This is not recommended.</p>
+<p>The default setting, compatible with releases 2018070200 and earlier of the link crawler robot, is disabled, while the recommended value, especially for new installations, is enabled.</p>';
 $string['useraccount'] = 'User account';
 $string['unknown'] = 'Unknown';
 $string['url'] = 'URL';

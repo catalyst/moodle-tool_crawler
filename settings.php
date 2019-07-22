@@ -167,6 +167,11 @@ useridlistid
                                                     new lang_string('bigfilesizedesc',   'tool_crawler'),
                                                     '1' ));
 
+        $settings->add(new admin_setting_configcheckbox('tool_crawler/usehead',
+                                                    new lang_string('usehead',           'tool_crawler'),
+                                                    new lang_string('useheaddesc',       'tool_crawler'),
+                                                    '0' ));
+
         $options = array();
         foreach (array(
                     TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE,
@@ -203,5 +208,3 @@ useridlistid
                                                         '0' ));
     }
 }
-
-
