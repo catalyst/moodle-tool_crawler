@@ -32,6 +32,38 @@ require_once($CFG->dirroot.'/admin/tool/crawler/extlib/simple_html_dom.php');
 require_once($CFG->dirroot.'/user/lib.php');
 
 /**
+ * How many bytes to download at most per linked HTML document stored on external hosts.
+ * Due to the way downloading works, a few more bytes may actually be downloaded.
+ */
+define('TOOL_CRAWLER_DOWNLOAD_LIMIT', 262144);
+
+/**
+ * How many bytes do download at most per redirecting resource on an external host.
+ * Due to the way downloading works, a few more byte may actually be downloaded.
+ *
+ * This value is used when an HTTP redirection happens because the connection should be kept open (mostly to save time). In case of
+ * a redirection, we allow for larger redirection bodies than the usual download limit for external documents. Reason for this is
+ * that we do not extract the title element from the first part of the HTML document, but we download (and trash) the entire
+ * resource in order to be able to use the redirection following logic from curl.
+ *
+ * The question about this and the details for the behavior of curl with pre-HTTP/2 servers are archived in thread
+ * <https://curl.haxx.se/mail/lib-2019-04/0012.html>.
+ *
+ * Should be larger than TOOL_CRAWLER_DOWNLOAD_LIMIT.
+ */
+define('TOOL_CRAWLER_REDIRECTION_DOWNLOAD_LIMIT', 1572864);
+
+/**
+ * How many bytes to download at most per HTTP header.
+ * Due to the way downloading works, a few more bytes may actually be downloaded.
+ *
+ * Curl documents that it processes no headers longer than 100 KiB, but testing (with curl-7.65.0) has shown that this is not
+ * enforced in the PHP code. So implement an own limit (and make it 16 KiB, which should be enough by far, see
+ * <https://stackoverflow.com/q/686217> (2019-05-23)).
+ */
+define('TOOL_CRAWLER_HEADER_LIMIT', 16 * 1024);
+
+/**
  * tool_crawler
  *
  * @package    tool_crawler
@@ -883,6 +915,58 @@ class crawler {
      * @param string $url HTTP/HTTPS URI of the resource which is to be retrieved from the web.
      * @return object The result object.
      */
+    /* Implementation-specific notes, currently not part of the API:
+     *
+     * This function implements an HTTP client built on Curl. In the usual case, when everything runs smoothly, it uses keep-alive
+     * connections when possible.(*) It issues HEAD requests in order to find out about the media type and length of the resource.
+     * If the target resource is an HTML document, uses a GET request to retrieve it, and extracts and stores the document title. In
+     * case of errors, these are recorded in the returned result object.
+     *
+     * (*) XXX: future possible extension: reuse Curl handles across function calls so that we can reuse a handle for more than one
+     * request. This will be beneficial when loading lots of resources from a single web server (in most cases, the own Moodle web
+     * server) as initializing a TCP connection takes quite some time.
+     *
+     * The amount of transmitted data is marginally increased by the additional HEAD request and response(s). The time needed to
+     * handle URIs may also increase slightly. As a result of using HEAD first, followed by a possible GET, the number of requests
+     * to the server is often doubled. But the needed time is not, due to keep-alive connections, so this is neglegible. Big
+     * resources are not downloaded at all or are not entirely downloaded. Main purpose of this is to avoid starting a download of a
+     * non-HTML document of which the size is already known after HEAD processing. This is a common case on the web.
+     *
+     * If the queried web server is not a general-purpose web server (see RFC 7231 section 4.1
+     * <https://tools.ietf.org/html/rfc7231#section-4.1>), it possibly does not support HEAD, but only understands GET. The server
+     * will signal this in the response with 405 Method Not Allowed. If this happens, this function switches to GET.
+     *
+     * For security reasons, if the server does not tell about the resource media type, this function does _not_ employ content
+     * sniffing to find out whether the referenced representation is an HTML document. Instead, it assumes the media type to be
+     * "application/octet-stream" (which means that it ignores the content of the document). See RFC 7231 section 3.1.1.5
+     * <https://tools.ietf.org/html/rfc7231#section-3.1.1.5>.
+     *
+     * The download size is almost always limited: this function employs TOOL_CRAWLER_HEADER_LIMIT as size limit for each of the
+     * HTTP headers (NB: not header-fields). External resources are usually not downloaded in full, but at most
+     * TOOL_CRAWLER_DOWNLOAD_LIMIT octets are retrieved. This is normally enough by far to extract the title of external HTML
+     * documents.
+     *
+     * When redirections are followed, the size of the HTTP bodies (e.g. documents informing about the redirection) is limited, too,
+     * with TOOL_CRAWLER_REDIRECTION_DOWNLOAD_LIMIT as the maximum allowed size.
+     *
+     * There is normally no need to fully download non-HTML resources, even if their size cannot be determined from the headers.
+     *
+     * In most cases, it is sufficient for the average web out there and for average users of crawler reports to report external
+     * non-HTML documents as having an unknown size if the web server has not provided any.
+     *
+     * While _external_ documents do not need to be fully retrieved, _HTML documents_ which are located _on the own Moodle web
+     * server_ are always fully retrieved and parsed. This is necessary so that their links can be followed.
+     *
+     * The code of this function has to consider at least the following things that can happen (possibly combined):
+     *   * curl_exec() signals an error,
+     *   * 405 Method Not Allowed in response to HEAD request,
+     *   * oversize header,
+     *   * oversize body in response to GET request,
+     *   * HTTP redirection,
+     *   * transfer is aborted by this function itself,
+     *   * resource is located on an _external_ host,
+     *   * redirection points to an external host, but the target resource is located on our web server again.
+     */
     public function scrape($url) {
 
         global $CFG;
@@ -890,80 +974,270 @@ class crawler {
         $config = self::get_config();
 
         $s = curl_init();
-        curl_setopt($s, CURLOPT_URL,             $url);
         curl_setopt($s, CURLOPT_TIMEOUT,         $config->maxtime);
         if ( $this->should_be_authenticated($url) ) {
             curl_setopt($s, CURLOPT_USERPWD,     $config->botusername . ':' . $config->botpassword);
         }
         curl_setopt($s, CURLOPT_USERAGENT,       $config->useragent . '/' . $config->version . ' (' . $CFG->wwwroot . ')');
         curl_setopt($s, CURLOPT_MAXREDIRS,       5);
-        curl_setopt($s, CURLOPT_RETURNTRANSFER,  true);
         curl_setopt($s, CURLOPT_FOLLOWLOCATION,  true);
-        curl_setopt($s, CURLOPT_FRESH_CONNECT,   true);
-        curl_setopt($s, CURLOPT_HEADER,          true);
+        curl_setopt($s, CURLOPT_FRESH_CONNECT,   false);
         curl_setopt($s, CURLOPT_COOKIEJAR,       $cookiefilelocation);
         curl_setopt($s, CURLOPT_COOKIEFILE,      $cookiefilelocation);
         curl_setopt($s, CURLOPT_SSL_VERIFYHOST,  0);
         curl_setopt($s, CURLOPT_SSL_VERIFYPEER,  0);
 
+        $sizelimit = TOOL_CRAWLER_REDIRECTION_DOWNLOAD_LIMIT; // Assume at first that we will be redirected.
+        $abortdownload = false;
+
+        $chunks = array();
+        $targetisexternal = null; // Cache for whether target resource is external.
+        $targetishtml = null; // Cache for whether target resource is an HTML document.
+        curl_setopt($s, CURLOPT_WRITEFUNCTION, function($hdl, $content)
+                use (&$chunks, &$sizelimit, &$targetisexternal, &$targetishtml, &$abortdownload) {
+            $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT; // Target resource reached, switch to non-redirection limit.
+
+            if ($targetisexternal === null) {
+                $effectiveuri = curl_getinfo($hdl, CURLINFO_EFFECTIVE_URL);
+                $targetisexternal = self::is_external($effectiveuri);
+            }
+
+            if ($targetishtml === null) {
+                $contenttype = curl_getinfo($hdl, CURLINFO_CONTENT_TYPE);
+                $targetishtml = (strpos($contenttype, 'text/html') === 0);
+            }
+
+            // Variables $targetisexternal and $targetishtml are not going to change anymore as we have reached the target resource.
+
+            if ($targetisexternal && !$targetishtml) {
+                // Not body of a redirection, external document, not HTML. ⇒ Abort transfer because we neither need nor can
+                // understand the body.
+                $abortdownload = true;
+            }
+
+            $chunks[] = $content;
+            return strlen($content);
+        });
+
+        // Whether the next header line which we read will be the HTTP status-line.
+        // We cannot make this a static variable in the header callback function (closure) because we need to reset it to true
+        // before the second call to curl_exec (for the GET request), in case we have aborted reading of responses to our first
+        // request (the HEAD request).
+        $firstheaderline = true;
+
+        $httpmsg = '';
+        $headersize = 0;
+        // We may receive HTTP trailers in the header function. An HTTP client can tell the server whether it will accept trailers
+        // by using the TE header field. However, RFC 7230 does not forbid servers to send trailers if the client does not like
+        // them; it also does not REQUIRE servers to send a Trailer header field. The RFC only contains SHOULD NOT/SHOULD rules for
+        // that (see sections 4.1.2 and 4.4).
+        curl_setopt($s, CURLOPT_HEADERFUNCTION, function($hdl, $header)
+                use (&$firstheaderline, &$httpmsg, &$headersize, &$abortdownload) {
+            $len = strlen($header);
+
+            if ($header === "\r\n") {
+                $firstheaderline = true;
+                $headersize = 0;
+            } else {
+                if ($firstheaderline) {
+                    // This code path will erroneously be triggered in the case of trailers. Not a big problem, especially not in
+                    // the case of well-formed trailers. But we will then reset $httpmsg a bit too early.
+                    if (preg_match('@^HTTP/[^ ]+ ([0-9]+) ([^\r\n]*)@', $header, $headerparts)) { // HTTP status-line.
+                        $httpmsg = $headerparts[2];
+                    } else {
+                        $httpmsg = '';
+                    }
+                }
+
+                $firstheaderline = false;
+
+                $headersize += $len;
+                if ($headersize > TOOL_CRAWLER_HEADER_LIMIT) {
+                    // Header too long.
+                    $abortdownload = true;
+                }
+            }
+
+            return $len;
+        });
+
+        curl_setopt($s, CURLOPT_NOPROGRESS, false);
+        curl_setopt($s, CURLOPT_PROGRESSFUNCTION, function($resource, $expecteddownbytes, $downbytes, $expectedupbytes, $upbytes)
+                use (&$abortdownload, &$sizelimit, &$targetisexternal) {
+            // Do not enforce size limit for internal resources.
+            if ($targetisexternal !== null) {
+                // We have already reached the target resource and can utilize the cached computed value from the write callback
+                // function.
+                $external = $targetisexternal;
+            } else {
+                // We may still be processing a redirect.
+                // XXX: the result from is_external could be cached to avoid wasting cycles. To implement that cache, we would have
+                // to recompute a new value only each time after a new Location header has been seen in the header function and has
+                // become effective.
+                // For now, be lazy and ask curl again for the current resource URI.
+                $effectiveuri = curl_getinfo($resource, CURLINFO_EFFECTIVE_URL);
+                $external = self::is_external($effectiveuri);
+            }
+
+            if ($external && $downbytes > $sizelimit) {
+                $abortdownload = true;
+            }
+
+            return $abortdownload ? 1 : 0;
+        });
+
+        // First, use a HEAD request to try to find out the type and length of the linked document without having to download it.
+        curl_setopt($s, CURLOPT_NOBODY,          true);
+
         $result = (object) array();
         $result->url              = $url;
 
-        $raw   = curl_exec($s);
+        $method = 'HEAD';
+        $needhttprequest = true; // Whether we have to send (a further) HTTP request.
+        while ($needhttprequest) {
+            // Curl seems to store the current URI at each redirection, so reset the value before each request.
+            // Otherwise we would use the last URI after a temporary redirect, which is wrong. Re-requesting a resource starting
+            // from the beginning should always work, even in the case that there have only been permanent redirects in the
+            // responses to the HEAD request.
+            curl_setopt($s, CURLOPT_URL, $url);
 
-        $result->filesize         = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
+            $success = curl_exec($s);
+            $needhttprequest = false; // Curl has been run, no new iteration necessary for now.
 
-        $contenttype              = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
-        $result->mimetype         = preg_replace('/;.*/', '', $contenttype);
+            // NOTE: information that can be queried by curl_getinfo is cached if the handle is reused. According to the PHP
+            // documentation for curl_getinfo, the data _may_ be overwritten by subsequent curl queries. Testing has shown that at
+            // least Content-Type and Content-Length are not affected by excessive caching. If they were, we would have to ensure
+            // that we get _fresh_ data on the second call to curl_exec and curl_getinfo.
 
-        $result->lastcrawled      = time();
+            $errno = curl_errno($s);
+            $downloadaborted = $errno === CURLE_ABORTED_BY_CALLBACK;
 
-        $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
-
-        $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
-        if ($final != $url) {
-            $result->redirect = $final;
-        } else {
-            $result->redirect = '';
-        }
-        $result->external = self::is_external($final);
-
-        if (empty($raw)) {
-            $result->errormsg         = (string)curl_errno($s);
-            $result->title            = curl_error($s); // We do not try to translate Curl error messages.
-            $result->contents         = '';
-            $result->httpcode         = '500';
-            $result->httpmsg          = null;
-        } else {
-            $result->errormsg = null;  // Important in case of repeated scraping in order to reset error status.
-
-            $headersize = curl_getinfo($s, CURLINFO_HEADER_SIZE);
-            $headers = substr($raw, 0, $headersize);
-            if (preg_match_all('@(^|[\r\n])(HTTP/[^ ]+) ([0-9]+) ([^\r\n]+|$)@', $headers, $httplines, PREG_SET_ORDER)) {
-                $result->httpmsg = array_pop($httplines)[4];
+            if ($method == 'GET' && !$downloadaborted) {
+                $filesize             = curl_getinfo($s, CURLINFO_SIZE_DOWNLOAD);
             } else {
-                $result->httpmsg = '';
+                $filesize             = curl_getinfo($s, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+                if (!is_double($filesize)) {
+                    $filesize = -1.0;
+                }
             }
+            $result->filesize         = $filesize;
+
+            $contenttype              = curl_getinfo($s, CURLINFO_CONTENT_TYPE);
+            $result->mimetype         = preg_replace('/;.*/', '', $contenttype);
+
+            $result->lastcrawled      = time();
+
+            $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
+
+            $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
+            if ($final != $url) {
+                $result->redirect = $final;
+            } else {
+                $result->redirect = '';
+            }
+            $result->external = self::is_external($final);
 
             $ishtml = (strpos($contenttype, 'text/html') === 0);
-            if ($ishtml) { // Related to Issue #13.
-                // May need a significant amount of memory as the data is temporarily stored twice.
-                $data = substr($raw, $headersize);
-                unset($raw); // Allow to free memory.
 
-                /* Convert it if it is anything but UTF-8 */
-                $charset = $this->detect_encoding($contenttype, $data);
-                if (is_string($charset) && strtoupper($charset) != "UTF-8") {
-                    // You can change 'UTF-8' to 'UTF-8//IGNORE' to
-                    // ignore conversion errors and still output something reasonable.
-                    $data = iconv($charset, 'UTF-8', $data);
+            $httpcode = curl_getinfo($s, CURLINFO_RESPONSE_CODE);
+
+            if (!$success) {
+                // Whether we have started reading the body of the target resource.
+                // The way of detecting this is safe for our purpose because none of our abort conditions are triggered with a body
+                // which has a length of zero octets. This renders it unnecessary to watch HTTP status-lines (for redirections) and
+                // to implement the same redirection logic as curl uses. (The only condition that would abort during the final
+                // response is triggered by an overlong header – which is not yet in the final body, ergo properly handled.)
+                $bodystarted = count($chunks) > 0;
+
+                if ($method == 'GET' && $downloadaborted && $bodystarted) {
+                    // We have cancelled the download _during final body parsing_, because the resource was too large.
+                    // Can only happen on external resources.
+
+                    if ($ishtml) { // Also related to issue #13.
+                        // The document title can even be extracted by simple_html_dom from a partially received HTML document.
+                        // Title extraction will only be attempted by the caller if the final HTTP status-code signals success.
+
+                        // May need a significant amount of memory as the data is temporarily stored twice.
+                        $result->contents = implode($chunks);
+                        unset($chunks); // Allow to free memory.
+                    } else {
+                        // Nothing special to do here. Length has already been saved.
+                        $result->contents = '';
+                    }
+
+                    $result->errormsg         = null;  // Important in case of repeated scraping in order to reset error status.
+                    $result->httpcode         = $httpcode;
+                    $result->httpmsg          = $httpmsg;
+                } else {
+                    // There has been a download error; or we have aborted the download _during header parsing_, because a header
+                    // was too large; or we have aborted the download _during parsing of a non-final body_, because that body was
+                    // too large – the latter can (only) happen on redirections.
+                    // If we abort a download before parsing the final body (any of the two cases), this is an error which must be
+                    // reported to the user. Same as for download errors, we use HTTP status code 500, but the case can be clearly
+                    // identified by the stored curl error code and message which is (the message for) CURLE_ABORTED_BY_CALLBACK.
+
+                    $result->errormsg         = (string)$errno;
+                    $result->title            = curl_error($s); // We do not try to translate Curl error messages.
+                    $result->contents         = '';
+                    $result->httpcode         = '500';
+                    $result->httpmsg          = null;
                 }
-                $result->contents = $data;
             } else {
-                $result->contents = '';
-            }
+                $result->errormsg = null;  // Important in case of repeated scraping in order to reset error status.
+                $result->httpmsg = $httpmsg;
 
-            $result->httpcode         = curl_getinfo($s, CURLINFO_HTTP_CODE);
+                if ($method == 'HEAD') {
+                    $filesizeknown = (is_double($filesize) && $filesize >= 0.0);
+                    $methodnotallowed = ($httpcode == 405);
+
+                    if ($methodnotallowed || $ishtml) {
+                        // Retry with GET if HEAD is not allowed.
+                        // For all HTML documents also switch to HTTP GET and try again so that we can extract the titles.
+                        $needhttprequest = true;
+                    } else if (!$filesizeknown) {
+                        // Try to determine the size of non-HTML documents with unknown size by using HTTP GET.
+                        $needhttprequest = true;
+                    } else {
+                        // No need to download documents which are not HTML documents.
+                        $result->contents = '';
+                    }
+
+                    if ($needhttprequest) {
+                        // Switch to HTTP GET and try again.
+                        curl_setopt($s, CURLOPT_HTTPGET, true);
+                        $method = 'GET';
+
+                        $sizelimit = TOOL_CRAWLER_REDIRECTION_DOWNLOAD_LIMIT; // Assume at first that we will be redirected.
+                        $chunks = array();
+                        $firstheaderline = true;
+                        $headersize = 0;
+                        $targetisexternal = null;
+                        $targetishtml = null;
+                        $abortdownload = false;
+                    }
+                } else {
+                    // Linked resource has been downloaded using HTTP GET.
+
+                    if ($ishtml) { // Related to Issue #13.
+                        // May need a significant amount of memory as the data is temporarily stored twice.
+                        $data = implode($chunks);
+                        unset($chunks); // Allow to free memory.
+
+                        /* Convert it if it is anything but UTF-8 */
+                        $charset = $this->detect_encoding($contenttype, $data);
+                        if (is_string($charset) && strtoupper($charset) != "UTF-8") {
+                            // You can change 'UTF-8' to 'UTF-8//IGNORE' to
+                            // ignore conversion errors and still output something reasonable.
+                            $data = iconv($charset, 'UTF-8', $data);
+                        }
+                        $result->contents = $data;
+                    } else {
+                        $result->contents = '';
+                    }
+                }
+
+                $result->httpcode = $httpcode;
+            }
         }
 
         curl_close($s);
