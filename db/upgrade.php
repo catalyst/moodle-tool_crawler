@@ -58,7 +58,7 @@ function xmldb_tool_crawler_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2019022200, 'tool', 'crawler');
     }
 
-    if ($oldversion < 2019052300) {
+    if ($oldversion < 2019072600) {
         $table = new xmldb_table('tool_crawler_url');
         $field = new xmldb_field('filesizestatus', XMLDB_TYPE_INTEGER, 1, null, false, false, TOOL_CRAWLER_FILESIZE_EXACT,
                 'filesize');
@@ -77,7 +77,7 @@ function xmldb_tool_crawler_upgrade($oldversion) {
         $field->setDefault(null);
         $dbman->change_field_default($table, $field);
 
-        upgrade_plugin_savepoint(true, 2019052300, 'tool', 'crawler');
+        upgrade_plugin_savepoint(true, 2019072600, 'tool', 'crawler');
     }
 
     return true;
