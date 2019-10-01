@@ -14,24 +14,23 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
- * Defines the version of tool_crawler
+ * This file defines observers needed by the plugin tool_crawler
  *
  * @package    tool_crawler
- * @author     Brendan Heywood <brendan@catalyst-au.net>
- * @copyright  Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-
-$plugin->version   = 2019100100;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->release   = 2018070200;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2016021800;        // Requires this Moodle version.
-$plugin->component = 'tool_crawler'; // To check on upgrade, that module sits in correct place.
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->dependencies = array(
-    'auth_basic' => ANY_VERSION,
-);
+// List of observers.
+$observers = [
+    [
+        'eventname' => '\core\event\course_updated',
+        'callback'  => '\tool_crawler\event\observer::course_updated',
+    ],
+    [
+        'eventname' => '\core\event\course_module_updated',
+        'callback'  => '\tool_crawler\event\observer::course_module_updated',
+    ],
+];
