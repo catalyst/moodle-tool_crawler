@@ -303,10 +303,11 @@ class crawler {
      * @param string $baseurl
      * @param string $url relative URL
      * @param int the course id if it is known.
+     * @param int $priority the priority of this queue item
      * @return object|boolean The node record if the resource pointed to by the URL can and should be considered; or `false` if the
      *     URL is invalid or excluded.
      */
-    public function mark_for_crawl($baseurl, $url, $courseid = null) {
+    public function mark_for_crawl($baseurl, $url, $courseid = null, $priority = TOOL_CRAWLER_PRIORITY_DEFAULT) {
 
         global $DB, $CFG;
 
@@ -419,6 +420,7 @@ class crawler {
             $node->url        = $url;
             $node->external   = self::is_external($url);
             $node->needscrawl = time();
+            $node->priority = $priority;
 
             if (isset($courseid)) {
                 $node->courseid = $courseid;
@@ -558,7 +560,7 @@ class crawler {
                                          FROM {tool_crawler_url}
                                         WHERE lastcrawled IS NULL
                                            OR lastcrawled < needscrawl
-                                     ORDER BY needscrawl ASC, id ASC
+                                     ORDER BY priority DESC, needscrawl ASC, id ASC
                                         LIMIT 1
                                     ');
 

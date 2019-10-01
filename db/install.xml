@@ -26,6 +26,7 @@
         <FIELD NAME="ignoredtime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="httpmsg" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="errormsg" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="priority" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" DEFAULT="0"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -35,6 +36,7 @@
         <INDEX NAME="needscrawl_id" UNIQUE="false" FIELDS="needscrawl, id"/>
         <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid"/>
         <INDEX NAME="httpcode" UNIQUE="false" FIELDS="httpcode"/>
+        <INDEX NAME="priority_needscrawl" UNIQUE="false" FIELDS="needscrawl, priority"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="tool_crawler_edge" COMMENT="Links between URLs">
