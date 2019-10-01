@@ -49,6 +49,15 @@ Options:
 Example:
 $sudo -u www-data php crawl-as.php --url=https://host.example/
 ';
+$string['clicrawlerhelp'] = 'Run the crawler manually without having to wait for the scheduled task.
+
+Options:
+-h, --help          Print out this help
+--verbose=<level>   Verbosity level (0 = Quiet, 1 = Standard verbosity, 2 = Extended verbosity), Default: 1
+
+Example:
+$sudo -u www-data php crawler.php --verbose=1
+';
 $string['clierror'] = 'Error: {$a}';
 $string['cliscrapeashelp'] = 'Scrape the URL as the robot would see it, but do not process/queue it.
 
