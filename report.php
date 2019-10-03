@@ -93,6 +93,7 @@ if ($report == 'broken') {
                                           b.httpmsg,
                                           b.errormsg,
                                           b.lastcrawled,
+                                          b.priority,
                                           b.id AS toid,
                                           l.id linkid,
                                           l.text,
@@ -113,6 +114,7 @@ if ($report == 'broken') {
     $table->head = array(
         '',
         get_string('lastcrawledtime', 'tool_crawler'),
+        get_string('priority', 'tool_crawler'),
         get_string('response', 'tool_crawler'),
         get_string('broken', 'tool_crawler'),
         get_string('frompage', 'tool_crawler')
@@ -134,6 +136,7 @@ if ($report == 'broken') {
             html_writer::link(new moodle_url($baseurl, array('retryid' => $row->toid )),
                 get_string('retry', 'tool_crawler')),
             userdate($row->lastcrawled, $datetimeformat),
+            tool_crawler_priority_level($row->priority),
             tool_crawler_http_code($row),
             tool_crawler_link($row->target, $text, $row->redirect, true),
             tool_crawler_link($row->url, $row->title, $row->redirect)
@@ -160,6 +163,7 @@ if ($report == 'broken') {
                                           a.lastcrawled,
                                           a.needscrawl,
                                           a.courseid,
+                                          a.priority,
                                           c.shortname $sql
                                  ORDER BY a.needscrawl ASC,
                                           a.id ASC",
@@ -173,7 +177,8 @@ if ($report == 'broken') {
 
     $table->head = array(
         get_string('whenqueued', 'tool_crawler'),
-        get_string('url', 'tool_crawler')
+        get_string('url', 'tool_crawler'),
+        get_string('priority', 'tool_crawler'),
     );
 
     if (!$courseid) {
@@ -187,7 +192,8 @@ if ($report == 'broken') {
         }
         $data = array(
             userdate($row->needscrawl, $datetimeformat),
-            tool_crawler_link($row->target, $title, $row->redirect)
+            tool_crawler_link($row->target, $title, $row->redirect),
+            tool_crawler_priority_level($row->priority),
         );
         if (!$courseid) {
             $escapedshortname = htmlspecialchars($row->shortname, ENT_NOQUOTES | ENT_HTML401);
@@ -216,6 +222,7 @@ if ($report == 'broken') {
                                           b.redirect,
                                           b.mimetype,
                                           b.courseid,
+                                          b.priority,
                                           c.shortname
                                           $sql
                                  ORDER BY b.lastcrawled DESC",
@@ -231,6 +238,7 @@ if ($report == 'broken') {
         get_string('response', 'tool_crawler'),
         get_string('size', 'tool_crawler'),
         get_string('url', 'tool_crawler'),
+        get_string('priority', 'tool_crawler'),
         get_string('mimetype', 'tool_crawler'),
     );
     if (!$courseid) {
@@ -248,6 +256,7 @@ if ($report == 'broken') {
             $code,
             htmlspecialchars(tool_crawler_displaysize($row), ENT_NOQUOTES | ENT_HTML401),
             tool_crawler_link($row->target, $title, $row->redirect),
+            tool_crawler_priority_level($row->priority),
             htmlspecialchars($row->mimetype, ENT_NOQUOTES | ENT_HTML401),
         );
         if (!$courseid) {
@@ -275,6 +284,7 @@ if ($report == 'broken') {
                                           b.filesizestatus,
                                           b.lastcrawled,
                                           b.mimetype,
+                                          b.priority,
                                           l.text,
                                           a.title,
                                           a.url,
@@ -298,6 +308,7 @@ if ($report == 'broken') {
         get_string('lastcrawledtime', 'tool_crawler'),
         get_string('size', 'tool_crawler'),
         get_string('slowurl', 'tool_crawler'),
+        get_string('priority', 'tool_crawler'),
         get_string('mimetype', 'tool_crawler'),
         get_string('frompage', 'tool_crawler'),
     );
@@ -320,6 +331,7 @@ if ($report == 'broken') {
             userdate($row->lastcrawled, $datetimeformat),
             htmlspecialchars(tool_crawler_displaysize($row), ENT_NOQUOTES | ENT_HTML401),
             tool_crawler_link($row->target, $text, $row->redirect, true),
+            tool_crawler_priority_level($row->priority),
             htmlspecialchars($row->mimetype, ENT_NOQUOTES | ENT_HTML401),
             tool_crawler_link($row->url, $row->title, $row->redirect)
         );

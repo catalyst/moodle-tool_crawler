@@ -61,6 +61,29 @@ function tool_crawler_link($url, $label, $redirect = '', $labelishtml = false) {
 }
 
 /**
+ * Renders a priority level integer as readable HTML
+ *
+ * @param int $priority the priority level
+ * @return string HTML snippet which can be used in output.
+ */
+function tool_crawler_priority_level($priority) {
+
+    $html = '';
+    if ($priority == TOOL_CRAWLER_PRIORITY_DEFAULT) {
+        $html = html_writer::div(get_string('defaultpriority', 'tool_crawler'), 'priority');
+    }
+    if ($priority == TOOL_CRAWLER_PRIORITY_NORMAL) {
+        $html = html_writer::div(get_string('normalpriority', 'tool_crawler'), 'priority');
+    }
+    if ($priority == TOOL_CRAWLER_PRIORITY_HIGH) {
+        $html = html_writer::div(get_string('highpriority', 'tool_crawler'), 'priority');
+    }
+    if (!$html) {
+        $html = html_writer::div(get_string('custompriority', 'tool_crawler', $priority), 'priority');
+    }
+    return $html;
+}
+/**
  * Get a html code chunk
  *
  * @param integer $row row

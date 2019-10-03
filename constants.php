@@ -86,3 +86,10 @@ define('TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE', 'excessive');
  * Value for the `networkstrain` configuration setting.
  */
 define('TOOL_CRAWLER_NETWORKSTRAIN_WASTEFUL', 'wasteful');
+
+/**
+ * Priority levels for queue items. By default they have a value of 0.
+ */
+define('TOOL_CRAWLER_PRIORITY_DEFAULT', 0);
+define('TOOL_CRAWLER_PRIORITY_NORMAL', 50);
+define('TOOL_CRAWLER_PRIORITY_HIGH', 100);

@@ -80,5 +80,19 @@ function xmldb_tool_crawler_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2019072600, 'tool', 'crawler');
     }
 
+    if ($oldversion < 2019100300) {
+        $table = new xmldb_table('tool_crawler_url');
+        $field = new xmldb_field('priority', XMLDB_TYPE_INTEGER, '10', null, false, false, TOOL_CRAWLER_PRIORITY_DEFAULT);
+        $index = new xmldb_index('priority_needscrawl', XMLDB_INDEX_NOTUNIQUE, array('needscrawl', 'priority'));
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        upgrade_plugin_savepoint(true, 2019100300, 'tool', 'crawler');
+    }
+
     return true;
 }
