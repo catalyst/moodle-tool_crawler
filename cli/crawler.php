@@ -29,5 +29,28 @@ require(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php');
 require_once($CFG->libdir.'/clilib.php');
 require_once($CFG->dirroot .'/admin/tool/crawler/lib.php');
 
-tool_crawler_crawl(1);
+list($options, $unrecognized) = cli_get_params(array(
+        'help'      => false,
+        'verbose'   => 1,
+),
+        array(
+                'h' => 'help'
+        ));
+
+if ($unrecognized) {
+    $unrecognized = implode("\n  ", $unrecognized);
+    cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
+}
+
+if ($options['help']) {
+    echo get_string('clicrawlerhelp', 'tool_crawler');
+    die();
+}
+
+if ($options['verbose'] && (!is_numeric($options['verbose']) || $options['verbose'] < 0 || $options['verbose'] > 2)) {
+    echo get_string('clicrawlerhelp', 'tool_crawler');
+    die();
+}
+
+tool_crawler_crawl($options['verbose']);
 
