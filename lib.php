@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/constants.php');
-
+require_once(__DIR__ . '/classes/task/adhoc_crawl_task.php');
 /**
  * Perform one cron 'tick' of crawl processing
  *
@@ -95,16 +95,7 @@ function tool_crawler_crawl($verbose = false) {
     $cronstart = time();
     $cronstop = $cronstart + $config->maxcrontime;
 
-    // While we are not exceeding the maxcron time, and the queue is not empty
-    // find the next URL in the queue and crawl it.
-    $hasmore = true;
-    $hastime = true;
-    while ($hasmore && $hastime) {
-
-        $hasmore = $robot->process_queue($verbose);
-        $hastime = time() < $cronstop;
-        set_config('crawltick', time(), 'tool_crawler');
-    }
+    $hastime = $robot->process_queue($verbose);
 
     // If the queue is empty then mark the crawl as ended.
     if ($hastime) {
@@ -207,3 +198,29 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
         }
     }
 }
+/**
+ * Add a batch of ad hoc crawl tasks
+ * @param integer $limitadhoctasks the limit of concurrent adhoc crawl tasks
+ * @param boolean $verbose show verbose feedback
+ */
+function tool_crawler_add_adhoc_task($limitadhoctasks, $verbose = false) {
+    // Get number of adhoc crawl tasks we currently have.
+    $currentadhoc = tool_crawler_get_adhoc_tasks();
+    $toadd = $limitadhoctasks - $currentadhoc;
+    // If we have less than the limit, then add more ad hoc tasks.
+    if ($toadd > 0) {
+        $crawltask = new \tool_crawler\task\adhoc_crawl_task();
+        $crawltask->set_component('tool_crawler');
+        if ($verbose) {
+            echo "Adding $toadd ad hoc tasks to the queue";
+        }
+        // Queue the adhoc_crawl_task $toadd times.
+        for ($i = 0; $i < $toadd; $i++) {
+            \core\task\manager::queue_adhoc_task($crawltask);
+        }
+    }
+    if ($toadd < 1 && $verbose) {
+        echo "Already have a full ad hoc task queue with $limitadhoctasks tasks";
+    }
+}
+

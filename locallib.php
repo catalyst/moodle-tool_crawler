@@ -313,3 +313,16 @@ function tool_crawler_url_create_page($url) {
 
     return $page;
 }
+/**
+ * Get the number of crawler adhoc tasks we currently have queued up
+ *
+ * @return integer
+ */
+function tool_crawler_get_adhoc_tasks() {
+    global $DB;
+    $numberadhoctasks = $DB->count_records('task_adhoc', [
+                                               'component' => 'tool_crawler',
+                                               'classname' => '\tool_crawler\task\adhoc_crawl_task'
+                                           ]);
+    return $numberadhoctasks;
+}

@@ -535,7 +535,9 @@ class crawler {
     }
 
     /**
-     * Pops an item off the queue and processes it
+     * Crawl as many URL's as we can in the time limit
+     * This function will run in parallel with itself
+     * and use locking to only grab any item once
      *
      * @param boolean $verbose show debugging
      * @return true if it did anything, false if the queue is empty
@@ -549,53 +551,58 @@ class crawler {
             $recentcourses = $this->get_recentcourses();
         }
 
-        // Iterate through the queue until we find an item that is a recent course, or the time runs out.
+        // Iterate through the queue.
         $cronstart = time();
         $cronstop = $cronstart + $config->maxcrontime;
-        $hasmore = true;
         $hastime = true;
-        while ($hasmore && $hastime) {
-            // Grab the first item from the queue.
-            $node = $DB->get_record_sql('SELECT *
+
+        $timeout = 0; // Lock this resource with a zero second timeout.
+        $locktype = 'tool_crawler_process_queue';
+
+        // Get an instance of the currently configured lock_factory.
+        $lockfactory = \core\lock\lock_config::get_lock_factory($locktype);
+
+        // While we are not exceeding the maxcron time, and the queue is not empty.
+        while ($hastime) {
+            if (empty($nodes)) {
+                // Grab a list of items from the front of the queue
+                $nodes = $DB->get_records_sql('SELECT *
                                          FROM {tool_crawler_url}
                                         WHERE lastcrawled IS NULL
                                            OR lastcrawled < needscrawl
                                      ORDER BY priority DESC, needscrawl ASC, id ASC
-                                        LIMIT 1
-                                    ');
-
-            if ($config->uselogs == 1) {
-
-                if (isset($node->courseid)) {
-
-                    // If the course id is not in recent courses, remove it from the queue.
-                    if (!in_array($node->courseid, $recentcourses)) {
-
-                        // Will not show up in queue, but still keeps the data
-                        // in case the course becomes recently active in the future.
-                        $node->needscrawl = $node->lastcrawled;
-                        $DB->update_record('tool_crawler_url', $node);
-                    } else {
-                        break;
-                    }
-                } else {
-                    break;
+                                        LIMIT :limitadhocworkers
+                                    ', ['limitadhocworkers' => 1000]);
+                if (empty($nodes)) {
+                    return true; // The queue is empty
                 }
-            } else {
-                break;
+            }
+            $node = array_shift($nodes);
+            $resource = (string)$node->id; // The node id is the unique resource that we want to lock on.
+
+            // Get a new lock for the resource, wait for it if needed.
+            if (!$lock = $lockfactory->get_lock($resource, $timeout)) {
+                continue; // Try crawl the next node, this one is already being processed.
             }
 
-            $hastime = time() < $cronstop;
-            set_config('crawltick', time(), 'tool_crawler');
-        }
+            // If the course id is not in recent courses, remove it from the queue.
+            if ($config->uselogs == 1 && isset($node->courseid) && !in_array($node->courseid, $recentcourses)) {
+                // Will not show up in queue, but still keeps the data.
+                // in case the course becomes recently active in the future.
+                $node->needscrawl = $node->lastcrawled;
+                $DB->update_record('tool_crawler_url', $node);
+                $lock->release();
+                continue;
+            }
 
-        if (isset($node) && $node !== false) {
             $this->crawl($node, $verbose);
-            return true;
+
+            $lock->release();
+
+            $hastime = time() < $cronstop;
         }
-
+        set_config('crawltick', time(), 'tool_crawler');
         return false;
-
     }
 
     /**

@@ -14,12 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * tool_crawler
  *
  * @package    tool_crawler
- * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
+ * @copyright  2019 Kristian Ringer <kristian.ringer@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,19 +29,18 @@ defined('MOODLE_INTERNAL') || die();
 require_once("$CFG->dirroot/admin/tool/crawler/lib.php");
 
 /**
- * crawl_task
+ * adhoc_crawl_task
+ * Crawl the queue
  *
  * @package    tool_crawler
- * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class crawl_task extends \core\task\scheduled_task {
-
+class adhoc_crawl_task extends \core\task\adhoc_task {
     /**
      * Get task name
      */
     public function get_name() {
-        return get_string('pluginname', 'tool_crawler');
+        return get_string('adhoc_crawl_task', 'tool_crawler');
     }
 
     /**
@@ -53,6 +51,9 @@ class crawl_task extends \core\task\scheduled_task {
             return;
         }
 
+        // Run this task for the maxcrontime in the settings.
+        // During the time grab the first item from the queue if it's not locked and crawl it.
+        // Uses locking to stop other instances of this task taking the same item.
         tool_crawler_crawl();
     }
 }
