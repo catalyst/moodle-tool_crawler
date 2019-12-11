@@ -1,5 +1,15 @@
 [![Build Status](https://travis-ci.org/catalyst/moodle-tool_crawler.svg?branch=master)](https://travis-ci.org/catalyst/moodle-tool_crawler)
 
+* [What is this?](#what-is-this)
+* [How does it work?](#how-does-it-work)
+* [Branches](#branches)
+* [Installation](#installation)
+* [Configuration](#configuration)
+* [Testing](#testing)
+* [Reports](#reports)
+* [Support](#support)
+* [Warm thanks](#warm-thanks)
+
 # What is this?
 
 This is a link checking robot, that crawls your Moodle site following links
@@ -17,7 +27,14 @@ broken links that actually matter to students.
 
 Since the plugin cronjob comes in from outside it needs to authenticate in Moodle.
 
-# Installing Requirements
+# Branches
+
+| Moodle verion     | Branch      |
+| ----------------- | ----------- |
+| Moodle 3.5 to 3.8 | master      |
+| Totara 12+        | master      |
+
+# Installation
 
 The plugin has a dependency on the [moodle-auth_basic](https://moodle.org/plugins/auth_basic).
 To install the dependency plugin as a git submodule:
@@ -25,13 +42,12 @@ To install the dependency plugin as a git submodule:
 git submodule add https://github.com/catalyst/moodle-auth_basic auth/basic
 ```
 
-# Installing plugin source code
 
 Install plugin moodle-tool_crawler as a git submodule:
 ```
 git submodule add https://github.com/central-queensland-uni/moodle-tool_crawler.git admin/tool/crawler
 ```
-# Configure
+# Configuration
 
 When installing the plugins please keep in mind the official Moodle recommendations: [installing Moodle plugins](https://docs.moodle.org/32/en/Installing_add-ons)
 
@@ -156,19 +172,33 @@ and
 
 /admin/tool/crawler/report.php?report=recent
 
-# Reporting
+# Reports
 
 4 new admin reports are available for showing the current crawl status, broken
 links and URLs and slow links. They are available under:
 
 Administration > Reports > Link checker
 
-# Issues and Feedback
+# Support
 
 Please raise any issues in GitHub:
 
-https://github.com/central-queensland-uni/moodle-tool_crawler/issues
+https://github.com/catalyst/moodle-tool_crawler/issues
 
 If you need anything urgently and would like to sponsor it's implementation please
 email me: [Brendan Heywood](mailto:brendan@catalyst-au.net).
 
+
+
+Warm thanks
+-----------
+
+Thanks to Central Queensland University for sponsoring the initial creation of this plugin:
+
+https://www.cqu.edu.au/
+
+This plugin was developed by Catalyst IT Australia:
+
+https://www.catalyst-au.net/
+
+<img alt="Catalyst IT" src="https://cdn.rawgit.com/CatalystIT-AU/moodle-auth_saml2/master/pix/catalyst-logo.svg" width="400">
