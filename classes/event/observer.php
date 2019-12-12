@@ -38,7 +38,8 @@ class observer {
 
         $courseid = $event->objectid;
         $crawler = new \tool_crawler\robot\crawler();
-        return $crawler->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
+        return $crawler->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid,
+            TOOL_CRAWLER_PRIORITY_HIGH);
     }
     /**
      * When a course_module is updated, queue up that page for recrawling again immediately
@@ -53,6 +54,7 @@ class observer {
         $crawler = new \tool_crawler\robot\crawler();
         // Get the name of module to build the correct url.
         $modulename = $event->get_data()['other']['modulename'];
-        return $crawler->mark_for_crawl($CFG->wwwroot . '/', 'mod/' . $modulename . '/view.php?id=' . $cmid);
+        return $crawler->mark_for_crawl($CFG->wwwroot . '/', 'mod/' . $modulename . '/view.php?id=' . $cmid, null,
+            TOOL_CRAWLER_PRIORITY_HIGH);
     }
 }

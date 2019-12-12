@@ -427,15 +427,20 @@ class crawler {
             }
 
             $node->id = $DB->insert_record('tool_crawler_url', $node);
-        } else if ( $node->needscrawl < self::get_config()->crawlstart ) {
-            // Push this node to the end of the queue.
-            $node->needscrawl = time();
+        } else {
+            // Set the priority again, in case marking node a different priority.
+            $node->priority = $priority;
 
-            if (isset($courseid)) {
-                $node->courseid = $courseid;
+            if ( $node->needscrawl < self::get_config()->crawlstart ) {
+                // Push this node to the end of the queue.
+                $node->needscrawl = time();
+
+                if (isset($courseid)) {
+                    $node->courseid = $courseid;
+                }
+
+                $DB->update_record('tool_crawler_url', $node);
             }
-
-            $DB->update_record('tool_crawler_url', $node);
         }
         return $node;
     }
