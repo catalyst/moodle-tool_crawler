@@ -260,15 +260,17 @@ class crawler {
                 $DB->execute("UPDATE {tool_crawler_url} u
                          INNER JOIN {tool_crawler_edge} e ON e.a = u.id
                          SET needscrawl = ?,
-                                 lastcrawled = null
-                         WHERE e.b = ?", [$time, $nodeid]);
+                                 lastcrawled = null,
+                                 priority = ?
+                         WHERE e.b = ?", [$time, TOOL_CRAWLER_PRIORITY_HIGH, $nodeid]);
             } else {
                 $DB->execute("UPDATE {tool_crawler_url} u
                              SET needscrawl = ?,
-                                 lastcrawled = null
+                                 lastcrawled = null,
+                                 priority = ?
                             FROM {tool_crawler_edge} e
                            WHERE e.a = u.id
-                             AND e.b = ?", [$time, $nodeid]);
+                             AND e.b = ?", [$time, TOOL_CRAWLER_PRIORITY_HIGH, $nodeid]);
             }
 
             // Delete all edges that point to this node.
