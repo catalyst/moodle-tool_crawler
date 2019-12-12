@@ -428,12 +428,12 @@ class crawler {
 
             $node->id = $DB->insert_record('tool_crawler_url', $node);
         } else {
-            // Set the priority again, in case marking node a different priority.
-            $node->priority = $priority;
 
-            if ( $node->needscrawl < self::get_config()->crawlstart ) {
+            if ( $node->needscrawl < self::get_config()->crawlstart || $node->priority != $priority) {
                 // Push this node to the end of the queue.
                 $node->needscrawl = time();
+                // Set the priority again, in case marking node a different priority.
+                $node->priority = $priority;
 
                 if (isset($courseid)) {
                     $node->courseid = $courseid;
