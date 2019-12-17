@@ -1061,12 +1061,24 @@ class crawler {
         $cookiefilelocation = $CFG->dataroot . '/tool_crawler_cookies.txt';
         $config = self::get_config();
 
+        $version = moodle_major_version();
+
+        if (function_exists('get_moodlebot_useragent')) {
+            $useragent = \core_useragent::get_moodlebot_useragent();
+        } else {
+            $useragent = "MoodleBot/$version (+{$CFG->wwwroot})";
+        }
+
+        if ($config->useragent) {
+            $useragent = "$config->useragent/$config->version (+{$CFG->wwwroot})";
+        }
+
         $s = curl_init();
         curl_setopt($s, CURLOPT_TIMEOUT,         $config->maxtime);
         if ( $this->should_be_authenticated($url) ) {
             curl_setopt($s, CURLOPT_USERPWD,     $config->botusername . ':' . $config->botpassword);
         }
-        curl_setopt($s, CURLOPT_USERAGENT,       $config->useragent . '/' . $config->version . ' (' . $CFG->wwwroot . ')');
+        curl_setopt($s, CURLOPT_USERAGENT,       $useragent);
         curl_setopt($s, CURLOPT_MAXREDIRS,       5);
         curl_setopt($s, CURLOPT_FOLLOWLOCATION,  true);
         curl_setopt($s, CURLOPT_FRESH_CONNECT,   false);
