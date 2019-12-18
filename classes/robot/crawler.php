@@ -1485,8 +1485,8 @@ class crawler {
                           WHERE log.timecreated > :startingtime
                             AND target = 'course'
                             AND userid NOT IN (
-                                SELECT id 
-                                  FROM {user} 
+                                SELECT id
+                                  FROM {user}
                                   WHERE username = :botusername
                                 )
                             AND courseid <> 1";
