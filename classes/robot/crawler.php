@@ -258,25 +258,25 @@ class crawler {
             // Mark all nodes that link to this as needing a recrawl.
             if ($DB->get_dbfamily() == 'mysql') {
                 $DB->execute("UPDATE {tool_crawler_url} u
-                         INNER JOIN {tool_crawler_edge} e ON e.a = u.id
-                         SET needscrawl = ?,
-                                 lastcrawled = null,
-                                 priority = ?
-                         WHERE e.b = ?", [$time, TOOL_CRAWLER_PRIORITY_HIGH, $nodeid]);
+                              INNER JOIN {tool_crawler_edge} e ON e.a = u.id
+                                     SET needscrawl = ?,
+                                         lastcrawled = null,
+                                         priority = ?
+                                   WHERE e.b = ?", [$time, TOOL_CRAWLER_PRIORITY_HIGH, $nodeid]);
             } else {
                 $DB->execute("UPDATE {tool_crawler_url} u
-                             SET needscrawl = ?,
-                                 lastcrawled = null,
-                                 priority = ?
-                            FROM {tool_crawler_edge} e
-                           WHERE e.a = u.id
-                             AND e.b = ?", [$time, TOOL_CRAWLER_PRIORITY_HIGH, $nodeid]);
+                                     SET needscrawl = ?,
+                                         lastcrawled = null,
+                                         priority = ?
+                                    FROM {tool_crawler_edge} e
+                                   WHERE e.a = u.id
+                                     AND e.b = ?", [$time, TOOL_CRAWLER_PRIORITY_HIGH, $nodeid]);
             }
 
             // Delete all edges that point to this node.
             $DB->execute("DELETE
-                          FROM {tool_crawler_edge}
-                          WHERE b = ?", array($nodeid));
+                                FROM {tool_crawler_edge}
+                               WHERE b = ?", array($nodeid));
 
             // Delete the 'to' node as it may be completely wrong.
             $DB->delete_records('tool_crawler_url', array('id' => $nodeid) );
@@ -572,7 +572,8 @@ class crawler {
                 // Grab a list of items from the front of the queue. We need the first 1000
                 // in case other workers are already locked and processing items at the front of the queue.
                 // We try each queue item until we find an available one.
-                $nodes = $DB->get_records_sql('SELECT *
+                $nodes = $DB->get_records_sql('
+                                       SELECT *
                                          FROM {tool_crawler_url}
                                         WHERE lastcrawled IS NULL
                                            OR lastcrawled < needscrawl
@@ -1480,14 +1481,15 @@ class crawler {
         $startingtimerecentactivity = strtotime("-$config->recentactivity days", time());
 
         $sql = "SELECT DISTINCT log.courseid
-                                                 FROM {logstore_standard_log} log
-                                                WHERE log.timecreated > :startingtime
-                                                AND target = 'course'
-                                                AND userid NOT IN (
-                                                    SELECT id FROM {user} WHERE username = :botusername
-                                                )
-                                                AND courseid <> 1
-                                            ";
+                           FROM {logstore_standard_log} log
+                          WHERE log.timecreated > :startingtime
+                            AND target = 'course'
+                            AND userid NOT IN (
+                                SELECT id 
+                                  FROM {user} 
+                                  WHERE username = :botusername
+                                )
+                            AND courseid <> 1";
         $botusername = isset($config->botusername) ? $config->botusername : '';
         $values = ['startingtime' => $startingtimerecentactivity, 'botusername' => $botusername];
 
