@@ -182,7 +182,7 @@ Links which have been blacklisted or which are in excluded DOM elements will not
 $string['uselogs'] = 'Use log tables';
 $string['uselogsdesc'] = 'If enabled, only crawl links that are part of courses with recent activity. Uses table mdl_logstore_standard_log.';
 $string['useragent'] = 'Bot user agent string';
-$string['useragentdesc'] = 'The user agent name to use in the HTTP headers, without a version. The version of this plugin is automatically appended.';
+$string['useragentdesc'] = 'The user agent name to use in the HTTP headers, without a version. The version of this plugin is automatically appended. This setting can be left empty and will default to the built in Bot useragent.';
 $string['whenqueued'] = 'When queued';
 /*
  * Privacy provider (GDPR)

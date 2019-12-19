@@ -81,7 +81,7 @@ if ($hassiteconfig) {
         $settings->add(new admin_setting_configtext('tool_crawler/useragent',
                                                     new lang_string('useragent',         'tool_crawler'),
                                                     new lang_string('useragentdesc',     'tool_crawler'),
-                                                    'MoodleLinkChecker' ));
+                                                    '' ));
 
         $settings->add(new admin_setting_configtextarea('tool_crawler/excludeexturl',
                                                     new lang_string('excludeexturl',     'tool_crawler'),
