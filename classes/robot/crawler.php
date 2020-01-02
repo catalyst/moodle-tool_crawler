@@ -733,7 +733,7 @@ class crawler {
      * @param boolean $external is the URL ourside moodle
      * @param boolean $verbose show debugging
      */
-    private function parse_html($node, $external, $verbose = false) {
+    public function parse_html($node, $external, $verbose = false) {
 
         global $CFG;
         $config = self::get_config();
@@ -778,7 +778,7 @@ class crawler {
         $excludes = explode("\n", $config->excludemdldom);
         foreach ($excludes as $exclude) {
             foreach ($html->find($exclude) as $e) {
-                $e->outertext = ' ';
+                $e->remove();
             }
         }
 

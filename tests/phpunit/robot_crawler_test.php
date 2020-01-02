@@ -257,6 +257,59 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
         self::assertRegExp($expectedpattern, $page);
     }
 
+    /**
+     * Test for Issue #92: specified dom elements in the config should be excluded.
+     */
+    public function test_should_be_excluded() {
+        global $DB;
+
+        $url = 'http://crawler.test/course/view.php?id=1&section=2';
+        $node = [
+            'url' => $url,
+            'external' => 0,
+            'createdate' => strtotime("03-01-2020 10:00:00"),
+            'lastcrawled' => strtotime("31-12-2019 11:20:00"),
+            'needscrawl' => strtotime("01-01-2020 10:00:00"),
+            'httpcode' => 200,
+            'mimetype' => 'text/html',
+            'title' => 'Crawler Parse Test',
+            'downloadduration' => 0.23,
+            'filesize' => 44003,
+            'filesizestatus' => TOOL_CRAWLER_FILESIZE_EXACT,
+            'courseid' => 1,
+            'contextid' => 1,
+            'cmid' => null,
+            'ignoreduserid' => null,
+            'ignoredtime' => null,
+            'httpmsg' => 'OK',
+            'errormsg' => null
+        ];
+        $insertid = $DB->insert_record('tool_crawler_url', $node);
+
+        $this->setAdminUser();
+        $page = tool_crawler_url_create_page($url);
+
+        $linktoexclude = '<div class="exclude"><a href="http://crawler.test/foo/bar.php"></div>';
+
+        $node = new stdClass();
+        $node->contents = $page . $linktoexclude;
+        $node->url      = $url;
+        $node->id       = $insertid;
+
+        $this->resetAfterTest(true);
+
+        set_config('excludemdldom',
+            ".block.block_settings\n.block.block_book_toc\n.block.block_calendar_month\n" .
+            ".block.block_navigation\n.block.block_cqu_assessment\n.exclude",
+            'tool_crawler');
+
+        $this->robot->parse_html($node, false);
+
+        // URL should not exist for crawling.
+        $found = $DB->record_exists('tool_crawler_url', array('url' => 'http://crawler.test/foo/bar.php') );
+        self::assertFalse($found);
+    }
+
 }
 
 
