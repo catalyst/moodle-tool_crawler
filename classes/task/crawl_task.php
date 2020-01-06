@@ -53,25 +53,25 @@ class crawl_task extends \core\task\scheduled_task {
         if ($config->disablebot === '1') {
             return;
         }
-        $limitadhoctasks = $config->crawl_task;
-        if (!$limitadhoctasks) {
+        $maxworkers = $config->maxworkers;
+        if (!$maxworkers) {
             return;
         }
-        self::tool_crawler_add_adhoc_task($limitadhoctasks);
+        self::tool_crawler_add_adhoc_task($maxworkers);
     }
     /**
      * Add a batch of ad hoc crawl tasks
-     * @param integer $limitadhoctasks the limit of concurrent adhoc crawl tasks
+     * @param integer $maxworkers the limit of concurrent adhoc crawl tasks (workers)
      * @param boolean $verbose show verbose feedback
      */
-    public function tool_crawler_add_adhoc_task($limitadhoctasks, $verbose = false) {
+    public function tool_crawler_add_adhoc_task($maxworkers, $verbose = false) {
         $crawltask = new \tool_crawler\task\adhoc_crawl_task();
         $crawltask->set_component('tool_crawler');
         if ($verbose) {
-            echo "Adding $limitadhoctasks ad hoc tasks to the queue";
+            echo "Adding $maxworkers ad hoc tasks to the queue";
         }
-        // Queue the adhoc_crawl_task $limitadhoctasks times.
-        for ($i = 0; $i < $limitadhoctasks; $i++) {
+        // Queue the adhoc_crawl_task $maxworkers times.
+        for ($i = 0; $i < $maxworkers; $i++) {
             $crawltask->set_custom_data(['worker' => $i]);
             // We set customdata so that the task API will ignore adding duplicates.
             \core\task\manager::queue_adhoc_task($crawltask, true); // Need true to check for duplicate workers.
