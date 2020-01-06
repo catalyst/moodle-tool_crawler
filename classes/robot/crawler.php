@@ -556,23 +556,22 @@ class crawler {
         $cronstop = $cronstart + $config->maxcrontime;
         $hastime = true;
 
-        $timeout = 0; // Lock this resource with a zero second timeout.
-        $locktype = 'tool_crawler_process_queue';
-
         // Get an instance of the currently configured lock_factory.
-        $lockfactory = \core\lock\lock_config::get_lock_factory($locktype);
+        $lockfactory = \core\lock\lock_config::get_lock_factory('tool_crawler_process_queue');
 
         // While we are not exceeding the maxcron time, and the queue is not empty.
         while ($hastime) {
             if (empty($nodes)) {
-                // Grab a list of items from the front of the queue
+                // Grab a list of items from the front of the queue. We need this limit availablequeueitem
+                // in case other workers are already locked and processing items at the front of the queue.
+                // We try each queue item until we find an available one.
                 $nodes = $DB->get_records_sql('SELECT *
                                          FROM {tool_crawler_url}
                                         WHERE lastcrawled IS NULL
                                            OR lastcrawled < needscrawl
                                      ORDER BY priority DESC, needscrawl ASC, id ASC
-                                        LIMIT :limitadhocworkers
-                                    ', ['limitadhocworkers' => 1000]);
+                                        LIMIT :availablequeueitem
+                                    ', ['availablequeueitem' => 1000]);
                 if (empty($nodes)) {
                     return true; // The queue is empty
                 }
@@ -580,8 +579,8 @@ class crawler {
             $node = array_shift($nodes);
             $resource = (string)$node->id; // The node id is the unique resource that we want to lock on.
 
-            // Get a new lock for the resource, wait for it if needed.
-            if (!$lock = $lockfactory->get_lock($resource, $timeout)) {
+            // Get a new zero second timeout lock for the resource.
+            if (!$lock = $lockfactory->get_lock($resource, 0)) {
                 continue; // Try crawl the next node, this one is already being processed.
             }
 

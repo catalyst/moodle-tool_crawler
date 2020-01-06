@@ -25,7 +25,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/constants.php');
-require_once(__DIR__ . '/classes/task/adhoc_crawl_task.php');
 /**
  * Perform one cron 'tick' of crawl processing
  *
