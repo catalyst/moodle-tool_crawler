@@ -35,7 +35,7 @@ $tasks = array(
         'month' => '*'
     ),
     array(
-        'classname' => 'tool_crawler\task\crawl_manager',
+        'classname' => 'tool_crawler\task\crawl_task',
         'blocking' => 0,
         'minute' => '00',
         'hour' => '1',

@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once("$CFG->dirroot/admin/tool/crawler/lib.php");
 
 /**
- * crawl_manager
+ * crawl_task
  * Creates a batch of crawls to be done in an ad hoc task.
  * This gives us control over how parallel it is, and also when the workload is processed (eg at night).
  *
@@ -37,12 +37,12 @@ require_once("$CFG->dirroot/admin/tool/crawler/lib.php");
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class crawl_manager extends \core\task\scheduled_task {
+class crawl_task extends \core\task\scheduled_task {
     /**
      * Get task name
      */
     public function get_name() {
-        return get_string('crawl_manager', 'tool_crawler');
+        return get_string('crawl_task', 'tool_crawler');
     }
 
     /**
@@ -53,7 +53,7 @@ class crawl_manager extends \core\task\scheduled_task {
         if ($config->disablebot === '1') {
             return;
         }
-        $limitadhoctasks = $config->crawl_manager;
+        $limitadhoctasks = $config->crawl_task;
         if (!$limitadhoctasks) {
             return;
         }
