@@ -562,16 +562,17 @@ class crawler {
         // While we are not exceeding the maxcron time, and the queue is not empty.
         while ($hastime) {
             if (empty($nodes)) {
-                // Grab a list of items from the front of the queue. We need this limit availablequeueitem
+                // Grab a list of items from the front of the queue. We need the first 1000
                 // in case other workers are already locked and processing items at the front of the queue.
                 // We try each queue item until we find an available one.
                 $nodes = $DB->get_records_sql('SELECT *
                                          FROM {tool_crawler_url}
                                         WHERE lastcrawled IS NULL
                                            OR lastcrawled < needscrawl
-                                     ORDER BY priority DESC, needscrawl ASC, id ASC
-                                        LIMIT :availablequeueitem
-                                    ', ['availablequeueitem' => 1000]);
+                                     ORDER BY priority DESC,
+                                              needscrawl ASC,
+                                              id ASC
+                                    ', null, 0, 1000);
                 if (empty($nodes)) {
                     return true; // The queue is empty
                 }
