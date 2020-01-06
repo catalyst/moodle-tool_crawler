@@ -26,6 +26,15 @@ defined('MOODLE_INTERNAL') || die();
 
 $tasks = array(
     array(
+        'classname' => 'tool_crawler\task\crawl_task',
+        'blocking'  => 0,
+        'minute'    => '*',
+        'hour '     => '*',
+        'day'       => '*',
+        'dayofweek' => '*',
+        'month'     => '*'
+    ),
+    array(
         'classname' => 'tool_crawler\task\robot_cleanup',
         'blocking' => 0,
         'minute' => '30',
@@ -34,14 +43,5 @@ $tasks = array(
         'dayofweek' => '*',
         'month' => '*'
     ),
-    array(
-        'classname' => 'tool_crawler\task\crawl_task',
-        'blocking' => 0,
-        'minute' => '00',
-        'hour' => '1',
-        'day' => '*',
-        'dayofweek' => '*',
-        'month' => '*'
-    )
 );
 

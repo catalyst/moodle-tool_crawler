@@ -198,29 +198,3 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
         }
     }
 }
-/**
- * Add a batch of ad hoc crawl tasks
- * @param integer $limitadhoctasks the limit of concurrent adhoc crawl tasks
- * @param boolean $verbose show verbose feedback
- */
-function tool_crawler_add_adhoc_task($limitadhoctasks, $verbose = false) {
-    // Get number of adhoc crawl tasks we currently have.
-    $currentadhoc = tool_crawler_get_adhoc_tasks();
-    $toadd = $limitadhoctasks - $currentadhoc;
-    // If we have less than the limit, then add more ad hoc tasks.
-    if ($toadd > 0) {
-        $crawltask = new \tool_crawler\task\adhoc_crawl_task();
-        $crawltask->set_component('tool_crawler');
-        if ($verbose) {
-            echo "Adding $toadd ad hoc tasks to the queue";
-        }
-        // Queue the adhoc_crawl_task $toadd times.
-        for ($i = 0; $i < $toadd; $i++) {
-            \core\task\manager::queue_adhoc_task($crawltask);
-        }
-    }
-    if ($toadd < 1 && $verbose) {
-        echo "Already have a full ad hoc task queue with $limitadhoctasks tasks";
-    }
-}
-
