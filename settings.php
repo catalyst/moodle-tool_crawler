@@ -152,9 +152,9 @@ useridlistid
                                                     $recentactivitydesc,
                                                     '1'));
 
-        $settings->add(new admin_setting_configtext('tool_crawler/crawl_task',
-                                                    new lang_string('crawl_task',           'tool_crawler'),
-                                                    new lang_string('crawl_taskdesc',       'tool_crawler'),
+        $settings->add(new admin_setting_configtext('tool_crawler/max_workers',
+                                                    new lang_string('max_workers',           'tool_crawler'),
+                                                    new lang_string('max_workersdesc',       'tool_crawler'),
                                                     '10' ));
 
         $settings->add(new admin_setting_configtext('tool_crawler/maxtime',
