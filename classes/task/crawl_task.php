@@ -53,7 +53,7 @@ class crawl_task extends \core\task\scheduled_task {
         if ($config->disablebot === '1') {
             return;
         }
-        $maxworkers = $config->maxworkers;
+        $maxworkers = $config->max_workers;
         if (!$maxworkers) {
             return;
         }
