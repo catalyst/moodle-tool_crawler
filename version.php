@@ -27,8 +27,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 
-$plugin->version   = 2019100300;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->release   = 2018070200;        // The current plugin version (Date: YYYYMMDDXX)
+$plugin->version   = 2020010600;        // The current plugin version (Date: YYYYMMDDXX)
+$plugin->release   = 2020010600;        // The current plugin version (Date: YYYYMMDDXX)
 $plugin->requires  = 2016021800;        // Requires this Moodle version.
 $plugin->component = 'tool_crawler'; // To check on upgrade, that module sits in correct place.
 $plugin->maturity  = MATURITY_STABLE;

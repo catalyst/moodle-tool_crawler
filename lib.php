@@ -25,12 +25,13 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/constants.php');
-
 /**
  * Perform one cron 'tick' of crawl processing
  *
  * Has limits of both how many URLs to crawl
- * and a soft time limit on total crawl time.
+ * and a soft time limit on total crawl time (the maxcrontime in the settings.)
+ * During this time grab the first item from the queue if it's not locked and crawl it.
+ * Uses locking to stop other instances of this task taking the same item.
  *
  * @param boolean $verbose show verbose feedback
  */
@@ -95,16 +96,7 @@ function tool_crawler_crawl($verbose = false) {
     $cronstart = time();
     $cronstop = $cronstart + $config->maxcrontime;
 
-    // While we are not exceeding the maxcron time, and the queue is not empty
-    // find the next URL in the queue and crawl it.
-    $hasmore = true;
-    $hastime = true;
-    while ($hasmore && $hastime) {
-
-        $hasmore = $robot->process_queue($verbose);
-        $hastime = time() < $cronstop;
-        set_config('crawltick', time(), 'tool_crawler');
-    }
+    $hastime = $robot->process_queue($verbose);
 
     // If the queue is empty then mark the crawl as ended.
     if ($hastime) {

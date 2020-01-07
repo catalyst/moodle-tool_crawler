@@ -18,30 +18,40 @@
  * tool_crawler
  *
  * @package    tool_crawler
- * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
+ * @copyright  2019 Kristian Ringer <kristian.ringer@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace tool_crawler\task;
+
 defined('MOODLE_INTERNAL') || die();
 
-$tasks = array(
-    array(
-        'classname' => 'tool_crawler\task\crawl_task',
-        'blocking'  => 0,
-        'minute'    => '*',
-        'hour '     => '*',
-        'day'       => '*',
-        'dayofweek' => '*',
-        'month'     => '*'
-    ),
-    array(
-        'classname' => 'tool_crawler\task\robot_cleanup',
-        'blocking' => 0,
-        'minute' => '30',
-        'hour' => '2',
-        'day' => '*',
-        'dayofweek' => '*',
-        'month' => '*'
-    ),
-);
+require_once("$CFG->dirroot/admin/tool/crawler/lib.php");
+
+/**
+ * adhoc_crawl_task
+ * Crawl the queue
+ *
+ * @package    tool_crawler
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class adhoc_crawl_task extends \core\task\adhoc_task {
+    /**
+     * Get task name
+     */
+    public function get_name() {
+        return get_string('adhoc_crawl_task', 'tool_crawler');
+    }
+
+    /**
+     * Execute task
+     */
+    public function execute() {
+        if (\tool_crawler\robot\crawler::get_config()->disablebot === '1') {
+            return;
+        }
+        tool_crawler_crawl();
+    }
+}
+
 
