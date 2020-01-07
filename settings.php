@@ -141,16 +141,9 @@ useridlistid
                                                       0,
                                                       $options));
 
-        $robot = new \tool_crawler\robot\crawler();
-        $days = $robot::get_config()->recentactivity;
-        $count = count($robot->get_recentcourses());
-        $recentactivitydesc = get_string('recentactivitydesc', 'tool_crawler', ['days' => $days, 'count' => $count]);
-        $recentactivitydesc = htmlspecialchars($recentactivitydesc, ENT_NOQUOTES | ENT_HTML401);
-        $recentactivitydesc = preg_replace('/(\r\n?|\n)/', '<br>', $recentactivitydesc);
         $settings->add(new admin_setting_configtext('tool_crawler/recentactivity',
                                                     new lang_string('recentactivity',    'tool_crawler'),
-                                                    $recentactivitydesc,
-                                                    '1'));
+                                                    get_string('recentactivitydesc', 'tool_crawler'), '1'));
 
         $settings->add(new admin_setting_configtext('tool_crawler/max_workers',
                                                     new lang_string('max_workers',           'tool_crawler'),
