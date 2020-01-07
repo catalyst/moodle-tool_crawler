@@ -258,26 +258,23 @@ class crawler {
             // Mark all nodes that link to this as needing a recrawl.
             if ($DB->get_dbfamily() == 'mysql') {
                 $DB->execute("UPDATE {tool_crawler_url} u
-                              INNER JOIN {tool_crawler_edge} e ON e.a = u.id
-                                     SET needscrawl = ?,
-                                         lastcrawled = null,
-                                         priority = ?
-                                   WHERE e.b = ?", [$time, TOOL_CRAWLER_PRIORITY_HIGH, $nodeid]);
+                          INNER JOIN {tool_crawler_edge} e ON e.a = u.id
+                                 SET needscrawl = ?,
+                                     lastcrawled = null,
+                                     priority = ?
+                               WHERE e.b = ?", [$time, TOOL_CRAWLER_PRIORITY_HIGH, $nodeid]);
             } else {
                 $DB->execute("UPDATE {tool_crawler_url} u
-                                     SET needscrawl = ?,
-                                         lastcrawled = null,
-                                         priority = ?
-                                    FROM {tool_crawler_edge} e
-                                   WHERE e.a = u.id
-                                     AND e.b = ?", [$time, TOOL_CRAWLER_PRIORITY_HIGH, $nodeid]);
+                                 SET needscrawl = ?,
+                                     lastcrawled = null,
+                                     priority = ?
+                                FROM {tool_crawler_edge} e
+                               WHERE e.a = u.id
+                                 AND e.b = ?", [$time, TOOL_CRAWLER_PRIORITY_HIGH, $nodeid]);
             }
 
             // Delete all edges that point to this node.
-            $DB->execute("DELETE
-                                FROM {tool_crawler_edge}
-                               WHERE b = ?", array($nodeid));
-
+            $DB->delete_records('tool_crawler_edge', ['b' => $nodeid]);
             // Delete the 'to' node as it may be completely wrong.
             $DB->delete_records('tool_crawler_url', array('id' => $nodeid) );
 
@@ -430,17 +427,22 @@ class crawler {
 
             $node->id = $DB->insert_record('tool_crawler_url', $node);
         } else {
-
-            if ( $node->needscrawl < self::get_config()->crawlstart || $node->priority != $priority) {
+            $needsupdating = false;
+            if ($node->needscrawl < self::get_config()->crawlstart) {
                 // Push this node to the end of the queue.
                 $node->needscrawl = time();
+                $needsupdating = true;
+            }
+            if ($node->priority != $priority) {
                 // Set the priority again, in case marking node a different priority.
                 $node->priority = $priority;
-
-                if (isset($courseid)) {
-                    $node->courseid = $courseid;
-                }
-
+                $needsupdating = true;
+            }
+            if (isset($courseid)) {
+                $node->courseid = $courseid;
+                $needsupdating = true;
+            }
+            if ($needsupdating) {
                 $DB->update_record('tool_crawler_url', $node);
             }
         }
