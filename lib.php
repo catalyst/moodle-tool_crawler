@@ -29,7 +29,9 @@ require_once(__DIR__ . '/constants.php');
  * Perform one cron 'tick' of crawl processing
  *
  * Has limits of both how many URLs to crawl
- * and a soft time limit on total crawl time.
+ * and a soft time limit on total crawl time (the maxcrontime in the settings.)
+ * During this time grab the first item from the queue if it's not locked and crawl it.
+ * Uses locking to stop other instances of this task taking the same item.
  *
  * @param boolean $verbose show verbose feedback
  */

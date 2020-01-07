@@ -50,10 +50,6 @@ class adhoc_crawl_task extends \core\task\adhoc_task {
         if (\tool_crawler\robot\crawler::get_config()->disablebot === '1') {
             return;
         }
-
-        // Run this task for the maxcrontime in the settings.
-        // During the time grab the first item from the queue if it's not locked and crawl it.
-        // Uses locking to stop other instances of this task taking the same item.
         tool_crawler_crawl();
     }
 }
