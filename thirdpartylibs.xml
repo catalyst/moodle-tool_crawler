@@ -4,7 +4,7 @@
     <location>extlib/simple_html_dom.php</location>
     <name>Simple HTML DOM</name>
     <license>MIT</license>
-    <version>1.5</version>
+    <version>1.9.1</version>
     <licenseversion>1</licenseversion>
   </library>
 </libraries>
