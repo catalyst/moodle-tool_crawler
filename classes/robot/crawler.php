@@ -258,24 +258,23 @@ class crawler {
             // Mark all nodes that link to this as needing a recrawl.
             if ($DB->get_dbfamily() == 'mysql') {
                 $DB->execute("UPDATE {tool_crawler_url} u
-                         INNER JOIN {tool_crawler_edge} e ON e.a = u.id
-                         SET needscrawl = ?,
-                                 lastcrawled = null
-                         WHERE e.b = ?", [$time, $nodeid]);
+                          INNER JOIN {tool_crawler_edge} e ON e.a = u.id
+                                 SET needscrawl = ?,
+                                     lastcrawled = null,
+                                     priority = ?
+                               WHERE e.b = ?", [$time, TOOL_CRAWLER_PRIORITY_HIGH, $nodeid]);
             } else {
                 $DB->execute("UPDATE {tool_crawler_url} u
-                             SET needscrawl = ?,
-                                 lastcrawled = null
-                            FROM {tool_crawler_edge} e
-                           WHERE e.a = u.id
-                             AND e.b = ?", [$time, $nodeid]);
+                                 SET needscrawl = ?,
+                                     lastcrawled = null,
+                                     priority = ?
+                                FROM {tool_crawler_edge} e
+                               WHERE e.a = u.id
+                                 AND e.b = ?", [$time, TOOL_CRAWLER_PRIORITY_HIGH, $nodeid]);
             }
 
             // Delete all edges that point to this node.
-            $DB->execute("DELETE
-                          FROM {tool_crawler_edge}
-                          WHERE b = ?", array($nodeid));
-
+            $DB->delete_records('tool_crawler_edge', ['b' => $nodeid]);
             // Delete the 'to' node as it may be completely wrong.
             $DB->delete_records('tool_crawler_url', array('id' => $nodeid) );
 
@@ -427,15 +426,25 @@ class crawler {
             }
 
             $node->id = $DB->insert_record('tool_crawler_url', $node);
-        } else if ( $node->needscrawl < self::get_config()->crawlstart ) {
-            // Push this node to the end of the queue.
-            $node->needscrawl = time();
-
+        } else {
+            $needsupdating = false;
+            if ($node->needscrawl < self::get_config()->crawlstart) {
+                // Push this node to the end of the queue.
+                $node->needscrawl = time();
+                $needsupdating = true;
+            }
+            if ($node->priority != $priority) {
+                // Set the priority again, in case marking node a different priority.
+                $node->priority = $priority;
+                $needsupdating = true;
+            }
             if (isset($courseid)) {
                 $node->courseid = $courseid;
+                $needsupdating = true;
             }
-
-            $DB->update_record('tool_crawler_url', $node);
+            if ($needsupdating) {
+                $DB->update_record('tool_crawler_url', $node);
+            }
         }
         return $node;
     }
@@ -535,7 +544,9 @@ class crawler {
     }
 
     /**
-     * Pops an item off the queue and processes it
+     * Crawl as many URL's as we can in the time limit
+     * This function will run in parallel with itself
+     * and use locking to only grab any item once
      *
      * @param boolean $verbose show debugging
      * @return true if it did anything, false if the queue is empty
@@ -549,53 +560,59 @@ class crawler {
             $recentcourses = $this->get_recentcourses();
         }
 
-        // Iterate through the queue until we find an item that is a recent course, or the time runs out.
+        // Iterate through the queue.
         $cronstart = time();
         $cronstop = $cronstart + $config->maxcrontime;
-        $hasmore = true;
         $hastime = true;
-        while ($hasmore && $hastime) {
-            // Grab the first item from the queue.
-            $node = $DB->get_record_sql('SELECT *
+
+        // Get an instance of the currently configured lock_factory.
+        $lockfactory = \core\lock\lock_config::get_lock_factory('tool_crawler_process_queue');
+
+        // While we are not exceeding the maxcron time, and the queue is not empty.
+        while ($hastime) {
+            if (empty($nodes)) {
+                // Grab a list of items from the front of the queue. We need the first 1000
+                // in case other workers are already locked and processing items at the front of the queue.
+                // We try each queue item until we find an available one.
+                $nodes = $DB->get_records_sql('
+                                       SELECT *
                                          FROM {tool_crawler_url}
                                         WHERE lastcrawled IS NULL
                                            OR lastcrawled < needscrawl
-                                     ORDER BY priority DESC, needscrawl ASC, id ASC
-                                        LIMIT 1
-                                    ');
-
-            if ($config->uselogs == 1) {
-
-                if (isset($node->courseid)) {
-
-                    // If the course id is not in recent courses, remove it from the queue.
-                    if (!in_array($node->courseid, $recentcourses)) {
-
-                        // Will not show up in queue, but still keeps the data
-                        // in case the course becomes recently active in the future.
-                        $node->needscrawl = $node->lastcrawled;
-                        $DB->update_record('tool_crawler_url', $node);
-                    } else {
-                        break;
-                    }
-                } else {
-                    break;
+                                     ORDER BY priority DESC,
+                                              needscrawl ASC,
+                                              id ASC
+                                    ', null, 0, 1000);
+                if (empty($nodes)) {
+                    return true; // The queue is empty
                 }
-            } else {
-                break;
+            }
+            $node = array_shift($nodes);
+            $resource = (string)$node->id; // The node id is the unique resource that we want to lock on.
+
+            // Get a new zero second timeout lock for the resource.
+            if (!$lock = $lockfactory->get_lock($resource, 0)) {
+                continue; // Try crawl the next node, this one is already being processed.
             }
 
-            $hastime = time() < $cronstop;
-            set_config('crawltick', time(), 'tool_crawler');
-        }
+            // If the course id is not in recent courses, remove it from the queue.
+            if ($config->uselogs == 1 && isset($node->courseid) && !in_array($node->courseid, $recentcourses)) {
+                // Will not show up in queue, but still keeps the data.
+                // in case the course becomes recently active in the future.
+                $node->needscrawl = $node->lastcrawled;
+                $DB->update_record('tool_crawler_url', $node);
+                $lock->release();
+                continue;
+            }
 
-        if (isset($node) && $node !== false) {
             $this->crawl($node, $verbose);
-            return true;
+
+            $lock->release();
+
+            $hastime = time() < $cronstop;
         }
-
+        set_config('crawltick', time(), 'tool_crawler');
         return false;
-
     }
 
     /**
@@ -1458,17 +1475,23 @@ class crawler {
         global $DB;
         $config = self::get_config();
 
+        // Do not try to fetch recent courses if uselogs setting is not enabled.
+        if ($config->uselogs == false) {
+            return array();
+        }
+
         $startingtimerecentactivity = strtotime("-$config->recentactivity days", time());
 
         $sql = "SELECT DISTINCT log.courseid
-                                                 FROM {logstore_standard_log} log
-                                                WHERE log.timecreated > :startingtime
-                                                AND target = 'course'
-                                                AND userid NOT IN (
-                                                    SELECT id FROM {user} WHERE username = :botusername
-                                                )
-                                                AND courseid <> 1
-                                            ";
+                           FROM {logstore_standard_log} log
+                          WHERE log.timecreated > :startingtime
+                            AND target = 'course'
+                            AND userid NOT IN (
+                                SELECT id
+                                  FROM {user}
+                                  WHERE username = :botusername
+                                )
+                            AND courseid <> 1";
         $botusername = isset($config->botusername) ? $config->botusername : '';
         $values = ['startingtime' => $startingtimerecentactivity, 'botusername' => $botusername];
 

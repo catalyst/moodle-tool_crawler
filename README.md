@@ -156,10 +156,22 @@ Once Basic HTTP auth works test running the robot task from the CLI:
 
 ```
 php admin/tool/task/cli/schedule_task.php --execute='\tool_crawler\task\crawl_task'
-Scheduled task: Link checker robot
-... used 2997 dbqueries
-... used 59.828736066818 seconds
-Task completed.
+Execute scheduled task: Parallel crawling task (tool_crawler\task\crawl_task)
+... used 22 dbqueries
+... used 0.039698123931885 seconds
+Scheduled task complete: Parallel crawling task (tool_crawler\task\crawl_task)
+```
+
+This will create a batch of new adhoc crawl tasks in the mdl_task_adhoc table that
+will run in parallel, depending on the crawl_task setting. 
+
+You can manually run the adhoc tasks from the CLI with:
+```
+php admin/tool/task/cli/adhoc_task.php --execute
+Execute adhoc task: tool_crawler\task\adhoc_crawl_task
+... used 5733 dbqueries
+... used 58.239180088043 seconds
+Adhoc task complete: tool_crawler\task\adhoc_crawl_task
 ```
 
 If this worked then it's a matter of sitting back and waiting for the
