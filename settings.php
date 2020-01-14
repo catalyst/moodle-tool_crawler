@@ -146,10 +146,14 @@ useridlistid
                                                     new lang_string('recentactivity',    'tool_crawler'),
                                                     get_string('recentactivitydesc', 'tool_crawler'), '1'));
 
+        // The default moodle level of concurrency is 3 so if we spawned 10 crawler
+        // tasks every minute then moodle may not ever be able to keep up and it will
+        // block other tasks from being processed in a timely fashion.
+        // So default to 1 to be effectively not parallel by default.
         $settings->add(new admin_setting_configtext('tool_crawler/max_workers',
                                                     new lang_string('max_workers',           'tool_crawler'),
                                                     new lang_string('max_workersdesc',       'tool_crawler'),
-                                                    '10' ));
+                                                    '1' ));
 
         $settings->add(new admin_setting_configtext('tool_crawler/maxtime',
                                                     new lang_string('maxtime',           'tool_crawler'),
