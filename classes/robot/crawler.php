@@ -902,7 +902,7 @@ class crawler {
         global $DB;
 
         // Add the node URL to the queue.
-        $to = $this->mark_for_crawl($from->url, $url);
+        $to = $this->mark_for_crawl($from->url, $url, null, $from->priority);
         if ($to === false) {
             return false;
         }
