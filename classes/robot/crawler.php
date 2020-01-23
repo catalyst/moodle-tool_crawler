@@ -922,8 +922,10 @@ class crawler {
             $level = TOOL_CRAWLER_NODE_LEVEL_INDIRECT_CHILD;
         }
 
+        $priority = $from->priority ? $from->priority : TOOL_CRAWLER_PRIORITY_DEFAULT;
+
         // Add the node URL to the queue.
-        $to = $this->mark_for_crawl($from->url, $url, $from->courseid, $from->priority, $level);
+        $to = $this->mark_for_crawl($from->url, $url, $from->courseid, $priority, $level);
         if ($to === false) {
             return false;
         }
