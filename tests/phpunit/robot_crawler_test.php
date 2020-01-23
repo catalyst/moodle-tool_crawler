@@ -295,6 +295,7 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
         $node->contents = $page . $linktoexclude;
         $node->url      = $url;
         $node->id       = $insertid;
+        $node->level    = TOOL_CRAWLER_NODE_LEVEL_PARENT;
 
         $this->resetAfterTest(true);
 
@@ -310,6 +311,67 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
         self::assertFalse($found);
     }
 
+    /**
+     * Test for issue #108 - passing node crawl priority to child nodes when parsing html.
+     */
+    public function test_parse_html_priority_inheritance() {
+        global $CFG, $DB;
+
+        $parentlocalurl = 'course/view.php?id=1&section=2';
+        $directchildlocalurl = 'mod/book/view.php?id=7';
+        $indirectchildexternalurl = 'http://someexternalsite.net.au';
+        $nodes = [];
+
+        // Internal parent node.
+        $node = $this->robot->mark_for_crawl($CFG->wwwroot, $parentlocalurl, 1, TOOL_CRAWLER_PRIORITY_HIGH);
+        $node->httpcode = 200;
+        $node->mimetype = 'text/html';
+        $node->external = 0;
+        $node->contents = <<<HTML
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>Test title</title>
+	</head>
+	<body class="course-1">
+	    <a href="$CFG->wwwroot/$directchildlocalurl">Direct child node</a>
+	</body>
+</html>
+HTML;
+        // Parse the parent node, to add create the direct child node.
+        $parentnode = $this->robot->parse_html($node, $node->external);
+
+        // Internal node direct child.
+        $url = new moodle_url('/' . $directchildlocalurl);
+        $node = $DB->get_record('tool_crawler_url', array('url' => $url->raw_out()) );
+        $node->url = $CFG->wwwroot.'/'.$directchildlocalurl;
+        $node->httpcode = 200;
+        $node->mimetype = 'text/html';
+        $node->external = 0;
+        $node->contents = <<<HTML
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>Test title</title>
+	</head>
+	<body class="course-1">
+	    <a href="$indirectchildexternalurl">Indirect child node</a>
+	</body>
+</html>
+HTML;
+        // Parse the direct child, to create the indirect child node.
+        $directchildnode = $this->robot->parse_html($node, $node->external);
+        $indirectchildnode = $DB->get_record('tool_crawler_url', ['url' => $indirectchildexternalurl]);
+
+        // Direct child nodes should inherit priority from parent node (super node).
+        $this->assertEquals($parentnode->priority, $directchildnode->priority);
+        // Indirect child nodes should not inherit a high priority from parent node (super node).
+        $this->assertGreaterThanOrEqual($indirectchildnode->priority, $parentnode->priority);
+        // Indirect child nodes should not inherit a high priority from parent node (super node).
+        $this->assertGreaterThanOrEqual($indirectchildnode->priority, $directchildnode->priority);
+        // Indirect child nodes should not be able to have a high priority.
+        $this->assertLessThan(TOOL_CRAWLER_PRIORITY_HIGH, $indirectchildnode->priority);
+    }
 }
-
-

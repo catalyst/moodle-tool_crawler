@@ -916,16 +916,17 @@ class crawler {
         global $DB;
 
         // Ascertain the correct node level based on parent node level.
-        if ($from->level == TOOL_CRAWLER_NODE_LEVEL_PARENT) {
+        if (!empty($from->level) && $from->level == TOOL_CRAWLER_NODE_LEVEL_PARENT) {
             $level = TOOL_CRAWLER_NODE_LEVEL_DIRECT_CHILD;
         } else {
             $level = TOOL_CRAWLER_NODE_LEVEL_INDIRECT_CHILD;
         }
 
-        $priority = $from->priority ? $from->priority : TOOL_CRAWLER_PRIORITY_DEFAULT;
+        $priority = isset($from->priority) ? $from->priority : TOOL_CRAWLER_PRIORITY_DEFAULT;
+        $courseid = isset($from->courseid) ? $from->courseid : null;
 
         // Add the node URL to the queue.
-        $to = $this->mark_for_crawl($from->url, $url, $from->courseid, $priority, $level);
+        $to = $this->mark_for_crawl($from->url, $url, $courseid, $priority, $level);
         if ($to === false) {
             return false;
         }
