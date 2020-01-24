@@ -27,6 +27,7 @@ use tool_crawler\robot\crawler;
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
 
 require_once(__DIR__ . '/../../locallib.php');
+require_once(__DIR__ . '/../../constants.php');
 
 /**
  *  Unit tests for link crawler robot
@@ -312,18 +313,32 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
     }
 
     /**
+     * Priority provider.
+     *
+     * @return array of potential crawler priority codes.
+     */
+    public function priority_provider() {
+        return [
+            ['high' => TOOL_CRAWLER_PRIORITY_HIGH],
+            ['normal' => TOOL_CRAWLER_PRIORITY_NORMAL],
+            ['default' => TOOL_CRAWLER_PRIORITY_DEFAULT]
+        ];
+    }
+
+    /**
+     * @dataProvider priority_provider
+     *
      * Test for issue #108 - passing node crawl priority to child nodes when parsing html.
      */
-    public function test_parse_html_priority_inheritance() {
+    public function test_parse_html_priority_inheritance($parentpriority) {
         global $CFG, $DB;
 
         $parentlocalurl = 'course/view.php?id=1&section=2';
         $directchildlocalurl = 'mod/book/view.php?id=7';
         $indirectchildexternalurl = 'http://someexternalsite.net.au';
-        $nodes = [];
 
         // Internal parent node.
-        $node = $this->robot->mark_for_crawl($CFG->wwwroot, $parentlocalurl, 1, TOOL_CRAWLER_PRIORITY_HIGH);
+        $node = $this->robot->mark_for_crawl($CFG->wwwroot, $parentlocalurl, 1, $parentpriority);
         $node->httpcode = 200;
         $node->mimetype = 'text/html';
         $node->external = 0;
@@ -339,7 +354,7 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
 	</body>
 </html>
 HTML;
-        // Parse the parent node, to add create the direct child node.
+        // Parse the parent node, to create the direct child node.
         $parentnode = $this->robot->parse_html($node, $node->external);
 
         // Internal node direct child.
@@ -367,9 +382,9 @@ HTML;
 
         // Direct child nodes should inherit priority from parent node (super node).
         $this->assertEquals($parentnode->priority, $directchildnode->priority);
-        // Indirect child nodes should not inherit a high priority from parent node (super node).
+        // Indirect child nodes should not inherit priority from parent node (super node).
         $this->assertGreaterThanOrEqual($indirectchildnode->priority, $parentnode->priority);
-        // Indirect child nodes should not inherit a high priority from parent node (super node).
+        // Indirect child nodes should not inherit priority from direct child node.
         $this->assertGreaterThanOrEqual($indirectchildnode->priority, $directchildnode->priority);
         // Indirect child nodes should not be able to have a high priority.
         $this->assertLessThan(TOOL_CRAWLER_PRIORITY_HIGH, $indirectchildnode->priority);
