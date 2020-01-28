@@ -93,3 +93,12 @@ define('TOOL_CRAWLER_NETWORKSTRAIN_WASTEFUL', 'wasteful');
 define('TOOL_CRAWLER_PRIORITY_DEFAULT', 0);
 define('TOOL_CRAWLER_PRIORITY_NORMAL', 50);
 define('TOOL_CRAWLER_PRIORITY_HIGH', 100);
+
+/**
+ * Node level assigned to each node based on whether it is the parent node, or
+ * a child node discovered within a parent when crawling, or any child of a child
+ * node (or even further removed).
+ */
+define('TOOL_CRAWLER_NODE_LEVEL_PARENT', 2);
+define('TOOL_CRAWLER_NODE_LEVEL_DIRECT_CHILD', 1);
+define('TOOL_CRAWLER_NODE_LEVEL_INDIRECT_CHILD', 0);

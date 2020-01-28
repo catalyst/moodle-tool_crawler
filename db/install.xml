@@ -27,6 +27,7 @@
         <FIELD NAME="httpmsg" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="errormsg" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="priority" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" DEFAULT="0"/>
+        <FIELD NAME="level" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="2" SEQUENCE="false" COMMENT="Node level, 2 for parent node, 1 for direct child and 0 for subsequent children."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
