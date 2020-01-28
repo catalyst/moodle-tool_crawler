@@ -306,11 +306,19 @@ class crawler {
      * @return object|boolean The node record if the resource pointed to by the URL can and should be considered; or `false` if the
      *     URL is invalid or excluded.
      */
-    public function mark_for_crawl($baseurl, $url, $courseid = null, $priority = TOOL_CRAWLER_PRIORITY_DEFAULT) {
+    public function mark_for_crawl($baseurl, $url, $courseid = null, $priority = TOOL_CRAWLER_PRIORITY_DEFAULT,
+            $level = TOOL_CRAWLER_NODE_LEVEL_PARENT) {
 
         global $DB, $CFG;
 
         $url = $this->absolute_url($baseurl, $url);
+
+        // Strip priority from indirect child nodes. Only parent and direct children
+        // of parent nodes have priority applied to avoid recursively applying priority
+        // to all ancestors of a parent node.
+        if ($level == TOOL_CRAWLER_NODE_LEVEL_INDIRECT_CHILD) {
+            $priority = TOOL_CRAWLER_PRIORITY_DEFAULT;
+        }
 
         // Filter out non http protocols like mailto:cqulibrary@cqu.edu.au etc.
         $bits = parse_url($url);
@@ -420,6 +428,7 @@ class crawler {
             $node->external   = self::is_external($url);
             $node->needscrawl = time();
             $node->priority = $priority;
+            $node->level = $level;
 
             if (isset($courseid)) {
                 $node->courseid = $courseid;
@@ -437,6 +446,11 @@ class crawler {
                 // Set the priority again, in case marking node a different priority.
                 $node->priority = $priority;
                 $needsupdating = true;
+            }
+            if ($node->level != $level) {
+                // Set the level again, in case this node has been seen again at a different
+                // level, to avoid reprocessing.
+                $node->level = $level;
             }
             if (isset($courseid)) {
                 $node->courseid = $courseid;
@@ -901,8 +915,18 @@ class crawler {
 
         global $DB;
 
+        // Ascertain the correct node level based on parent node level.
+        if (!empty($from->level) && $from->level == TOOL_CRAWLER_NODE_LEVEL_PARENT) {
+            $level = TOOL_CRAWLER_NODE_LEVEL_DIRECT_CHILD;
+        } else {
+            $level = TOOL_CRAWLER_NODE_LEVEL_INDIRECT_CHILD;
+        }
+
+        $priority = isset($from->priority) ? $from->priority : TOOL_CRAWLER_PRIORITY_DEFAULT;
+        $courseid = isset($from->courseid) ? $from->courseid : null;
+
         // Add the node URL to the queue.
-        $to = $this->mark_for_crawl($from->url, $url);
+        $to = $this->mark_for_crawl($from->url, $url, $courseid, $priority, $level);
         if ($to === false) {
             return false;
         }

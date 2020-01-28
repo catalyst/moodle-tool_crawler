@@ -94,5 +94,20 @@ function xmldb_tool_crawler_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2019100300, 'tool', 'crawler');
     }
 
+    if ($oldversion < 2020012300) {
+
+        // Define field level to be added to tool_crawler_url.
+        $table = new xmldb_table('tool_crawler_url');
+        $field = new xmldb_field('level', XMLDB_TYPE_INTEGER, '1', null, null, null, '2', 'priority');
+
+        // Conditionally launch add field level.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Crawler savepoint reached.
+        upgrade_plugin_savepoint(true, 2020012300, 'tool', 'crawler');
+    }
+
     return true;
 }
