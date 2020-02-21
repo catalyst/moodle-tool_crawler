@@ -165,7 +165,8 @@ if ($report == 'broken') {
                                           a.courseid,
                                           a.priority,
                                           c.shortname $sql
-                                 ORDER BY a.needscrawl ASC,
+                                 ORDER BY a.priority DESC,
+                                          a.needscrawl ASC,
                                           a.id ASC",
                                           $opts,
                                           $start,

@@ -22,6 +22,11 @@
  */
 namespace tool_crawler\event;
 
+use context;
+use core\event\course_module_updated;
+use core\event\course_updated;
+use tool_crawler\robot\crawler;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -33,12 +38,11 @@ class observer {
      *
      * @param \core\event\course_updated $event
      */
-    public static function course_updated(\core\event\course_updated $event) {
+    public static function course_updated(course_updated $event) {
         global $CFG;
-
-        $courseid = $event->objectid;
-        $crawler = new \tool_crawler\robot\crawler();
-        return $crawler->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
+        $crawler = new crawler();
+        $localurl = self::get_url_from_contextid($event->contextid);
+        return $crawler->mark_for_crawl($CFG->wwwroot, $localurl, $event->objectid, TOOL_CRAWLER_PRIORITY_HIGH);
     }
     /**
      * When a course_module is updated, queue up that page for recrawling again immediately
@@ -46,13 +50,20 @@ class observer {
      * @param \core\event\course_module_updated $event
      * @return boolean
      */
-    public static function course_module_updated(\core\event\course_module_updated $event) {
+    public static function course_module_updated(course_module_updated $event) {
         global $CFG;
-
-        $cmid = $event->objectid;
-        $crawler = new \tool_crawler\robot\crawler();
-        // Get the name of module to build the correct url.
-        $modulename = $event->get_data()['other']['modulename'];
-        return $crawler->mark_for_crawl($CFG->wwwroot . '/', 'mod/' . $modulename . '/view.php?id=' . $cmid);
+        $crawler = new crawler();
+        $localurl = self::get_url_from_contextid($event->contextid);
+        return $crawler->mark_for_crawl($CFG->wwwroot, $localurl, null, TOOL_CRAWLER_PRIORITY_HIGH);
+    }
+    /**
+     * Get the local url from a context id
+     *
+     * @param integer $contextid
+     * @return string
+     */
+    public static function get_url_from_contextid($contextid) {
+        $context = context::instance_by_id($contextid, IGNORE_MISSING);
+        return $context->get_url()->out_as_local_url();
     }
 }

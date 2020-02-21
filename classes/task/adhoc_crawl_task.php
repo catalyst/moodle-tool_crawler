@@ -14,24 +14,44 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
- * Defines the version of tool_crawler
+ * tool_crawler
  *
  * @package    tool_crawler
- * @author     Brendan Heywood <brendan@catalyst-au.net>
- * @copyright  Catalyst IT
+ * @copyright  2019 Kristian Ringer <kristian.ringer@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace tool_crawler\task;
+
 defined('MOODLE_INTERNAL') || die();
 
+require_once("$CFG->dirroot/admin/tool/crawler/lib.php");
 
-$plugin->version   = 2020012300;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->release   = 2020012300;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2016021800;        // Requires this Moodle version.
-$plugin->component = 'tool_crawler'; // To check on upgrade, that module sits in correct place.
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->dependencies = array(
-    'auth_basic' => ANY_VERSION,
-);
+/**
+ * adhoc_crawl_task
+ * Crawl the queue
+ *
+ * @package    tool_crawler
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class adhoc_crawl_task extends \core\task\adhoc_task {
+    /**
+     * Get task name
+     */
+    public function get_name() {
+        return get_string('adhoc_crawl_task', 'tool_crawler');
+    }
+
+    /**
+     * Execute task
+     */
+    public function execute() {
+        if (\tool_crawler\robot\crawler::get_config()->disablebot === '1') {
+            return;
+        }
+        tool_crawler_crawl();
+    }
+}
+
+

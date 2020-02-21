@@ -27,6 +27,7 @@ use tool_crawler\robot\crawler;
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
 
 require_once(__DIR__ . '/../../locallib.php');
+require_once(__DIR__ . '/../../constants.php');
 
 /**
  *  Unit tests for link crawler robot
@@ -257,6 +258,135 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
         self::assertRegExp($expectedpattern, $page);
     }
 
+    /**
+     * Test for Issue #92: specified dom elements in the config should be excluded.
+     */
+    public function test_should_be_excluded() {
+        global $DB;
+
+        $url = 'http://crawler.test/course/view.php?id=1&section=2';
+        $node = [
+            'url' => $url,
+            'external' => 0,
+            'createdate' => strtotime("03-01-2020 10:00:00"),
+            'lastcrawled' => strtotime("31-12-2019 11:20:00"),
+            'needscrawl' => strtotime("01-01-2020 10:00:00"),
+            'httpcode' => 200,
+            'mimetype' => 'text/html',
+            'title' => 'Crawler Parse Test',
+            'downloadduration' => 0.23,
+            'filesize' => 44003,
+            'filesizestatus' => TOOL_CRAWLER_FILESIZE_EXACT,
+            'courseid' => 1,
+            'contextid' => 1,
+            'cmid' => null,
+            'ignoreduserid' => null,
+            'ignoredtime' => null,
+            'httpmsg' => 'OK',
+            'errormsg' => null
+        ];
+        $insertid = $DB->insert_record('tool_crawler_url', $node);
+
+        $this->setAdminUser();
+        $page = tool_crawler_url_create_page($url);
+
+        $linktoexclude = '<div class="exclude"><a href="http://crawler.test/foo/bar.php"></div>';
+
+        $node = new stdClass();
+        $node->contents = $page . $linktoexclude;
+        $node->url      = $url;
+        $node->id       = $insertid;
+        $node->level    = TOOL_CRAWLER_NODE_LEVEL_PARENT;
+
+        $this->resetAfterTest(true);
+
+        set_config('excludemdldom',
+            ".block.block_settings\n.block.block_book_toc\n.block.block_calendar_month\n" .
+            ".block.block_navigation\n.block.block_cqu_assessment\n.exclude",
+            'tool_crawler');
+
+        $this->robot->parse_html($node, false);
+
+        // URL should not exist for crawling.
+        $found = $DB->record_exists('tool_crawler_url', array('url' => 'http://crawler.test/foo/bar.php') );
+        self::assertFalse($found);
+    }
+
+    /**
+     * Priority provider.
+     *
+     * @return array of potential crawler priority codes.
+     */
+    public function priority_provider() {
+        return [
+            ['high' => TOOL_CRAWLER_PRIORITY_HIGH],
+            ['normal' => TOOL_CRAWLER_PRIORITY_NORMAL],
+            ['default' => TOOL_CRAWLER_PRIORITY_DEFAULT]
+        ];
+    }
+
+    /**
+     * @dataProvider priority_provider
+     *
+     * Test for issue #108 - passing node crawl priority to child nodes when parsing html.
+     */
+    public function test_parse_html_priority_inheritance($parentpriority) {
+        global $CFG, $DB;
+
+        $parentlocalurl = 'course/view.php?id=1&section=2';
+        $directchildlocalurl = 'mod/book/view.php?id=7';
+        $indirectchildexternalurl = 'http://someexternalsite.net.au';
+
+        // Internal parent node.
+        $node = $this->robot->mark_for_crawl($CFG->wwwroot, $parentlocalurl, 1, $parentpriority);
+        $node->httpcode = 200;
+        $node->mimetype = 'text/html';
+        $node->external = 0;
+        $node->contents = <<<HTML
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>Test title</title>
+	</head>
+	<body class="course-1">
+	    <a href="$CFG->wwwroot/$directchildlocalurl">Direct child node</a>
+	</body>
+</html>
+HTML;
+        // Parse the parent node, to create the direct child node.
+        $parentnode = $this->robot->parse_html($node, $node->external);
+
+        // Internal node direct child.
+        $url = new moodle_url('/' . $directchildlocalurl);
+        $node = $DB->get_record('tool_crawler_url', array('url' => $url->raw_out()) );
+        $node->url = $CFG->wwwroot.'/'.$directchildlocalurl;
+        $node->httpcode = 200;
+        $node->mimetype = 'text/html';
+        $node->external = 0;
+        $node->contents = <<<HTML
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>Test title</title>
+	</head>
+	<body class="course-1">
+	    <a href="$indirectchildexternalurl">Indirect child node</a>
+	</body>
+</html>
+HTML;
+        // Parse the direct child, to create the indirect child node.
+        $directchildnode = $this->robot->parse_html($node, $node->external);
+        $indirectchildnode = $DB->get_record('tool_crawler_url', ['url' => $indirectchildexternalurl]);
+
+        // Direct child nodes should inherit priority from parent node (super node).
+        $this->assertEquals($parentnode->priority, $directchildnode->priority);
+        // Indirect child nodes should not inherit priority from parent node (super node).
+        $this->assertGreaterThanOrEqual($indirectchildnode->priority, $parentnode->priority);
+        // Indirect child nodes should not inherit priority from direct child node.
+        $this->assertGreaterThanOrEqual($indirectchildnode->priority, $directchildnode->priority);
+        // Indirect child nodes should not be able to have a high priority.
+        $this->assertLessThan(TOOL_CRAWLER_PRIORITY_HIGH, $indirectchildnode->priority);
+    }
 }
-
-
