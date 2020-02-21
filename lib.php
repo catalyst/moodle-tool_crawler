@@ -22,6 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_crawler\local\url;
+use tool_crawler\robot\crawler;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/constants.php');
@@ -39,7 +42,8 @@ function tool_crawler_crawl($verbose = false) {
 
     global $CFG, $DB;
 
-    $robot = new \tool_crawler\robot\crawler();
+    $robot = new crawler();
+    $url = new url();
     $config = $robot::get_config();
     $crawlstart = $config->crawlstart;
     $crawlend   = $config->crawlend;
@@ -83,7 +87,7 @@ function tool_crawler_crawl($verbose = false) {
         $history->endcrawl = time();
         set_config('crawlend', time(), 'tool_crawler');
     }
-    $history->urls = $robot->get_processed();
+    $history->urls = $url->get_processed();
     $history->links = $robot->get_num_links();
     $history->broken = $robot->get_num_broken_urls();
     $history->oversize = $robot->get_num_oversize();

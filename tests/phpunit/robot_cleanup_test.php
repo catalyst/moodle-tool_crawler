@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_crawler\local\url;
+
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
 
 /**
@@ -54,8 +56,8 @@ class tool_crawler_robot_cleanup_test extends advanced_testcase {
         $dataobjects = array(
             array(
                 'url' => 'http://cqu.ubox001.com/course/index.php',
-                'external' => 0,
-                'createdate' => strtotime("16-05-2016 10:00:00"),
+                'externalurl' => 0,
+                'timecreated' => strtotime("16-05-2016 10:00:00"),
                 'lastcrawled' => strtotime("16-05-2016 11:20:00"),
                 'needscrawl' => strtotime("17-05-2017 10:00:00"),
                 'httpcode' => 200,
@@ -75,8 +77,8 @@ class tool_crawler_robot_cleanup_test extends advanced_testcase {
             ),
             array(
                 'url' => 'http://moodle.org/',
-                'external' => 1,
-                'createdate' => strtotime("15-05-2016 10:00:00"),
+                'externalurl' => 1,
+                'timecreated' => strtotime("15-05-2016 10:00:00"),
                 'lastcrawled' => strtotime("16-05-2016 14:49:59"),
                 'needscrawl' => strtotime("17-05-2017 10:00:00"),
                 'httpcode' => 200,
@@ -96,8 +98,8 @@ class tool_crawler_robot_cleanup_test extends advanced_testcase {
             ),
             array(
                 'url' => 'http://cqu.ubox001.com/course/index.php?categoryid=1',
-                'external' => 0,
-                'createdate' => strtotime("16-05-2016 10:00:00"),
+                'externalurl' => 0,
+                'timecreated' => strtotime("16-05-2016 10:00:00"),
                 'lastcrawled' => strtotime("16-05-2016 14:50:01"),
                 'needscrawl' => strtotime("17-05-2017 10:00:00"),
                 'httpcode' => 200,
@@ -118,7 +120,10 @@ class tool_crawler_robot_cleanup_test extends advanced_testcase {
         );
 
         try {
-            $DB->insert_records('tool_crawler_url', $dataobjects);
+            foreach ($dataobjects as $dataobject) {
+                $persistent = new url(0, (object)$dataobject);
+                $persistent->create();
+            }
         } catch (Exception $e) {
             echo 'Caught exception: ', $e->getMessage(), "\n";
         }

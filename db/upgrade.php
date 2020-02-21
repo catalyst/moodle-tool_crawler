@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_crawler\local\url;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/../constants.php');
@@ -107,6 +109,59 @@ function xmldb_tool_crawler_upgrade($oldversion) {
 
         // Crawler savepoint reached.
         upgrade_plugin_savepoint(true, 2020012300, 'tool', 'crawler');
+    }
+
+    if ($oldversion < 2020031800) {
+        // Add persistent API fields to the tool_crawler_url table.
+        $table = new xmldb_table('tool_crawler_url');
+
+        // Use existing createdate field as timecreated instead of creating a new timecreated field.
+        $field = new xmldb_field('createdate', XMLDB_TYPE_INTEGER, '10', null, true, false);
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'timecreated');
+        }
+        // Add new urlhash field to the url table and index it.
+        $field = new xmldb_field('urlhash', XMLDB_TYPE_CHAR, '255', null, true, false);
+        $index = new xmldb_index('urlhash', XMLDB_INDEX_NOTUNIQUE, array('urlhash'));
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        // Before indexing, populate the urlhash field with hashes of the currently existing urls.
+        core_php_time_limit::raise();
+        $urlrecords = $DB->get_recordset('tool_crawler_url');
+        foreach ($urlrecords as $urlrecord) {
+            $urlrecord->urlhash = url::hash_url($urlrecord->url);
+            $DB->update_record('tool_crawler_url', $urlrecord);
+        }
+
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        $field = new xmldb_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, false, false);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $field = new xmldb_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, false, false);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // level and external are reserved words in mssql.
+        $table = new xmldb_table('tool_crawler_url');
+        $field = new xmldb_field('level', XMLDB_TYPE_INTEGER, '1', null, null, null, '2', 'priority');
+
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'urllevel');
+        }
+        $field = new xmldb_field('external', XMLDB_TYPE_INTEGER);
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'externalurl');
+        }
+
+        // Crawler savepoint reached.
+        upgrade_plugin_savepoint(true, 2020031800, 'tool', 'crawler');
     }
 
     return true;

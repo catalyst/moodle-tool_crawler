@@ -34,6 +34,7 @@ echo $OUTPUT->header();
 $action         = optional_param('action', '', PARAM_ALPHANUMEXT);
 
 $robot = new \tool_crawler\robot\crawler();
+$url = new \tool_crawler\local\url();
 $config = $robot::get_config();
 
 if ($action == 'makebot') {
@@ -46,15 +47,15 @@ $crawlstart     = $config->crawlstart;
 $crawlend       = $config->crawlend;
 $crawltick      = $config->crawltick;
 $boterror       = $robot->is_bot_valid();
-$queuesize      = $robot->get_queue_size();
-$recent         = $robot->get_processed();
+$queuesize      = $url->get_queue_size();
+$recent         = $url->get_processed();
 $numlinks       = $robot->get_num_links();
 $oldqueuesize   = $robot->get_old_queue_size();
 $numurlsbroken  = $robot->get_num_broken_urls();
 $numpageswithurlsbroken = $robot->get_pages_withbroken_links();
 $oversize       = $robot->get_num_oversize();
 
-if ($queuesize == 0) {
+if ($queuesize == 0 || $recent == 0) {
     $progress = 1;
 } else if ($oldqueuesize == 0) {
     $progress = $recent / ($recent + $queuesize);
