@@ -44,10 +44,6 @@ function tool_crawler_crawl($verbose = false) {
     $crawlstart = $config->crawlstart;
     $crawlend   = $config->crawlend;
 
-    if ($config->uselogs == 1) {
-        $recentcourses = $robot->get_recentcourses();
-    }
-
     // If we need to start a new crawl, add new items to the queue.
     if (!$crawlstart || $crawlstart <= $crawlend) {
 
@@ -55,6 +51,7 @@ function tool_crawler_crawl($verbose = false) {
         set_config('crawlstart', $start, 'tool_crawler');
 
         if ($config->uselogs == 1) {
+            $recentcourses = $robot->get_recentcourses();
             foreach ($recentcourses as $courseid) {
                 $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
             }
@@ -72,25 +69,6 @@ function tool_crawler_crawl($verbose = false) {
         $history->id = $DB->insert_record('tool_crawler_history', $history);
     } else {
         $history = $DB->get_record('tool_crawler_history', array('startcrawl' => $crawlstart));
-    }
-
-    // Before beginning to process queue, add any new courses to the queue.
-    if ($config->uselogs == 1) {
-
-        $coursesinurltableobject = $DB->get_records_list('tool_crawler_url', 'courseid', $recentcourses, '', 'DISTINCT courseid');
-
-        $coursesinurltable = [];
-        foreach ($coursesinurltableobject as $course) {
-            array_push($coursesinurltable, $course->courseid);
-        }
-
-        foreach ($recentcourses as $courseid) {
-
-            // If a course from recent activity is not in the queue, add it.
-            if (!in_array($courseid, $coursesinurltable)) {
-                $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
-            }
-        }
     }
 
     $cronstart = time();
