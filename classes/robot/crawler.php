@@ -30,6 +30,7 @@ require_once($CFG->dirroot.'/admin/tool/crawler/lib.php');
 require_once($CFG->dirroot.'/admin/tool/crawler/locallib.php');
 require_once($CFG->dirroot.'/admin/tool/crawler/extlib/simple_html_dom.php');
 require_once($CFG->dirroot.'/user/lib.php');
+require_once($CFG->dirroot.'/lib/xhprof/xhprof_moodle.php');
 
 /**
  * How many bytes to download at most per linked HTML document stored on external hosts.
@@ -329,23 +330,17 @@ class crawler {
             return false;
         }
 
-        $bad = 0;
+        $isexcluded = false;
         // If this URL is external then check the ext whitelist.
         if (!self::is_external($url)) {
-            $excludes = str_replace("\r", '', self::get_config()->excludemdlurl);
+            $excludes = str_replace(PHP_EOL, ',', self::get_config()->excludemdlurl);
         } else {
-            $excludes = str_replace("\r", '', self::get_config()->excludeexturl);
+            $excludes = str_replace(PHP_EOL, ',', self::get_config()->excludeexturl);
         }
-        $excludes = explode("\n", $excludes);
-        if (count($excludes) > 0 && $excludes[0]) {
-            foreach ($excludes as $exclude) {
-                if (strpos($url, $exclude) > 0 ) {
-                    $bad = 1;
-                    break;
-                }
-            }
-        }
-        if ($bad) {
+
+        $isexcluded = profiling_string_matches($url, $excludes);
+
+        if ($isexcluded) {
             return false;
         }
 
@@ -397,22 +392,10 @@ class crawler {
             }
         }
         if ($shortname !== '' && $shortname !== null) {
-            $bad = 0;
+            $isexcluded = false;
             $excludes = str_replace("\r", '', self::get_config()->excludecourses);
-            $excludes = explode("\n", $excludes);
-            if (count($excludes) > 0) {
-                foreach ($excludes as $exclude) {
-                    $exclude = trim($exclude);
-                    if ($exclude == '') {
-                        continue;
-                    }
-                    if (strpos($shortname, $exclude) !== false ) {
-                        $bad = 1;
-                        break;
-                    }
-                }
-            }
-            if ($bad) {
+            $isexcluded = profiling_string_matches($shortname, $excludes);
+            if ($isexcluded) {
                 return false;
             }
         }

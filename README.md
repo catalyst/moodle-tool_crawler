@@ -6,6 +6,7 @@
 * [Installation](#installation)
 * [Configuration](#configuration)
 * [Testing](#testing)
+* [Debugging](#debugging)
 * [Reports](#reports)
 * [Support](#support)
 * [Warm thanks](#warm-thanks)
@@ -184,12 +185,20 @@ and
 
 /admin/tool/crawler/report.php?report=recent
 
+# Debugging
+
+You can also run link crawler on given page by passing url. You might need to Reset Progress if its still running from Administration > Reports > Link crawler -> Robot status
+
+```
+php admin/tool/crawler/cli/crawl-as.php --url=http://localhost/
+```
+
 # Reports
 
 4 new admin reports are available for showing the current crawl status, broken
 links and URLs and slow links. They are available under:
 
-Administration > Reports > Link checker
+Administration > Reports > Link crawler
 
 # Support
 
