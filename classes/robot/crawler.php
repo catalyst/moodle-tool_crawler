@@ -333,9 +333,9 @@ class crawler {
         $isexcluded = false;
         // If this URL is external then check the ext whitelist.
         if (!self::is_external($url)) {
-            $excludes = str_replace("\r", '', self::get_config()->excludemdlurl);
+            $excludes = str_replace(PHP_EOL, ',', self::get_config()->excludemdlurl);
         } else {
-            $excludes = str_replace("\r", '', self::get_config()->excludeexturl);
+            $excludes = str_replace(PHP_EOL, ',', self::get_config()->excludemdlurl);
         }
 
         $isexcluded = profiling_string_matches($url, $excludes);

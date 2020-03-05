@@ -6,6 +6,7 @@
 * [Installation](#installation)
 * [Configuration](#configuration)
 * [Testing](#testing)
+* [Debugging](#debugging)
 * [Reports](#reports)
 * [Support](#support)
 * [Warm thanks](#warm-thanks)
@@ -183,6 +184,14 @@ cron cycles, you can watch it's progress in
 and
 
 /admin/tool/crawler/report.php?report=recent
+
+# Debugging
+
+You can also run link crawler on given page by passing url. You might need to Reset Progress if its still running from Administration > Reports > Link crawler -> Robot status
+
+```
+php admin/tool/crawler/cli/crawl-as.php --url=http://localhost/
+```
 
 # Reports
 
