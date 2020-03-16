@@ -389,4 +389,42 @@ HTML;
         // Indirect child nodes should not be able to have a high priority.
         $this->assertLessThan(TOOL_CRAWLER_PRIORITY_HIGH, $indirectchildnode->priority);
     }
+
+    /**
+     * Test for Issue #120:Specified external urls should be excluded.
+     */
+    public function should_be_crawled_provider() {
+        return [
+            ['http://moodle.org/', false],
+            ['http://validator.w3.org/', false],
+            ['https://www.facebook.com/crawler_au', true],
+            ['/moodle/course/view.php?id=1&section=2', true],
+            ['/moodle/admin/settings.php?section=tool_crawler', false],
+            ['/moodle/admin', false],
+        ];
+    }
+
+    /**
+     * Test will given url be crawled or not
+     *
+     * @dataProvider should_be_crawled_provider
+     * @param   string $url
+     * @param   bool   $expected
+     */
+    public function test_should_be_crawled($url, $expected) {
+        global $CFG;
+        $baseurl = 'https://www.example.com/moodle';
+        $this->resetAfterTest(true);
+
+        $urltoexclude = "http://moodle.org/\nhttp://validator.w3.org/";
+        set_config('excludeexturl', $urltoexclude, 'tool_crawler');
+
+        $urlexcludemdl = "/admin";
+        set_config('excludemdlurl', $urlexcludemdl, 'tool_crawler');
+
+        $result = $this->robot->mark_for_crawl($baseurl, $url);
+        $result = (is_object($result)) ? true : $result;
+
+        self::assertSame($result, $expected);
+    }
 }

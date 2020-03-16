@@ -335,7 +335,7 @@ class crawler {
         if (!self::is_external($url)) {
             $excludes = str_replace(PHP_EOL, ',', self::get_config()->excludemdlurl);
         } else {
-            $excludes = str_replace(PHP_EOL, ',', self::get_config()->excludemdlurl);
+            $excludes = str_replace(PHP_EOL, ',', self::get_config()->excludeexturl);
         }
 
         $isexcluded = profiling_string_matches($url, $excludes);
