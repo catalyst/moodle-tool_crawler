@@ -155,7 +155,7 @@ function xmldb_tool_crawler_upgrade($oldversion) {
         if ($dbman->field_exists($table, $field)) {
             $dbman->rename_field($table, $field, 'urllevel');
         }
-        $field = new xmldb_field('external', XMLDB_TYPE_INTEGER);
+        $field = new xmldb_field('external', XMLDB_TYPE_INTEGER, '1');
         if ($dbman->field_exists($table, $field)) {
             $dbman->rename_field($table, $field, 'externalurl');
         }
