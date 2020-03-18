@@ -569,9 +569,17 @@ class crawler {
                 continue;
             }
 
-            $this->crawl($node, $verbose);
-
-            $lock->release();
+            // Wrap crawl in a try-catch-finally to ensure lock is released.
+            // Without this, if crawl() throws, the underlying exception never
+            // gets reported because Moodle complains about the improper use of
+            // the lock.
+            try {
+                $this->crawl($node, $verbose);
+            } catch (\Throwable $e) {
+                throw $e;
+            } finally {
+                $lock->release();
+            }
 
             $hastime = time() < $cronstop;
         }
