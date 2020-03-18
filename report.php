@@ -72,8 +72,8 @@ require('tabs.php');
 echo $tabs;
 
 if ($retryid) {
-    $robot = new \tool_crawler\robot\crawler();
-    $robot->reset_for_recrawl($retryid);
+    $persistent = new \tool_crawler\local\url();
+    $persistent->reset_for_recrawl($retryid);
 }
 
 $datetimeformat = get_string('strftimerecentsecondshtml', 'tool_crawler');

@@ -23,6 +23,7 @@
  */
 
 namespace tool_crawler\robot;
+use tool_crawler\local\url;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -242,61 +243,6 @@ class crawler {
         return (strncmp($url, $CFG->wwwroot . '/', $mdlw + 1) != 0);
     }
 
-
-    /**
-     * Reset a node to be recrawled
-     *
-     * @param integer $nodeid node id
-     */
-    public function reset_for_recrawl($nodeid) {
-
-        global $DB;
-
-        if ($DB->get_record('tool_crawler_url', array('id' => $nodeid))) {
-
-            $time = self::get_config()->crawlstart;
-
-            // Mark all nodes that link to this as needing a recrawl.
-            if ($DB->get_dbfamily() == 'mysql') {
-                $DB->execute("UPDATE {tool_crawler_url} u
-                          INNER JOIN {tool_crawler_edge} e ON e.a = u.id
-                                 SET needscrawl = ?,
-                                     lastcrawled = null,
-                                     priority = ?
-                               WHERE e.b = ?", [$time, TOOL_CRAWLER_PRIORITY_HIGH, $nodeid]);
-            } else {
-                $DB->execute("UPDATE {tool_crawler_url} u
-                                 SET needscrawl = ?,
-                                     lastcrawled = null,
-                                     priority = ?
-                                FROM {tool_crawler_edge} e
-                               WHERE e.a = u.id
-                                 AND e.b = ?", [$time, TOOL_CRAWLER_PRIORITY_HIGH, $nodeid]);
-            }
-
-            // Delete all edges that point to this node.
-            $DB->delete_records('tool_crawler_edge', ['b' => $nodeid]);
-            // Delete the 'to' node as it may be completely wrong.
-            $DB->delete_records('tool_crawler_url', array('id' => $nodeid) );
-
-        }
-    }
-
-    /**
-     * Many URLs are in the queue now (more will probably be added)
-     *
-     * @return size of queue
-     */
-    public function get_queue_size() {
-        global $DB;
-
-        return $DB->get_field_sql("
-                SELECT COUNT(*)
-                  FROM {tool_crawler_url}
-                 WHERE lastcrawled IS NULL
-                    OR lastcrawled < needscrawl");
-    }
-
     /**
      * Adds a URL to the queue for crawling
      *
@@ -401,65 +347,53 @@ class crawler {
         }
 
         // Find the current node in the queue.
-        $node = $DB->get_record('tool_crawler_url', array('url' => $url) );
+        $node = url::get_record(['urlhash' => url::hash_url($url)]);
 
         if (!$node) {
             // If not in the queue then add it.
             $node = (object) array();
-            $node->createdate = time();
+            $node->timecreated = time();
             $node->url        = $url;
-            $node->external   = self::is_external($url);
+            $node->externalurl = self::is_external($url);
             $node->needscrawl = time();
             $node->priority = $priority;
-            $node->level = $level;
+            $node->urllevel = $level;
 
             if (isset($courseid)) {
                 $node->courseid = $courseid;
             }
-
-            $node->id = $DB->insert_record('tool_crawler_url', $node);
+            $node = new url(0, $node);
+            $node->create();
         } else {
             $needsupdating = false;
-            if ($node->needscrawl < self::get_config()->crawlstart) {
+            if ($node->get('needscrawl') < self::get_config()->crawlstart) {
                 // Push this node to the end of the queue.
-                $node->needscrawl = time();
+                $node->set('needscrawl', time());
                 $needsupdating = true;
             }
-            if ($node->priority != $priority) {
+            if ($node->get('priority') != $priority) {
                 // Set the priority again, in case marking node a different priority.
-                $node->priority = $priority;
+                $node->set('priority', $priority);
                 $needsupdating = true;
             }
-            if ($node->level != $level) {
+            if ($node->get('urllevel') != $level) {
                 // Set the level again, in case this node has been seen again at a different
                 // level, to avoid reprocessing.
-                $node->level = $level;
+                $node->set('urllevel', $level);
+                $needsupdating = true;
             }
             if (isset($courseid)) {
-                $node->courseid = $courseid;
+                $node->set('courseid', $courseid);
                 $needsupdating = true;
             }
             if ($needsupdating) {
-                $DB->update_record('tool_crawler_url', $node);
+                $node->update();
             }
         }
-        return $node;
+        // Get all the properties of $node in an stdClass.
+        return $node->to_record();
     }
 
-    /**
-     * How many URLs have been processed off the queue
-     *
-     * @return size of processes list
-     */
-    public function get_processed() {
-        global $DB;
-
-        return $DB->get_field_sql("
-                SELECT COUNT(*)
-                  FROM {tool_crawler_url}
-                 WHERE lastcrawled >= ?",
-                array(self::get_config()->crawlstart));
-    }
 
     /**
      * How many links have been processed off the queue
@@ -527,7 +461,7 @@ class crawler {
     /**
      * How many URLs have been processed off the previous queue
      *
-     * @return size of old processes list
+     * @return int size of old processes list
      */
     public function get_old_queue_size() {
         global $DB;
@@ -553,6 +487,7 @@ class crawler {
         global $DB;
         $config = $this::get_config();
 
+        $recentcourses = false;
         if ($config->uselogs == 1) {
             $recentcourses = $this->get_recentcourses();
         }
@@ -597,7 +532,8 @@ class crawler {
                 // Will not show up in queue, but still keeps the data.
                 // in case the course becomes recently active in the future.
                 $node->needscrawl = $node->lastcrawled;
-                $DB->update_record('tool_crawler_url', $node);
+                $persistent = new url(0, $node);
+                $persistent->update();
                 $lock->release();
                 continue;
             }
@@ -622,9 +558,6 @@ class crawler {
      * @param boolean $verbose show debugging
      */
     public function crawl($node, $verbose = false) {
-
-        global $DB;
-
         if ($verbose) {
             echo "Crawling $node->url ";
         }
@@ -655,7 +588,7 @@ class crawler {
                 // Look for new links on this page from the html.
                 // Insert new links into tool_crawler_edge, and into tool_crawler_url table.
                 // Find the course, cm, and context of where we are for the main scraped URL.
-                $this->parse_html($result, $result->external, $verbose);
+                $this->parse_html($result, $result->externalurl, $verbose);
             } else {
                 if ($verbose) {
                     echo "NOT html\n";
@@ -686,8 +619,10 @@ class crawler {
         }
 
         // Wait until we've finished processing the links before we save.
-        $DB->update_record('tool_crawler_url', $result);
-
+        // Remove contents before updating - not saved in url table
+        unset($result->contents);
+        $persistent = new url(0, $result);
+        $persistent->update();
     }
 
     /**
@@ -892,14 +827,14 @@ class crawler {
      * @param string $url current URL
      * @param string $text the link text label
      * @param string $idattr the id attribute of it or it's nearest ancestor
-     * @return the new URL node or false
+     * @return string|false the new URL node or false
      */
     private function link_from_node_to_url($from, $url, $text, $idattr) {
 
         global $DB;
 
         // Ascertain the correct node level based on parent node level.
-        if (!empty($from->level) && $from->level == TOOL_CRAWLER_NODE_LEVEL_PARENT) {
+        if (!empty($from->urllevel) && $from->urllevel == TOOL_CRAWLER_NODE_LEVEL_PARENT) {
             $level = TOOL_CRAWLER_NODE_LEVEL_DIRECT_CHILD;
         } else {
             $level = TOOL_CRAWLER_NODE_LEVEL_INDIRECT_CHILD;
@@ -1301,7 +1236,7 @@ class crawler {
             } else {
                 $result->redirect = '';
             }
-            $result->external = self::is_external($final);
+            $result->externalurl = self::is_external($final);
 
             $ishtml = (strpos($contenttype, 'text/html') === 0);
 

@@ -22,6 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_crawler\local\url;
 use tool_crawler\robot\crawler;
 
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
@@ -160,11 +161,13 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
     /** Regression test for Issue #17  */
     public function test_reset_queries() {
         global $DB;
+        // Create a new object.
+        $persistent = new url();
 
         $node = [
             'url' => 'http://crawler.test/course/index.php',
-            'external' => 0,
-            'createdate' => strtotime("16-05-2016 10:00:00"),
+            'externalurl' => 0,
+            'timecreated' => strtotime("16-05-2016 10:00:00"),
             'lastcrawled' => strtotime("16-05-2016 11:20:00"),
             'needscrawl' => strtotime("17-05-2017 10:00:00"),
             'httpcode' => 200,
@@ -182,10 +185,19 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
             'httpmsg' => 'OK',
             'errormsg' => null
         ];
-        $nodeid = $DB->insert_record('tool_crawler_url', $node);
 
-        $crawler = new crawler();
-        $crawler->reset_for_recrawl($nodeid);
+        $persistent->from_record((object)$node);
+
+        // Create object in the database.
+        $persistent->create();
+
+        $nodeid = $persistent->get('id');
+
+        // Record should exist
+        $found = $DB->record_exists('tool_crawler_url', ['id' => $nodeid]);
+        self::assertTrue($found);
+
+        $persistent->reset_for_recrawl($nodeid);
 
         // Record should not exist anymore.
         $found = $DB->record_exists('tool_crawler_url', ['id' => $nodeid]);
@@ -227,8 +239,8 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
         $escapedredirecturl = 'http://crawler.test/local/extendedview/viewcourse.php?id=1&amp;section=2';
         $node = [
             'url' => $url,
-            'external' => 0,
-            'createdate' => strtotime("16-05-2016 10:00:00"),
+            'externalurl' => 0,
+            'timecreated' => strtotime("16-05-2016 10:00:00"),
             'lastcrawled' => strtotime("16-05-2016 11:20:00"),
             'needscrawl' => strtotime("17-05-2017 10:00:00"),
             'httpcode' => 200,
@@ -246,7 +258,10 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
             'httpmsg' => 'OK',
             'errormsg' => null
         ];
-        $DB->insert_record('tool_crawler_url', $node);
+        $persistent = new url();
+        $persistent->from_record((object)$node);
+        // Create object in the database.
+        $persistent->create();
 
         $this->setAdminUser();
         $page = tool_crawler_url_create_page($url);
@@ -267,8 +282,8 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
         $url = 'http://crawler.test/course/view.php?id=1&section=2';
         $node = [
             'url' => $url,
-            'external' => 0,
-            'createdate' => strtotime("03-01-2020 10:00:00"),
+            'externalurl' => 0,
+            'timecreated' => strtotime("03-01-2020 10:00:00"),
             'lastcrawled' => strtotime("31-12-2019 11:20:00"),
             'needscrawl' => strtotime("01-01-2020 10:00:00"),
             'httpcode' => 200,
@@ -285,8 +300,12 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
             'httpmsg' => 'OK',
             'errormsg' => null
         ];
-        $insertid = $DB->insert_record('tool_crawler_url', $node);
+        $persistent = new url();
+        $persistent->from_record((object)$node);
+        // Create object in the database.
+        $persistent->create();
 
+        $insertid = $persistent->get('id');
         $this->setAdminUser();
         $page = tool_crawler_url_create_page($url);
 
@@ -296,7 +315,7 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
         $node->contents = $page . $linktoexclude;
         $node->url      = $url;
         $node->id       = $insertid;
-        $node->level    = TOOL_CRAWLER_NODE_LEVEL_PARENT;
+        $node->urllevel    = TOOL_CRAWLER_NODE_LEVEL_PARENT;
 
         $this->resetAfterTest(true);
 
@@ -308,7 +327,8 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
         $this->robot->parse_html($node, false);
 
         // URL should not exist for crawling.
-        $found = $DB->record_exists('tool_crawler_url', array('url' => 'http://crawler.test/foo/bar.php') );
+        $urlstring = 'http://crawler.test/foo/bar.php';
+        $found = $DB->record_exists('tool_crawler_url', array('urlhash' => url::hash_url($urlstring)) );
         self::assertFalse($found);
     }
 
@@ -341,7 +361,7 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
         $node = $this->robot->mark_for_crawl($CFG->wwwroot, $parentlocalurl, 1, $parentpriority);
         $node->httpcode = 200;
         $node->mimetype = 'text/html';
-        $node->external = 0;
+        $node->externalurl = 0;
         $node->contents = <<<HTML
 <!doctype html>
 <html>
@@ -355,15 +375,15 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
 </html>
 HTML;
         // Parse the parent node, to create the direct child node.
-        $parentnode = $this->robot->parse_html($node, $node->external);
+        $parentnode = $this->robot->parse_html($node, $node->externalurl);
 
         // Internal node direct child.
         $url = new moodle_url('/' . $directchildlocalurl);
-        $node = $DB->get_record('tool_crawler_url', array('url' => $url->raw_out()) );
+        $node = $DB->get_record('tool_crawler_url', array('urlhash' => url::hash_url($url->raw_out())) );
         $node->url = $CFG->wwwroot.'/'.$directchildlocalurl;
         $node->httpcode = 200;
         $node->mimetype = 'text/html';
-        $node->external = 0;
+        $node->externalurl = 0;
         $node->contents = <<<HTML
 <!doctype html>
 <html>
@@ -377,8 +397,8 @@ HTML;
 </html>
 HTML;
         // Parse the direct child, to create the indirect child node.
-        $directchildnode = $this->robot->parse_html($node, $node->external);
-        $indirectchildnode = $DB->get_record('tool_crawler_url', ['url' => $indirectchildexternalurl]);
+        $directchildnode = $this->robot->parse_html($node, $node->externalurl);
+        $indirectchildnode = $DB->get_record('tool_crawler_url', ['urlhash' => url::hash_url($indirectchildexternalurl)]);
 
         // Direct child nodes should inherit priority from parent node (super node).
         $this->assertEquals($parentnode->priority, $directchildnode->priority);
@@ -426,5 +446,53 @@ HTML;
         $result = (is_object($result)) ? true : $result;
 
         self::assertSame($result, $expected);
+    }
+
+    /**
+     * We must insert the hash of the url whenever we update the tool_crawler_url table.
+     *
+     */
+    public function test_url_creates_hash() {
+        global $DB;
+
+        $url = 'http://crawler.test/course/view.php?id=1&section=2';
+        $node = [
+            'url' => $url,
+            'externalurl' => 0,
+            'timecreated' => strtotime("16-05-2016 10:00:00"),
+            'lastcrawled' => strtotime("16-05-2016 11:20:00"),
+            'needscrawl' => strtotime("17-05-2017 10:00:00"),
+            'httpcode' => 200,
+            'mimetype' => 'text/html',
+            'title' => 'Crawler Test',
+            'downloadduration' => 0.23,
+            'filesize' => 44003,
+            'filesizestatus' => TOOL_CRAWLER_FILESIZE_EXACT,
+            'courseid' => 1,
+            'contextid' => 1,
+            'cmid' => null,
+            'ignoreduserid' => null,
+            'ignoredtime' => null,
+            'httpmsg' => 'OK',
+            'errormsg' => null
+        ];
+        $persistent = new url();
+        $persistent->from_record((object)$node);
+        // Create object in the database.
+        $persistent->create();
+        $urlrecord = $DB->get_record('tool_crawler_url', ['id' => $persistent->get('id')]);
+        self::assertTrue(url::hash_url($url) === $urlrecord->urlhash);
+
+        // Test that selecting on urlhash works too.
+        $urlhashrecord = $DB->get_record('tool_crawler_url', ['urlhash' => url::hash_url($url)]);
+        self::assertTrue(!empty($urlhashrecord));
+
+        // If we update a record's url, the hash should also change.
+        $newurl = 'http://crawler.test/course/view.php?id=2&section=3';
+        $persistent->set('url', $newurl);
+        $persistent->update();
+        $newurlrecord = $DB->get_record('tool_crawler_url', ['id' => $persistent->get('id')]);
+        self::assertTrue(url::hash_url($newurl) === $newurlrecord->urlhash);
+        self::assertTrue(url::hash_url($newurl) === $persistent->get('urlhash'));
     }
 }

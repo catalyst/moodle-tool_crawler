@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_crawler\local\url;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -256,7 +258,7 @@ function tool_crawler_url_create_page($url) {
     $urldetailshelp = preg_replace('/(\r\n?|\n)/', '<br>', $urldetailshelp);
     $page .= '<p>' . $urldetailshelp . '</p>';
 
-    $urlrec = $DB->get_record('tool_crawler_url', array('url' => $url));
+    $urlrec = $DB->get_record('tool_crawler_url', array('urlhash' => url::hash_url($url)));
     $page .= '<h2>' . tool_crawler_link($url, $urlrec->title, $urlrec->redirect) . '</h2>';
 
     $page .= '<h3>' . htmlspecialchars(get_string('outgoingurls', 'tool_crawler'), ENT_NOQUOTES | ENT_HTML401) . '</h3>';
@@ -278,9 +280,9 @@ function tool_crawler_url_create_page($url) {
            FROM {tool_crawler_edge} l
            JOIN {tool_crawler_url} f ON f.id = l.a
            JOIN {tool_crawler_url} t ON t.id = l.b
-          WHERE f.url = ?
+          WHERE f.urlhash = ?
        ORDER BY f.lastcrawled DESC
-    ", array($url));
+    ", array(url::hash_url($url)));
 
     $page .= tool_crawler_url_gen_table($data);
 
@@ -303,9 +305,9 @@ function tool_crawler_url_create_page($url) {
            FROM {tool_crawler_edge} l
            JOIN {tool_crawler_url} f ON f.id = l.a
            JOIN {tool_crawler_url} t ON t.id = l.b
-          WHERE t.url = ?
+          WHERE t.urlhash = ?
        ORDER BY f.lastcrawled DESC
-    ", array($url));
+    ", array(url::hash_url($url)));
 
     $page .= tool_crawler_url_gen_table($data);
 
