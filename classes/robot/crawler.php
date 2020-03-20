@@ -244,6 +244,32 @@ class crawler {
     }
 
     /**
+     * Helper function that looks for matchings of one string
+     * against an array of * wildchar patterns
+     * This is a copy of the core function profiling_string_matches()
+     * which has been altered in moodle >= 3.8
+     *
+     * @param $string string the full url
+     * @param $patterns string comma separated patterns to match to the url
+     * @return bool
+     */
+    public static function crawler_url_string_matches($string, $patterns) {
+        $patterns = explode(',', $patterns);
+        foreach ($patterns as $pattern) {
+            // Trim and prepare pattern
+            $pattern = str_replace('\*', '.*', preg_quote(trim($pattern), '~'));
+            // Don't process empty patterns
+            if (empty($pattern)) {
+                continue;
+            }
+            if (preg_match('~' . $pattern . '~', $string)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Adds a URL to the queue for crawling
      *
      * @param string $baseurl
@@ -284,7 +310,7 @@ class crawler {
             $excludes = str_replace(PHP_EOL, ',', self::get_config()->excludeexturl);
         }
 
-        $isexcluded = profiling_string_matches($url, $excludes);
+        $isexcluded = self::crawler_url_string_matches($url, $excludes);
 
         if ($isexcluded) {
             return false;
@@ -340,7 +366,7 @@ class crawler {
         if ($shortname !== '' && $shortname !== null) {
             $isexcluded = false;
             $excludes = str_replace("\r", '', self::get_config()->excludecourses);
-            $isexcluded = profiling_string_matches($shortname, $excludes);
+            $isexcluded = self::crawler_url_string_matches($shortname, $excludes);
             if ($isexcluded) {
                 return false;
             }
