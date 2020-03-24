@@ -495,4 +495,51 @@ HTML;
         self::assertTrue(url::hash_url($newurl) === $newurlrecord->urlhash);
         self::assertTrue(url::hash_url($newurl) === $persistent->get('urlhash'));
     }
+    /**
+     * Data provider for string matches
+     * This data is taken from the moodle (>3.7) core profiling_string_matches_provider function
+     * Since our matching function is customised, some of these match differently
+     * and have been commented here to highlight that.
+     *
+     * @return  array
+     */
+    public function crawler_url_string_matches_provider() {
+        return [
+            ['/index.php',              '/index.php',           true],
+            ['/some/dir/index.php',     '/index.php',           true], // Different from core function
+            ['/course/view.php',        '/course/view.php',     true],
+            ['/view.php',               '/course/view.php',     false],
+            ['/mod/forum',              '/mod/forum/*',         false],
+            ['/mod/forum/',             '/mod/forum/*',         true],
+            ['/mod/forum/index.php',    '/mod/forum/*',         true],
+            ['/mod/forum/foo.php',      '/mod/forum/*',         true],
+            ['/mod/forum/view.php',     '/mod/*/view.php',      true],
+            ['/mod/one/two/view.php',   '/mod/*/view.php',      true],
+            ['/view.php',               '*/view.php',           true],
+            ['/mod/one/two/view.php',   '*/view.php',           true],
+            ['/foo.php',                '/foo.php,/bar.php',    true],
+            ['/bar.php',                '/foo.php,/bar.php',    true],
+            ['/foo/bar.php',            "/foo.php,/bar.php",    true], // Different from core function
+            ['/foo/bar.php',            "/foo.php,*/bar.php",   true],
+            ['/foo/bar.php',            "/foo*.php,/bar.php",   true],
+            ['/foo.php',                "/foo.php\n/bar.php",   false], // Different from core function
+            ['/bar.php',                "/foo.php\n/bar.php",   false], // Different from core function
+            ['/foo/bar.php',            "/foo.php\n/bar.php",   false],
+            ['/foo/bar.php',            "/foo.php\n*/bar.php",  false], // Different from core function
+            ['/foo/bar.php',            "/foo*.php\n/bar.php",  false], // Different from core function
+        ];
+    }
+
+    /**
+     * Test the matching syntax
+     *
+     * @dataProvider crawler_url_string_matches_provider
+     * @param   string $string
+     * @param   string $patterns
+     * @param   bool   $expected
+     */
+    public function test_crawler_url_string_matches($string, $patterns, $expected) {
+        $result = $this->robot->crawler_url_string_matches($string, $patterns);
+        $this->assertSame($result, $expected);
+    }
 }
