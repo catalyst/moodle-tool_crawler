@@ -614,7 +614,15 @@ class crawler {
                 // Look for new links on this page from the html.
                 // Insert new links into tool_crawler_edge, and into tool_crawler_url table.
                 // Find the course, cm, and context of where we are for the main scraped URL.
-                $this->parse_html($result, $result->externalurl, $verbose);
+                try {
+                    $this->parse_html($result, $result->externalurl, $verbose);
+                } catch (\dml_write_exception $e) {
+                    mtrace("Database write error while processing page '{$result->url}'");
+                    if ($verbose) {
+                        mtrace("Exception: <" . get_class($e) . ">: \"" . $e->getMessage() . "\" in {$e->getFile()} at line {$e->getLine()}");
+                        mtrace("Trace:\n{$e->getTraceAsString()}");
+                    }
+                }
             } else {
                 if ($verbose) {
                     echo "NOT html\n";
