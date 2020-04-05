@@ -26,44 +26,20 @@ defined('MOODLE_INTERNAL') || die();
 
 $reports = array('queued', 'recent', 'broken', 'oversize');
 
-$tabs = '<p>';
-if (isset($courseid) && $courseid) {
-    foreach ($reports as $rpt) {
-        if ($rpt != 'queued') {
-            $tabs .= ' | ';
-        }
-        $wrap = (isset($report) && $report == $rpt) ? 'b' : 'span';
-        $tabs .= html_writer::start_tag($wrap);
-        $tabs .= html_writer::link(new moodle_url('/admin/tool/crawler/report.php',
-                array('report' => $rpt, 'course' => $courseid )),
-                get_string($rpt, 'tool_crawler'));
-        $tabs .= html_writer::end_tag($wrap);
-    }
-} else {
-
-    $section = optional_param('section', '', PARAM_RAW);
-    $wrap = ($section == 'tool_crawler') ? 'b' : 'span';
-    $tabs .= html_writer::start_tag($wrap);
-    $tabs .= html_writer::link(new moodle_url("/admin/settings.php?section=tool_crawler"),
-        get_string('settings', 'tool_crawler'));
-    $tabs .= html_writer::end_tag($wrap);
-
-    $tabs .= ' | ';
-
-    $wrap = (isset($report) && $report == 'index') ? 'b' : 'span';
-    $tabs .= html_writer::start_tag($wrap);
-    $tabs .= html_writer::link(new moodle_url("/admin/tool/crawler/index.php"),
-            get_string('status', 'tool_crawler'));
-    $tabs .= html_writer::end_tag($wrap);
-
-    foreach ($reports as $rpt) {
-        $tabs .= ' | ';
-        $wrap = (isset($report) && $report == $rpt) ? 'b' : 'span';
-        $tabs .= html_writer::start_tag($wrap);
-        $tabs .= html_writer::link(new moodle_url('/admin/tool/crawler/report.php', array('report' => $rpt )),
-                get_string($rpt, 'tool_crawler'));
-        $tabs .= html_writer::end_tag($wrap);
-    }
+$rows = [
+    new tabobject('settings', '/admin/settings.php?section=tool_crawler', get_string('settings', 'tool_crawler'), false),
+    new tabobject('index', '/admin/tool/crawler/index.php', get_string('status', 'tool_crawler')),
+];
+foreach ($reports as $rpt) {
+    $rows[] = new tabobject($rpt, '/admin/tool/crawler/report.php?report=' . $rpt, get_string($rpt, 'tool_crawler'));
 }
-$tabs .= '</p>';
+
+$section = optional_param('section', '', PARAM_RAW);
+if ($section == 'tool_crawler') {
+    $report = 'settings';
+}
+if (empty($report)) {
+    $report = '';
+}
+$tabs = $OUTPUT->tabtree($rows, $report);
 
