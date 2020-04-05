@@ -24,15 +24,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$reports = array('queued', 'recent', 'broken', 'oversize');
-
 $rows = [
-    new tabobject('settings', '/admin/settings.php?section=tool_crawler', get_string('settings', 'tool_crawler'), false),
-    new tabobject('index', '/admin/tool/crawler/index.php', get_string('status', 'tool_crawler')),
+    new tabobject('settings', '/admin/settings.php?section=tool_crawler',       get_string('settings', 'tool_crawler')),
+    new tabobject('index',    '/admin/tool/crawler/index.php',                  get_string('status',   'tool_crawler')),
+    new tabobject('queued',   '/admin/tool/crawler/report.php?report=queued',   get_string('queued',   'tool_crawler')),
+    new tabobject('recent',   '/admin/tool/crawler/report.php?report=recent',   get_string('recent',   'tool_crawler')),
+    new tabobject('broken',   '/admin/tool/crawler/report.php?report=broken',   get_string('broken',   'tool_crawler')),
+    new tabobject('oversize', '/admin/tool/crawler/report.php?report=oversize', get_string('oversize', 'tool_crawler')),
 ];
-foreach ($reports as $rpt) {
-    $rows[] = new tabobject($rpt, '/admin/tool/crawler/report.php?report=' . $rpt, get_string($rpt, 'tool_crawler'));
-}
 
 $section = optional_param('section', '', PARAM_RAW);
 if ($section == 'tool_crawler') {
