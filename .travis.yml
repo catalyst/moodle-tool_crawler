@@ -52,9 +52,11 @@ before_install:
   - sudo hostname short-hostname
   - phpenv config-rm xdebug.ini
   - cd ../..
+  - export MOODLE_VERSION=$(echo "$MOODLE_BRANCH" | cut -d'_' -f 2)
+  - if [ "$MOODLE_VERSION" = 36 ] || [ "$MOODLE_VERSION" -le 34 ]; then NVMVERSION=8.9; else NVMVERSION=14.0.0; fi
+  - nvm install $NVMVERSION;
+  - nvm use $NVMVERSION;
   - if [ "$CI_PLUGIN" = 2 ]; then
-      nvm install 8;
-      nvm use 8;
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2;
     else
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^1;
