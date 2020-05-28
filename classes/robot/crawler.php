@@ -285,6 +285,11 @@ class crawler {
         global $DB, $CFG;
 
         $url = $this->absolute_url($baseurl, $url);
+        $url = clean_param($url, PARAM_URL);
+
+        if (empty($url)) {
+            return false;
+        }
 
         // Strip priority from indirect child nodes. Only parent and direct children
         // of parent nodes have priority applied to avoid recursively applying priority

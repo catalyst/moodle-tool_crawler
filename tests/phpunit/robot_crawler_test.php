@@ -542,4 +542,36 @@ HTML;
         $result = $this->robot->crawler_url_string_matches($string, $patterns);
         $this->assertSame($result, $expected);
     }
+
+    /**
+     * Data provider for url validity check
+     *
+     * @return  array
+     */
+    public function url_validity_check_provider() {
+        return [
+            ['/index.php', true],
+            ['/some/dir/index.php', true],
+            ['/<invalidurl>', false],
+            ['/moodle/course/view.php?id=1&section=2', true],
+            ['/{invalidurl}', false],
+        ];
+    }
+
+    /**
+     * @dataProvider url_validity_check_provider
+     * Check url validity
+     *
+     * @param $expected
+     * @param $url
+     */
+    public function test_invalid_url($url, $expected) {
+        $baseurl = 'https://www.example.com/moodle';
+        $this->resetAfterTest(true);
+
+        $result = $this->robot->mark_for_crawl($baseurl, $url);
+        $result = (is_object($result)) ? true : $result;
+
+        self::assertSame($result, $expected);
+    }
 }
