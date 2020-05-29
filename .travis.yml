@@ -6,9 +6,7 @@ cache:
     - $HOME/.npm
 
 php:
-  - 7.1
   - 7.2
-  - 7.3
 
 sudo: required
 
@@ -20,33 +18,21 @@ services:
   - mysql
 
 env:
-  - DB=pgsql MOODLE_BRANCH=MOODLE_36_STABLE CI_PLUGIN=2
+  - DB=pgsql  MOODLE_BRANCH=MOODLE_36_STABLE CI_PLUGIN=2
   - DB=mysqli MOODLE_BRANCH=MOODLE_36_STABLE CI_PLUGIN=2
-  - DB=pgsql MOODLE_BRANCH=MOODLE_37_STABLE CI_PLUGIN=2
+  - DB=pgsql  MOODLE_BRANCH=MOODLE_37_STABLE CI_PLUGIN=2
   - DB=mysqli MOODLE_BRANCH=MOODLE_37_STABLE CI_PLUGIN=2
-  - DB=pgsql MOODLE_BRANCH=MOODLE_38_STABLE CI_PLUGIN=2
+  - DB=pgsql  MOODLE_BRANCH=MOODLE_38_STABLE CI_PLUGIN=2
   - DB=mysqli MOODLE_BRANCH=MOODLE_38_STABLE CI_PLUGIN=2
 
 matrix:
   include:
     - php: 7.1
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_34_STABLE CI_PLUGIN=2
+      env: DB=pgsql  MOODLE_BRANCH=MOODLE_34_STABLE CI_PLUGIN=2
     - php: 7.1
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_34_STABLE CI_PLUGIN=2
-    - php: 7.1
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_35_STABLE CI_PLUGIN=2
-    - php: 7.1
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_35_STABLE CI_PLUGIN=2
-    - php: 7.2
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_34_STABLE CI_PLUGIN=2
-    - php: 7.2
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_34_STABLE CI_PLUGIN=2
-    - php: 7.2
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_35_STABLE CI_PLUGIN=2
-    - php: 7.2
       env: DB=mysqli MOODLE_BRANCH=MOODLE_35_STABLE CI_PLUGIN=2
     - php: 7.3
-      env: DB=mysqli MOODLE_BRANCH=master CI_PLUGIN=2
+      env: DB=mysqli MOODLE_BRANCH=master           CI_PLUGIN=2
 
 before_install:
   - sudo hostname short-hostname
