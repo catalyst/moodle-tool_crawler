@@ -574,4 +574,29 @@ HTML;
 
         self::assertSame($result, $expected);
     }
+
+    /**
+     * Data provider for page title validity check
+     *
+     * @return  array
+     */
+    public function page_title_validity_check_provider() {
+        return [
+            [['contents' => '<title>Invalid <i>title</i><title><body></body>'], 'Invalid title'],
+            [['contents' => '<title>Valid title<title><body></body>'], 'Valid title'],
+        ];
+    }
+
+    /**
+     * @dataProvider page_title_validity_check_provider
+     *
+     * Test for Issue #143: invalid character in page title.
+     */
+    public function test_check_page_title_validity($node, $expected) {
+        $this->resetAfterTest(true);
+        $node = (object) array_merge((array) $node);
+        $result = $this->robot->parse_html($node, false);
+        self::assertSame($expected, $result->title);
+
+    }
 }
