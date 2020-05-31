@@ -751,7 +751,8 @@ class crawler {
 
         $titlenode = $html->find('title', 0);
         if (isset($titlenode)) {
-            $node->title = self::dom_text_decode_entities($titlenode->plaintext);
+            $title = self::dom_text_decode_entities($titlenode->plaintext);
+            $node->title = clean_param($title, PARAM_TEXT);
             if ($verbose) {
                 echo " - Found title of: '$node->title'\n";
             }
