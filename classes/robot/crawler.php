@@ -1279,6 +1279,7 @@ class crawler {
             $result->downloadduration = curl_getinfo($s, CURLINFO_TOTAL_TIME);
 
             $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
+            $final = clean_param($final, PARAM_URL);
             if ($final != $url) {
                 $result->redirect = $final;
             } else {
