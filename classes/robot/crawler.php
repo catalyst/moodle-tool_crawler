@@ -647,6 +647,8 @@ class crawler {
             if ($verbose) {
                 echo "\n";
             }
+            // There is case where it returns "#<Mime::NullType:0x00007f7480019568>".
+            $result->mimetype = null;
         }
 
         $detectutf8 = function ($string) {
