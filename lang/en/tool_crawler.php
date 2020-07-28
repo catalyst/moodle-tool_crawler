@@ -24,6 +24,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
+$string['adhoc_crawl_task'] = 'Adhoc crawl task';
 $string['autocreate'] = 'Auto create';
 $string['bigfilesize'] = 'Size of big files';
 $string['bigfilesizedesc'] = 'How big a file needs to be (in MB) to get flagged as oversize.';
@@ -90,7 +91,7 @@ $string['excludemdlparamdesc'] = 'One parameter key per line. URLs using this wi
 $string['excludemdlurl'] = 'Exclude Moodle URLs';
 $string['excludemdlurldesc'] = 'One URL per line and the * wildchar at any position is also accepted. Each is matched excluding the wwwroot.';
 $string['excludecourses'] = 'Exclude courses';
-$string['excludecoursesdesc'] = 'One course short name per line and the * wildchar usage is also accepted.';
+$string['excludecoursesdesc'] = 'One course short name per line and the * wildchar usage is also accepted. eg If you have a course short names such as COMP100_SEM1_2020 then you could exclude all COMP100 courses with <code>COMP100*</code> or all 2019 courses with <code>*_2019</code>';
 $string['fetcherror'] = 'Curl Error: {$a->errormessage}';
 $string['found'] = 'Found';
 $string['frompage'] = 'From page';
