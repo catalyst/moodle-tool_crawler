@@ -61,6 +61,7 @@
         <INDEX NAME="a" UNIQUE="false" FIELDS="a"/>
         <INDEX NAME="b" UNIQUE="false" FIELDS="b"/>
         <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid"/>
+        <INDEX NAME="lastmod" UNIQUE="false" FIELDS="lastmod"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="tool_crawler_history" COMMENT="Info around previous scraping runs">

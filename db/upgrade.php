@@ -164,5 +164,18 @@ function xmldb_tool_crawler_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2020031800, 'tool', 'crawler');
     }
 
+    if ($oldversion < 2020100100) {
+        // Add lastmod as an index in the tool_crawler_edge table.
+        $table = new xmldb_table('tool_crawler_edge');
+        $index = new xmldb_index('lastmod', XMLDB_INDEX_NOTUNIQUE, array('lastmod'));
+
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Crawler savepoint reached.
+        upgrade_plugin_savepoint(true, 2020100100, 'tool', 'crawler');
+    }
+
     return true;
 }
