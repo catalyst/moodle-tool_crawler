@@ -98,7 +98,7 @@ before_install:
   - nvm use $NVMVERSION;
   - if [ "$CI_PLUGIN" = 3 ]; then
       composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^3;
-  - elif [ "$CI_PLUGIN" = 2 ]; then
+    elif [ "$CI_PLUGIN" = 2 ]; then
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2;
     else
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^1;
