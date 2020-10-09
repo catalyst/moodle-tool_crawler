@@ -17,22 +17,76 @@ addons:
 services:
   - mysql
 
-env:
-  - DB=pgsql  MOODLE_BRANCH=MOODLE_36_STABLE CI_PLUGIN=2
-  - DB=mysqli MOODLE_BRANCH=MOODLE_36_STABLE CI_PLUGIN=2
-  - DB=pgsql  MOODLE_BRANCH=MOODLE_37_STABLE CI_PLUGIN=2
-  - DB=mysqli MOODLE_BRANCH=MOODLE_37_STABLE CI_PLUGIN=2
-  - DB=pgsql  MOODLE_BRANCH=MOODLE_38_STABLE CI_PLUGIN=2
-  - DB=mysqli MOODLE_BRANCH=MOODLE_38_STABLE CI_PLUGIN=2
-
 matrix:
   include:
+    - php: 7.0
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_35_STABLE CI_PLUGIN=3
+    - php: 7.0
+      env: DB=pgsql  MOODLE_BRANCH=MOODLE_35_STABLE CI_PLUGIN=3
     - php: 7.1
-      env: DB=pgsql  MOODLE_BRANCH=MOODLE_34_STABLE CI_PLUGIN=2
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_35_STABLE CI_PLUGIN=3
     - php: 7.1
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_35_STABLE CI_PLUGIN=2
+      env: DB=pgsql  MOODLE_BRANCH=MOODLE_35_STABLE CI_PLUGIN=3
+    - php: 7.1
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_37_STABLE CI_PLUGIN=3
+    - php: 7.1
+      env: DB=pgsql  MOODLE_BRANCH=MOODLE_37_STABLE CI_PLUGIN=3
+    - php: 7.1
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_38_STABLE CI_PLUGIN=3
+    - php: 7.1
+      env: DB=pgsql  MOODLE_BRANCH=MOODLE_38_STABLE CI_PLUGIN=3
+    - php: 7.2
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_35_STABLE CI_PLUGIN=3
+    - php: 7.2
+      env: DB=pgsql  MOODLE_BRANCH=MOODLE_35_STABLE CI_PLUGIN=3
+    - php: 7.2
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_36_STABLE CI_PLUGIN=3
+    - php: 7.2
+      env: DB=pgsql  MOODLE_BRANCH=MOODLE_36_STABLE CI_PLUGIN=3
+    - php: 7.2
+      env: DB=pgsql  MOODLE_BRANCH=MOODLE_37_STABLE CI_PLUGIN=3
+    - php: 7.2
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_37_STABLE CI_PLUGIN=3
+    - php: 7.2
+      env: DB=pgsql  MOODLE_BRANCH=MOODLE_38_STABLE CI_PLUGIN=3
+    - php: 7.2
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_38_STABLE CI_PLUGIN=3
+    - php: 7.2
+      env: DB=pgsql  MOODLE_BRANCH=MOODLE_39_STABLE CI_PLUGIN=3
+    - php: 7.2
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_39_STABLE CI_PLUGIN=3
+    - php: 7.2
+      env: DB=pgsql  MOODLE_BRANCH=master           CI_PLUGIN=3
+    - php: 7.2
+      env: DB=mysqli MOODLE_BRANCH=master           CI_PLUGIN=3
     - php: 7.3
-      env: DB=mysqli MOODLE_BRANCH=master           CI_PLUGIN=2
+      env: DB=pgsql  MOODLE_BRANCH=MOODLE_37_STABLE CI_PLUGIN=3
+    - php: 7.3
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_37_STABLE CI_PLUGIN=3
+    - php: 7.3
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_38_STABLE CI_PLUGIN=3
+    - php: 7.3
+      env: DB=pgsql  MOODLE_BRANCH=MOODLE_38_STABLE CI_PLUGIN=3
+    - php: 7.3
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_39_STABLE CI_PLUGIN=3
+    - php: 7.3
+      env: DB=pgsql  MOODLE_BRANCH=MOODLE_39_STABLE CI_PLUGIN=3
+    - php: 7.3
+      env: DB=pgsql  MOODLE_BRANCH=master           CI_PLUGIN=3
+    - php: 7.3
+      env: DB=mysqli MOODLE_BRANCH=master           CI_PLUGIN=3
+    - php: 7.4
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_38_STABLE CI_PLUGIN=3
+    - php: 7.4
+      env: DB=pgsql  MOODLE_BRANCH=MOODLE_38_STABLE CI_PLUGIN=3
+    - php: 7.4
+      env: DB=pgsql  MOODLE_BRANCH=MOODLE_39_STABLE CI_PLUGIN=3
+    - php: 7.4
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_39_STABLE CI_PLUGIN=3
+    - php: 7.4
+      env: DB=pgsql  MOODLE_BRANCH=master           CI_PLUGIN=3
+    - php: 7.4
+      env: DB=mysqli MOODLE_BRANCH=master           CI_PLUGIN=3
 
 before_install:
   - sudo hostname short-hostname
@@ -42,7 +96,9 @@ before_install:
   - if [ "$MOODLE_VERSION" = 36 ] || [ "$MOODLE_VERSION" -le 34 ]; then NVMVERSION=8.9; else NVMVERSION=14.0.0; fi
   - nvm install $NVMVERSION;
   - nvm use $NVMVERSION;
-  - if [ "$CI_PLUGIN" = 2 ]; then
+  - if [ "$CI_PLUGIN" = 3 ]; then
+      composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^3;
+  - elif [ "$CI_PLUGIN" = 2 ]; then
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2;
     else
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^1;
@@ -58,7 +114,7 @@ script:
   - moodle-plugin-ci phpmd
   - moodle-plugin-ci codechecker
   - moodle-plugin-ci validate
-  - if [ "$CI_PLUGIN" = 2 ]; then
+  - if [ "$CI_PLUGIN" = 3 ] || [ "$CI_PLUGIN" = 2 ]; then
       moodle-plugin-ci savepoints || travis_terminate 1;
       moodle-plugin-ci grunt || travis_terminate 1;
     else
