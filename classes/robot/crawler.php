@@ -249,16 +249,16 @@ class crawler {
      * This is a copy of the core function profiling_string_matches()
      * which has been altered in moodle >= 3.8
      *
-     * @param $string string the full url
-     * @param $patterns string comma separated patterns to match to the url
+     * @param string $string the full url
+     * @param string $patterns comma separated patterns to match to the url
      * @return bool
      */
     public static function crawler_url_string_matches($string, $patterns) {
         $patterns = explode(',', $patterns);
         foreach ($patterns as $pattern) {
-            // Trim and prepare pattern
+            // Trim and prepare pattern.
             $pattern = str_replace('\*', '.*', preg_quote(trim($pattern), '~'));
-            // Don't process empty patterns
+            // Don't process empty patterns.
             if (empty($pattern)) {
                 continue;
             }
@@ -274,8 +274,9 @@ class crawler {
      *
      * @param string $baseurl
      * @param string $url relative URL
-     * @param int the course id if it is known.
-     * @param int $priority the priority of this queue item
+     * @param int $courseid (optional) the course id if it is known.
+     * @param int $priority (optional) the priority of this queue item
+     * @param int $level (optional) the URL node level 
      * @return object|boolean The node record if the resource pointed to by the URL can and should be considered; or `false` if the
      *     URL is invalid or excluded.
      */
@@ -547,7 +548,7 @@ class crawler {
                                               id ASC
                                     ', null, 0, 1000);
                 if (empty($nodes)) {
-                    return true; // The queue is empty
+                    return true; // The queue is empty.
                 }
             }
             $node = array_shift($nodes);
@@ -632,7 +633,8 @@ class crawler {
                 } catch (\dml_write_exception $e) {
                     mtrace("Database write error while processing page '{$result->url}'");
                     if ($verbose) {
-                        mtrace("Exception: <" . get_class($e) . ">: \"" . $e->getMessage() . "\" in {$e->getFile()} at line {$e->getLine()}");
+                        mtrace("Exception: <" . get_class($e) . ">: \"" . 
+                            $e->getMessage() . "\" in {$e->getFile()} at line {$e->getLine()}");
                         mtrace("Trace:\n{$e->getTraceAsString()}");
                     }
                 }
@@ -666,7 +668,7 @@ class crawler {
         }
 
         // Wait until we've finished processing the links before we save.
-        // Remove contents before updating - not saved in url table
+        // Remove contents before updating - not saved in url table.
         unset($result->contents);
         $persistent = new url(0, $result);
         $persistent->update();
@@ -996,15 +998,6 @@ class crawler {
         }
     }
 
-    /**
-     * Scrapes a fully qualified URL and returns details about it.
-     *
-     * The returned object has thus format (properties) that it is ready to be directly inserted into the crawler URL table in the
-     * database.
-     *
-     * @param string $url HTTP/HTTPS URI of the resource which is to be retrieved from the web.
-     * @return object The result object.
-     */
     /* Implementation-specific notes, currently not part of the API:
      *
      * This function implements an HTTP client built on Curl. In the usual case, when everything runs smoothly, it uses keep-alive
@@ -1062,6 +1055,16 @@ class crawler {
      *   * resource is located on an _external_ host,
      *   * redirection points to an external host, but the target resource is located on our web server again.
      */
+
+    /**
+     * Scrapes a fully qualified URL and returns details about it.
+     *
+     * The returned object has thus format (properties) that it is ready to be directly inserted into the crawler URL table in the
+     * database.
+     *
+     * @param string $url HTTP/HTTPS URI of the resource which is to be retrieved from the web.
+     * @return object The result object.
+     */
     public function scrape($url) {
 
         global $CFG;
@@ -1102,65 +1105,65 @@ class crawler {
         $targetishtml = null; // Cache for whether target resource is an HTML document.
         $targetlengthknown = null; // Cache for whether target resource length is known.
         curl_setopt($s, CURLOPT_WRITEFUNCTION, function($hdl, $content)
-                use (&$chunks, &$sizelimit, &$targetisexternal, &$targetishtml, &$targetlengthknown, &$config, &$abortdownload) {
-            // Target resource reached, switch to non-redirection size limit.
-            if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
-                $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT;
-            } else if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_WASTEFUL) {
-                // Always fully download if not aborted by other conditions (like: Content-Length known for non-HTML documents).
-                $sizelimit = -1; // No size limit.
-            } else {
-                $sizelimit = $config->bigfilesize * 1000000;
-            }
-
-            if ($targetisexternal === null) {
-                $effectiveuri = curl_getinfo($hdl, CURLINFO_EFFECTIVE_URL);
-                $targetisexternal = self::is_external($effectiveuri);
-            }
-
-            if ($targetishtml === null) {
-                $contenttype = curl_getinfo($hdl, CURLINFO_CONTENT_TYPE);
-                $targetishtml = (strpos($contenttype, 'text/html') === 0);
-            }
-
-            if ($targetlengthknown === null) {
-                $contentlength = curl_getinfo($hdl, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-                $targetlengthknown = (is_double($contentlength) && $contentlength >= 0.0);
-            }
-
-            // Variables $targetisexternal, $targetishtml, and $targetlengthknown are not going to change anymore as we have reached
-            // the target resource.
-
-            if (!$targetishtml) {
-                // Ignore $targetisexternal. If the document is internal, you had better configure your web server to send
-                // Content-Length with non-HTML documents.
-                if ($targetlengthknown || $config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
-                    // Not body of a redirection, not HTML. Or HTML and the user is not interested in being overly exact. ⇒ Abort
-                    // transfer because we neither need nor can understand the body.
-                    $abortdownload = true;
-                } else if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE) {
+            use (&$chunks, &$sizelimit, &$targetisexternal, &$targetishtml, &$targetlengthknown, &$config, &$abortdownload) {
+                // Target resource reached, switch to non-redirection size limit.
+                if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
+                    $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT;
+                } else if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_WASTEFUL) {
+                    // Always fully download if not aborted by other conditions (like: Content-Length known for non-HTML documents).
                     $sizelimit = -1; // No size limit.
+                } else {
+                    $sizelimit = $config->bigfilesize * 1000000;
                 }
-            } else {
-                // Target resource is an HTML document.
 
-                // XXX: could abort the download as soon as we have received enough of the document to retrieve its title. This is
-                // *very* difficult to implement: need to take into account document encodings and all kinds of HTML-specific
-                // things. If you *really* want this, better change the code so that it directly streams the data from the network
-                // into an HTML parser.
-
-                // Internal transfers will never be aborted. When downloading external documents, the size limit, which is set by
-                // this function, will be applied.
-                // Disable the size limit for higher network strain settings under certain conditions. The “excessive” level fully
-                // downloads external resources _if their length is not known_ from Content-Type.
-                if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE && !$targetlengthknown) {
-                    $sizelimit = -1; // No size limit.
+                if ($targetisexternal === null) {
+                    $effectiveuri = curl_getinfo($hdl, CURLINFO_EFFECTIVE_URL);
+                    $targetisexternal = self::is_external($effectiveuri);
                 }
-            }
 
-            $chunks[] = $content;
-            return strlen($content);
-        });
+                if ($targetishtml === null) {
+                    $contenttype = curl_getinfo($hdl, CURLINFO_CONTENT_TYPE);
+                    $targetishtml = (strpos($contenttype, 'text/html') === 0);
+                }
+
+                if ($targetlengthknown === null) {
+                    $contentlength = curl_getinfo($hdl, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+                    $targetlengthknown = (is_double($contentlength) && $contentlength >= 0.0);
+                }
+
+                // Variables $targetisexternal, $targetishtml, and $targetlengthknown are not going to change anymore as we have reached
+                // the target resource.
+
+                if (!$targetishtml) {
+                    // Ignore $targetisexternal. If the document is internal, you had better configure your web server to send
+                    // Content-Length with non-HTML documents.
+                    if ($targetlengthknown || $config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
+                        // Not body of a redirection, not HTML. Or HTML and the user is not interested in being overly exact. ⇒ Abort
+                        // transfer because we neither need nor can understand the body.
+                        $abortdownload = true;
+                    } else if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE) {
+                        $sizelimit = -1; // No size limit.
+                    }
+                } else {
+                    // Target resource is an HTML document.
+
+                    // XXX: could abort the download as soon as we have received enough of the document to retrieve its title. This is
+                    // *very* difficult to implement: need to take into account document encodings and all kinds of HTML-specific
+                    // things. If you *really* want this, better change the code so that it directly streams the data from the network
+                    // into an HTML parser.
+
+                    // Internal transfers will never be aborted. When downloading external documents, the size limit, which is set by
+                    // this function, will be applied.
+                    // Disable the size limit for higher network strain settings under certain conditions. The “excessive” level fully
+                    // downloads external resources _if their length is not known_ from Content-Type.
+                    if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE && !$targetlengthknown) {
+                        $sizelimit = -1; // No size limit.
+                    }
+                }
+
+                $chunks[] = $content;
+                return strlen($content);
+            });
 
         // Whether the next header line which we read will be the HTTP status-line.
         // We cannot make this a static variable in the header callback function (closure) because we need to reset it to true
@@ -1175,59 +1178,59 @@ class crawler {
         // them; it also does not REQUIRE servers to send a Trailer header field. The RFC only contains SHOULD NOT/SHOULD rules for
         // that (see sections 4.1.2 and 4.4).
         curl_setopt($s, CURLOPT_HEADERFUNCTION, function($hdl, $header)
-                use (&$firstheaderline, &$httpmsg, &$headersize, &$abortdownload) {
-            $len = strlen($header);
+            use (&$firstheaderline, &$httpmsg, &$headersize, &$abortdownload) {
+                $len = strlen($header);
 
-            if ($header === "\r\n") {
-                $firstheaderline = true;
-                $headersize = 0;
-            } else {
-                if ($firstheaderline) {
-                    // This code path will erroneously be triggered in the case of trailers. Not a big problem, especially not in
-                    // the case of well-formed trailers. But we will then reset $httpmsg a bit too early.
-                    if (preg_match('@^HTTP/[^ ]+ ([0-9]+) ([^\r\n]*)@', $header, $headerparts)) { // HTTP status-line.
-                        $httpmsg = $headerparts[2];
-                    } else {
-                        $httpmsg = '';
+                if ($header === "\r\n") {
+                    $firstheaderline = true;
+                    $headersize = 0;
+                } else {
+                    if ($firstheaderline) {
+                        // This code path will erroneously be triggered in the case of trailers. Not a big problem, especially not in
+                        // the case of well-formed trailers. But we will then reset $httpmsg a bit too early.
+                        if (preg_match('@^HTTP/[^ ]+ ([0-9]+) ([^\r\n]*)@', $header, $headerparts)) { // HTTP status-line.
+                            $httpmsg = $headerparts[2];
+                        } else {
+                            $httpmsg = '';
+                        }
+                    }
+
+                    $firstheaderline = false;
+
+                    $headersize += $len;
+                    if ($headersize > TOOL_CRAWLER_HEADER_LIMIT) {
+                        // Header too long.
+                        $abortdownload = true;
                     }
                 }
 
-                $firstheaderline = false;
-
-                $headersize += $len;
-                if ($headersize > TOOL_CRAWLER_HEADER_LIMIT) {
-                    // Header too long.
-                    $abortdownload = true;
-                }
-            }
-
-            return $len;
-        });
+                return $len;
+            });
 
         curl_setopt($s, CURLOPT_NOPROGRESS, false);
         curl_setopt($s, CURLOPT_PROGRESSFUNCTION, function($resource, $expecteddownbytes, $downbytes, $expectedupbytes, $upbytes)
-                use (&$abortdownload, &$sizelimit, &$targetisexternal) {
-            // Do not enforce size limit for internal resources.
-            if ($targetisexternal !== null) {
-                // We have already reached the target resource and can utilize the cached computed value from the write callback
-                // function.
-                $external = $targetisexternal;
-            } else {
-                // We may still be processing a redirect.
-                // XXX: the result from is_external could be cached to avoid wasting cycles. To implement that cache, we would have
-                // to recompute a new value only each time after a new Location header has been seen in the header function and has
-                // become effective.
-                // For now, be lazy and ask curl again for the current resource URI.
-                $effectiveuri = curl_getinfo($resource, CURLINFO_EFFECTIVE_URL);
-                $external = self::is_external($effectiveuri);
-            }
+            use (&$abortdownload, &$sizelimit, &$targetisexternal) {
+                // Do not enforce size limit for internal resources.
+                if ($targetisexternal !== null) {
+                    // We have already reached the target resource and can utilize the cached computed value from the write callback
+                    // function.
+                    $external = $targetisexternal;
+                } else {
+                    // We may still be processing a redirect.
+                    // XXX: the result from is_external could be cached to avoid wasting cycles. To implement that cache, we would have
+                    // to recompute a new value only each time after a new Location header has been seen in the header function and has
+                    // become effective.
+                    // For now, be lazy and ask curl again for the current resource URI.
+                    $effectiveuri = curl_getinfo($resource, CURLINFO_EFFECTIVE_URL);
+                    $external = self::is_external($effectiveuri);
+                }
 
-            if ($external && $sizelimit != -1 && $downbytes > $sizelimit) {
-                $abortdownload = true;
-            }
+                if ($external && $sizelimit != -1 && $downbytes > $sizelimit) {
+                    $abortdownload = true;
+                }
 
-            return $abortdownload ? 1 : 0;
-        });
+                return $abortdownload ? 1 : 0;
+            });
 
         if ($config->usehead == '1') {
             // First, use a HEAD request to try to find out the type and length of the linked document without having to download

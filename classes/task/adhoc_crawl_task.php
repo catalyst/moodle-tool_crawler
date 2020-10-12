@@ -30,6 +30,7 @@ require_once("$CFG->dirroot/admin/tool/crawler/lib.php");
 
 /**
  * adhoc_crawl_task
+ *
  * Crawl the queue
  *
  * @package    tool_crawler
