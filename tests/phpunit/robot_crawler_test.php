@@ -39,6 +39,9 @@ require_once(__DIR__ . '/../../constants.php');
  */
 class tool_crawler_robot_crawler_test extends advanced_testcase {
 
+    /**
+     * Setup robot crawler testcase and parent setup
+     */
     protected function setUp() {
         parent::setup();
         $this->resetAfterTest(true);
@@ -193,7 +196,7 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
 
         $nodeid = $persistent->get('id');
 
-        // Record should exist
+        // Record should exist.
         $found = $DB->record_exists('tool_crawler_url', ['id' => $nodeid]);
         self::assertTrue($found);
 
@@ -349,6 +352,8 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
      * @dataProvider priority_provider
      *
      * Test for issue #108 - passing node crawl priority to child nodes when parsing html.
+     *
+     * @param int $parentpriority the priority of the parent queue item
      */
     public function test_parse_html_priority_inheritance($parentpriority) {
         global $CFG, $DB;
@@ -506,7 +511,7 @@ HTML;
     public function crawler_url_string_matches_provider() {
         return [
             ['/index.php',              '/index.php',           true],
-            ['/some/dir/index.php',     '/index.php',           true], // Different from core function
+            ['/some/dir/index.php',     '/index.php',           true], // Different from core function.
             ['/course/view.php',        '/course/view.php',     true],
             ['/view.php',               '/course/view.php',     false],
             ['/mod/forum',              '/mod/forum/*',         false],
@@ -519,14 +524,14 @@ HTML;
             ['/mod/one/two/view.php',   '*/view.php',           true],
             ['/foo.php',                '/foo.php,/bar.php',    true],
             ['/bar.php',                '/foo.php,/bar.php',    true],
-            ['/foo/bar.php',            "/foo.php,/bar.php",    true], // Different from core function
+            ['/foo/bar.php',            "/foo.php,/bar.php",    true], // Different from core function.
             ['/foo/bar.php',            "/foo.php,*/bar.php",   true],
             ['/foo/bar.php',            "/foo*.php,/bar.php",   true],
-            ['/foo.php',                "/foo.php\n/bar.php",   false], // Different from core function
-            ['/bar.php',                "/foo.php\n/bar.php",   false], // Different from core function
+            ['/foo.php',                "/foo.php\n/bar.php",   false], // Different from core function.
+            ['/bar.php',                "/foo.php\n/bar.php",   false], // Different from core function.
             ['/foo/bar.php',            "/foo.php\n/bar.php",   false],
-            ['/foo/bar.php',            "/foo.php\n*/bar.php",  false], // Different from core function
-            ['/foo/bar.php',            "/foo*.php\n/bar.php",  false], // Different from core function
+            ['/foo/bar.php',            "/foo.php\n*/bar.php",  false], // Different from core function.
+            ['/foo/bar.php',            "/foo*.php\n/bar.php",  false], // Different from core function.
         ];
     }
 
@@ -560,10 +565,11 @@ HTML;
 
     /**
      * @dataProvider url_validity_check_provider
+     *
      * Check url validity
      *
-     * @param $expected
-     * @param $url
+     * @param string $url the url to test
+     * @param $expected the expected result 
      */
     public function test_invalid_url($url, $expected) {
         $baseurl = 'https://www.example.com/moodle';
@@ -591,6 +597,9 @@ HTML;
      * @dataProvider page_title_validity_check_provider
      *
      * Test for Issue #143: invalid character in page title.
+     *
+     * @param $url the url to test
+     * @param $expected 
      */
     public function test_check_page_title_validity($node, $expected) {
         $this->resetAfterTest(true);

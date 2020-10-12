@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Definitions of constants for tool_crawler
+ *
  * @package   tool_crawler
  * @copyright 2019 Nicolas Roeser, Ulm University <nicolas.roeser@uni-ulm.de>
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

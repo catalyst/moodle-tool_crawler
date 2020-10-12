@@ -148,7 +148,7 @@ function xmldb_tool_crawler_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // level and external are reserved words in mssql.
+        // Fields level and external are reserved words in mssql.
         $table = new xmldb_table('tool_crawler_url');
         $field = new xmldb_field('level', XMLDB_TYPE_INTEGER, '1', null, null, null, '2', 'priority');
 

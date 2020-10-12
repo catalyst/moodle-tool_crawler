@@ -30,8 +30,11 @@ require_once("$CFG->dirroot/admin/tool/crawler/lib.php");
 
 /**
  * crawl_task
+ *
  * Creates a batch of crawls to be done in an ad hoc task.
- * This gives us control over how parallel it is, and also when the workload is processed (eg at night).
+ *
+ * This gives us control over how parallel it is, and also when the workload is
+ * processed (eg at night).
  *
  * @package    tool_crawler
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
