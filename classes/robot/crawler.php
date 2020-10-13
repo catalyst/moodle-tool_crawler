@@ -276,7 +276,7 @@ class crawler {
      * @param string $url relative URL
      * @param int $courseid (optional) the course id if it is known.
      * @param int $priority (optional) the priority of this queue item
-     * @param int $level (optional) the URL node level 
+     * @param int $level (optional) the URL node level
      * @return object|boolean The node record if the resource pointed to by the URL can and should be considered; or `false` if the
      *     URL is invalid or excluded.
      */
@@ -633,7 +633,7 @@ class crawler {
                 } catch (\dml_write_exception $e) {
                     mtrace("Database write error while processing page '{$result->url}'");
                     if ($verbose) {
-                        mtrace("Exception: <" . get_class($e) . ">: \"" . 
+                        mtrace("Exception: <" . get_class($e) . ">: \"" .
                             $e->getMessage() . "\" in {$e->getFile()} at line {$e->getLine()}");
                         mtrace("Trace:\n{$e->getTraceAsString()}");
                     }
@@ -1105,70 +1105,79 @@ class crawler {
         $targetishtml = null; // Cache for whether target resource is an HTML document.
         $targetlengthknown = null; // Cache for whether target resource length is known.
         curl_setopt($s, CURLOPT_WRITEFUNCTION, function($hdl, $content)
-            use (&$chunks, &$sizelimit, &$targetisexternal, &$targetishtml, &$targetlengthknown, &$config, &$abortdownload) {
-                // Target resource reached, switch to non-redirection size limit.
-                if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
-                    $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT;
-                } else if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_WASTEFUL) {
-                    // Always fully download if not aborted by other conditions (like: Content-Length known for non-HTML documents).
-                    $sizelimit = -1; // No size limit.
-                } else {
-                    $sizelimit = $config->bigfilesize * 1000000;
-                }
+          use (&$chunks, &$sizelimit, &$targetisexternal, &$targetishtml, &$targetlengthknown, &$config, &$abortdownload) {
+            // Target resource reached, switch to non-redirection size limit.
+            if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
+              $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT;
+            } else if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_WASTEFUL) {
+            // Always fully download if not aborted by other conditions (like: Content-Length known for non-HTML documents).
+            $sizelimit = -1; // No size limit.
+            } else {
+              $sizelimit = $config->bigfilesize * 1000000;
+            }
 
-                if ($targetisexternal === null) {
-                    $effectiveuri = curl_getinfo($hdl, CURLINFO_EFFECTIVE_URL);
-                    $targetisexternal = self::is_external($effectiveuri);
-                }
+            if ($targetisexternal === null) {
+              $effectiveuri = curl_getinfo($hdl, CURLINFO_EFFECTIVE_URL);
+              $targetisexternal = self::is_external($effectiveuri);
+            }
 
-                if ($targetishtml === null) {
-                    $contenttype = curl_getinfo($hdl, CURLINFO_CONTENT_TYPE);
-                    $targetishtml = (strpos($contenttype, 'text/html') === 0);
-                }
+            if ($targetishtml === null) {
+              $contenttype = curl_getinfo($hdl, CURLINFO_CONTENT_TYPE);
+              $targetishtml = (strpos($contenttype, 'text/html') === 0);
+            }
 
-                if ($targetlengthknown === null) {
-                    $contentlength = curl_getinfo($hdl, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-                    $targetlengthknown = (is_double($contentlength) && $contentlength >= 0.0);
-                }
+            if ($targetlengthknown === null) {
+              $contentlength = curl_getinfo($hdl, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+              $targetlengthknown = (is_double($contentlength) && $contentlength >= 0.0);
+            }
 
-                // Variables $targetisexternal, $targetishtml, and $targetlengthknown are not going to change anymore as we have reached
-                // the target resource.
+            // Variables $targetisexternal, $targetishtml, and
+            // $targetlengthknown are not going to change anymore as we have
+            // reached the target resource.
 
-                if (!$targetishtml) {
-                    // Ignore $targetisexternal. If the document is internal, you had better configure your web server to send
-                    // Content-Length with non-HTML documents.
-                    if ($targetlengthknown || $config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
-                        // Not body of a redirection, not HTML. Or HTML and the user is not interested in being overly exact. ⇒ Abort
-                        // transfer because we neither need nor can understand the body.
-                        $abortdownload = true;
-                    } else if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE) {
-                        $sizelimit = -1; // No size limit.
-                    }
-                } else {
-                    // Target resource is an HTML document.
+            if (!$targetishtml) {
+              // Ignore $targetisexternal. If the document is internal, you had
+              // better configure your web server to send Content-Length with
+              // non-HTML documents.
+              if ($targetlengthknown || $config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
+                // Not body of a redirection, not HTML. Or HTML and the user is
+                // not interested in being overly exact. ⇒ Abort transfer because
+                // we neither need nor can understand the body.
+                $abortdownload = true;
+              } else if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE) {
+              $sizelimit = -1; // No size limit.
+            }
+          } else {
+            // Target resource is an HTML document.
 
-                    // XXX: could abort the download as soon as we have received enough of the document to retrieve its title. This is
-                    // *very* difficult to implement: need to take into account document encodings and all kinds of HTML-specific
-                    // things. If you *really* want this, better change the code so that it directly streams the data from the network
-                    // into an HTML parser.
+            // XXX: could abort the download as soon as we have received enough
+            // of the document to retrieve its title. This is *very* difficult
+            // to implement: need to take into account document encodings and
+            // all kinds of HTML-specific things. If you *really* want this,
+            // better change the code so that it directly streams the data from
+            // the network into an HTML parser.
 
-                    // Internal transfers will never be aborted. When downloading external documents, the size limit, which is set by
-                    // this function, will be applied.
-                    // Disable the size limit for higher network strain settings under certain conditions. The “excessive” level fully
-                    // downloads external resources _if their length is not known_ from Content-Type.
-                    if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE && !$targetlengthknown) {
-                        $sizelimit = -1; // No size limit.
-                    }
-                }
+            // Internal transfers will never be aborted. When downloading
+            // external documents, the size limit, which is set by this
+            // function, will be applied.  Disable the size limit for higher
+            // network strain settings under certain conditions. The
+            // “excessive” level full downloads external resources _if their
+            // length is not known_ from Content-Type.
+            if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE && !$targetlengthknown) {
+              $sizelimit = -1; // No size limit.
+            }
+          }
 
-                $chunks[] = $content;
-                return strlen($content);
-            });
+          $chunks[] = $content;
+          return strlen($content);
+        });
 
-        // Whether the next header line which we read will be the HTTP status-line.
-        // We cannot make this a static variable in the header callback function (closure) because we need to reset it to true
-        // before the second call to curl_exec (for the GET request), in case we have aborted reading of responses to our first
-        // request (the HEAD request).
+        // Whether the next header line which we read will be the HTTP
+        // status-line.  We cannot make this a static variable in the header
+        // callback function (closure) because we need to reset it to true
+        // before the second call to curl_exec (for the GET request), in case
+        // we have aborted reading of responses to our first request (the HEAD
+        // request).
         $firstheaderline = true;
 
         $httpmsg = '';
