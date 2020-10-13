@@ -18,6 +18,7 @@
  * This file defines observers needed by the plugin tool_crawler
  *
  * @package    tool_crawler
+ * @copyright  Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

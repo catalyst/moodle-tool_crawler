@@ -15,8 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * url class
- * defines the model for a url record, for CRUD operations on the url table
+ * Url class model for a url record, CRUD operations and the url table
  *
  * @package    tool_crawler
  * @author     Kristian Ringer <kristianringer@catalyst-au.net>
@@ -230,7 +229,7 @@ class url extends \core\persistent {
 
     /**
      * Hash a url
-     * @param $url string the url to hash
+     * @param string $url the url to hash
      * @return string the hashed url
      */
     public static function hash_url($url) {
