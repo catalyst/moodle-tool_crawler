@@ -1113,7 +1113,7 @@ class crawler {
             // Always fully download if not aborted by other conditions (like: Content-Length known for non-HTML documents).
                 $sizelimit = -1; // No size limit.
             } else {
-                if$sizelimit = $config->bigfilesize * 1000000;
+                $sizelimit = $config->bigfilesize * 1000000;
             }
 
             if ($targetisexternal === null) {
