@@ -569,7 +569,7 @@ HTML;
      * Check url validity
      *
      * @param string $url the url to test
-     * @param $expected the expected result 
+     * @param $expected the expected result
      */
     public function test_invalid_url($url, $expected) {
         $baseurl = 'https://www.example.com/moodle';
@@ -599,7 +599,7 @@ HTML;
      * Test for Issue #143: invalid character in page title.
      *
      * @param $url the url to test
-     * @param $expected 
+     * @param $expected
      */
     public function test_check_page_title_validity($node, $expected) {
         $this->resetAfterTest(true);

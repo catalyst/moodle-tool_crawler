@@ -149,19 +149,24 @@ function tool_crawler_numberformat(float $number, int $decimals = 0) {
 }
 
 /**
- * Produces a filter for SQL queries which will limit a query to big links. The two parts of the filter are returned in an
- * associative array.
+ * Produces a filter for SQL queries which will limit a query to big links. The
+ * two parts of the filter are returned in an associative array.
  *
- * NB: resources with an unknown size will pass the filter as “maybe big”. However, resources which are shorter than the configured
- * big file size, but have an inexact length stored will not be returned marked as big.
+ * NB: resources with an unknown size will pass the filter as “maybe big”.
+ * However, resources which are shorter than the configured big file size, but
+ * have an inexact length stored will not be returned marked as big.
  *
- * @param string $tablealias Name to which the `tool_crawler_url` table is aliased in the final SQL statement. If empty or `null`,
- *                           the columns will be referenced without an explicit table name.
+ * @param string $tablealias Name to which the `tool_crawler_url` table is
+ *              aliased in the final SQL statement. If empty or `null`, the
+ *              columns will be referenced without an explicit table name.
  *
- * @return array Associative array with entries for `wherecondition` and `params`. The value for `wherecondition` is a string which
- *               can be added to a `WHERE` clause in SQL; the condition, if non-empty, already has (round) brackets around it to
- *               allow for combination with other conditions. The value for `params` is an array with entries forming the SQL
- *               parameters that should be used in the query.
+ * @return array Associative array with entries for `wherecondition` and
+ *              `params`. The value for `wherecondition` is a string which can
+ *              be added to a `WHERE` clause in SQL; the condition, if
+ *              non-empty, already has (round) brackets around it to allow for
+ *              combination with other conditions. The value for `params` is an
+ *              array with entries forming the SQL parameters that should be
+ *              used in the query.
  */
 function tool_crawler_sql_oversize_filter($tablealias = null) {
     if (is_string($tablealias) && $tablealias !== '') {
