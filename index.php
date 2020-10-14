@@ -71,6 +71,11 @@ $duration = time() - $crawlstart;
 $eta = floor($duration / $progress + $crawlstart);
 
 $robot = $DB->get_record('user', ['username' => $config->botusername]);
+if (!$robot) {
+    $robot = new stdClass();
+    $robot->id = get_string('botusermissing', 'tool_crawler');
+    $robot->username = get_string('botusermissing', 'tool_crawler');
+}
 
 $table = new html_table();
 $table->head = [get_string('robotstatus', 'tool_crawler')];
