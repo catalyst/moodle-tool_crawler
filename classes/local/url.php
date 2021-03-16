@@ -200,31 +200,49 @@ class url extends \core\persistent {
     /**
      * Many URLs are in the queue now (more will probably be added)
      *
+     * @param int $courseid optional course id
      * @return int size of queue
      */
-    public function get_queue_size() {
+    public function get_queue_size($courseid = 0) {
         global $DB;
 
-        return $DB->get_field_sql("
-                SELECT COUNT(*)
+        $sql = "SELECT COUNT(*)
                   FROM {tool_crawler_url}
-                 WHERE lastcrawled IS NULL
-                    OR lastcrawled < needscrawl");
+                 WHERE (lastcrawled IS NULL
+                    OR lastcrawled < needscrawl)";
+        $params = null;
+        if (!empty($courseid)) {
+            $sql .= " AND courseid = :courseid";
+            $params = ["courseid" => $courseid];
+        }
+        return $DB->get_field_sql($sql, $params);
     }
 
     /**
      * How many URLs have been processed off the queue
      *
+     * @param int $lastcrawled time of the last crawled
+     * @param int $courseid optional course id
      * @return int size of processes list
      */
-    public function get_processed() {
+    public function get_processed($lastcrawled = 0, $courseid = 0) {
         global $DB;
 
-        return $DB->get_field_sql("
-                SELECT COUNT(*)
+        $sql = "SELECT COUNT(*)
                   FROM {tool_crawler_url}
-                 WHERE lastcrawled >= ?",
-                                  array(crawler::get_config()->crawlstart));
+                 WHERE lastcrawled >= :lastcrawled";
+
+        if (!empty($lastcrawled)) {
+            $params = ["lastcrawled" => $lastcrawled];
+        } else {
+            $params = ["lastcrawled" => crawler::get_config()->crawlstart];
+        }
+
+        if (!empty($courseid)) {
+            $sql .= " AND courseid = :courseid";
+            $params = array_merge($params, ["courseid" => $courseid]);
+        }
+        return $DB->get_field_sql($sql, $params);
     }
 
     /**

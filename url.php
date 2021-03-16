@@ -25,4 +25,5 @@ require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once(__DIR__ . '/locallib.php');
 
 $url = required_param('url', PARAM_RAW);
-echo tool_crawler_url_create_page($url);
+$courseid = optional_param('courseid', 0, PARAM_INT);
+echo tool_crawler_url_create_page($url, $courseid);

@@ -14,30 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+use tool_crawler\table\course_links;
+
 /**
- *  tool_crawler reset cli
+ * Render course links table
  *
- * @package    tool_crawler
- * @author     Brendan Heywood <brendan@catalyst-au.net>
+ * @package tool_crawler
+ * @author  Nathan Nguyen <nathannguyen@catalyst-au.net>
  * @copyright  Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class tool_crawler_renderer extends plugin_renderer_base {
 
-define('CLI_SCRIPT', true);
+    /**
+     * Render course links table.
+     *
+     * @param course_links $courselinks
+     * @return false|string
+     */
+    public function render_course_links(course_links $courselinks) {
+        ob_start();
+        $courselinks->out($courselinks->pagesize, false);
+        $o = ob_get_contents();
+        ob_end_clean();
+        return $o;
+    }
 
-require(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php');
-require_once($CFG->libdir.'/clilib.php');
-require_once($CFG->dirroot .'/admin/tool/crawler/lib.php');
-
-global $DB;
-
-unset_config('crawlstart', 'tool_crawler');
-unset_config('crawlend', 'tool_crawler');
-unset_config('crawltick', 'tool_crawler');
-$DB->delete_records('tool_crawler_url');
-$DB->delete_records('tool_crawler_edge');
-$DB->set_field('tool_crawler_course', 'timestart', null);
-$DB->set_field('tool_crawler_course', 'timefinish', null);
-
-@unlink($CFG->dataroot . '/tool_crawler_cookies.txt');
-
+}

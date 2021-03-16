@@ -612,4 +612,49 @@ HTML;
         self::assertSame($expected, $result->title);
 
     }
+
+    /**
+     * Test with course mode
+     *
+     */
+    public function test_crawler_course_mode() {
+        global $DB;
+        $this->resetAfterTest(true);
+
+        // Turn on course mode.
+        set_config('coursemode', 1, 'tool_crawler');
+        // Queue a course.
+        $course = $this->getDataGenerator()->create_course();
+        \tool_crawler\helper::queue_course($course->id);
+        $courseids = \tool_crawler\helper::get_onqueue_course_ids();
+        $this->assertContains($course->id, $courseids);
+        // Run crawling.
+        tool_crawler_crawl();
+        // Crawled urls.
+        $crawlinks = $DB->get_records('tool_crawler_url');
+        $this->assertCount(1, $crawlinks);
+        $url = reset($crawlinks)->url;
+        // The url is course page.
+        if (method_exists($this, 'assertStringContainsString')) {
+            $this->assertStringContainsString("/moodle/course/view.php?id=$course->id", $url);
+        } else {
+            $this->assertContains("/moodle/course/view.php?id=$course->id", $url);
+        }
+
+        \tool_crawler\helper::clear_course_link($course->id);
+        $crawlinks = $DB->get_records('tool_crawler_url');
+        $this->assertCount(0, $crawlinks);
+
+        set_config('coursemode', 0, 'tool_crawler');
+        tool_crawler_crawl();
+        $crawlinks = $DB->get_records('tool_crawler_url');
+        $this->assertCount(1, $crawlinks);
+        $url = reset($crawlinks)->url;
+        // The url is not a course page.
+        if (method_exists($this, 'assertStringNotContainsString')) {
+            $this->assertStringNotContainsString("/moodle/course/view.php?id=$course->id", $url);
+        } else {
+            $this->assertNotContains("/moodle/course/view.php?id=$course->id", $url);
+        }
+    }
 }
