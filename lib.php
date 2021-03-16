@@ -54,7 +54,13 @@ function tool_crawler_crawl($verbose = false) {
         $start = time();
         set_config('crawlstart', $start, 'tool_crawler');
 
-        if ($config->uselogs == 1) {
+        if ($config->coursemode == 1) {
+            $courseids = \tool_crawler\helper::get_onqueue_course_ids();
+            foreach ($courseids as $courseid) {
+                $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
+                \tool_crawler\helper::start_course_crawling($courseid);
+            }
+        } else if ($config->uselogs == 1) {
             $recentcourses = $robot->get_recentcourses();
             foreach ($recentcourses as $courseid) {
                 $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
@@ -157,6 +163,14 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
     if (!$coursereports) {
         return; // Course reports submenu in "course administration" not available.
     }
+
+    $coursemode = get_config('tool_crawler', 'coursemode');
+    if ($coursemode) {
+        $url = new moodle_url('/admin/tool/crawler/course.php', array('id' => $course->id));
+        $navigation->add(get_string('pluginname', 'tool_crawler'),
+            $url, $navigation::TYPE_SETTING, null, 'crawler', new pix_icon('i/warning', ''));
+    }
+
 
     if ($coursereports) {
         $node = $coursereports->add(
