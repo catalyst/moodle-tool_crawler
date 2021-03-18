@@ -228,16 +228,22 @@ class helper {
     public static function send_email($courseid) {
         $notifyemail = get_config('tool_crawler', 'emailto');
 
-        if (!empty($notifyemail)) {
-            $url = new \moodle_url('/admin/tool/crawler/course.php', ['id' => $courseid]);
-            $noticehtml = get_string('emailcontent', 'tool_crawler', $url->out());
-            $subject = get_string('emailsubject', 'tool_crawler');
+        $context = \context_course::instance($courseid);
+        $users = get_users_by_capability($context, 'tool/crawler:courseconfig');
 
+        if (!empty($notifyemail)) {
             $user = new \stdClass();
             $user->id = -1;
             $user->email = $notifyemail;
             $user->mailformat = 1;
+            $users[] = $user;
+        }
 
+        $url = new \moodle_url('/admin/tool/crawler/course.php', ['id' => $courseid]);
+        $noticehtml = get_string('emailcontent', 'tool_crawler', $url->out());
+        $subject = get_string('emailsubject', 'tool_crawler');
+
+        foreach ($users as $user) {
             email_to_user(
                 $user,
                 get_admin(),
