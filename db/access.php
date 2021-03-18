@@ -14,24 +14,26 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
- * Defines the version of tool_crawler
  *
- * @package    tool_crawler
- * @author     Brendan Heywood <brendan@catalyst-au.net>
+ * @package tool_crawler
+ * @author  Nathan Nguyen <nathannguyen@catalyst-au.net>
  * @copyright  Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
+$capabilities = array(
+    'tool/crawler:courseconfig' => array(
 
-$plugin->version   = 2020101303;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->release   = 2020101303;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2016021800;        // Requires this Moodle version.
-$plugin->component = 'tool_crawler'; // To check on upgrade, that module sits in correct place.
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->dependencies = array(
-    'auth_basic' => ANY_VERSION,
+        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
 );

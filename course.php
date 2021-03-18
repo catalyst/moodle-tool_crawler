@@ -32,7 +32,7 @@ $courseid = required_param('id', PARAM_INT);
 $page = optional_param('page', 0, PARAM_INT);
 $course = get_course($courseid);
 require_login($course, false);
-require_capability('moodle/course:update', context_system::instance());
+require_capability('tool/crawler:courseconfig', context_course::instance($courseid));
 
 $title = get_string('pluginname', 'tool_crawler');
 $heading = get_string('pluginname', 'tool_crawler');
