@@ -44,12 +44,12 @@ defined('MOODLE_INTERNAL') || die();
  *               plain text.
  * @return string HTML snippet which can be used in output.
  */
-function tool_crawler_link($url, $label, $redirect = '', $labelishtml = false) {
+function tool_crawler_link($url, $label, $redirect = '', $labelishtml = false, $courseid = 0) {
     if (!$labelishtml) {
         $label = htmlspecialchars($label, ENT_NOQUOTES | ENT_HTML401);
     }
 
-    $html = html_writer::link(new moodle_url('url.php', array('url' => $url)), $label) .
+    $html = html_writer::link(new moodle_url('url.php', array('courseid' => $courseid, 'url' => $url)), $label) .
             ' ' .
             html_writer::link($url, '↗', array('target' => 'link')) .
             '<br><small>' . htmlspecialchars($url, ENT_NOQUOTES | ENT_HTML401) . '</small>';
@@ -240,12 +240,18 @@ function tool_crawler_url_gen_table($data) {
  * @param string $url The URL.
  * @return string A HTML page about the URL.
  */
-function tool_crawler_url_create_page($url) {
+function tool_crawler_url_create_page($url, $courseid = 0) {
     global $PAGE, $OUTPUT, $DB;
 
     require_login(null, false);
     $context = context_system::instance();
-    require_capability('moodle/site:config', $context);
+
+    if (!empty($courseid)) {
+        require_capability('tool/crawler:courseconfig', context_course::instance($courseid));
+    } else {
+        require_capability('moodle/site:config', $context);
+    }
+
 
     $navurl = new moodle_url('/admin/tool/crawler/url.php', array(
         'url' => $url

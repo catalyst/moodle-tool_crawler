@@ -208,7 +208,7 @@ class course_links extends table_sql implements renderable {
         } else {
             $text = htmlspecialchars($text, ENT_NOQUOTES | ENT_HTML401);
         }
-        return tool_crawler_link($row->target, $text, $row->redirect, true);
+        return tool_crawler_link($row->target, $text, $row->redirect, true, $this->courseid);
     }
 
     /**
@@ -218,7 +218,7 @@ class course_links extends table_sql implements renderable {
      * @throws \coding_exception
      */
     protected function col_url($row) {
-        return tool_crawler_link($row->url, $row->title, $row->redirect);
+        return tool_crawler_link($row->url, $row->title, $row->redirect, false, $this->courseid);
     }
 
 }
