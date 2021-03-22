@@ -189,8 +189,11 @@ class course_links extends table_sql implements renderable {
      * @throws \coding_exception
      */
     protected function col_httpcode($row) {
-        $text = \tool_crawler\helper::translate_httpcode($row->httpcode);
-        return !empty($text) ? $text : tool_crawler_http_code($row);
+        $text = tool_crawler_http_code($row);
+        if ($translation = \tool_crawler\helper::translate_httpcode($row->httpcode)) {
+            $text .= "<br/>" . $translation;
+        }
+        return $text;
     }
 
     /**
