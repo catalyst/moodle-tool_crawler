@@ -38,7 +38,6 @@ $title = get_string('pluginname', 'tool_crawler');
 $heading = get_string('pluginname', 'tool_crawler');
 $url = new moodle_url('/admin/tool/crawler/course.php', ['id' => $course->id]);
 
-
 $courseurl = new moodle_url('/course/view.php', ['id' => $course->id]);
 
 $PAGE->set_url($url);
@@ -61,7 +60,6 @@ if ($mform->is_cancelled()) {
 } else {
     echo $OUTPUT->header();
     echo $OUTPUT->heading($title);
-    $table = false;
     if (!empty($queuecourse)) {
         list($eta, $duration, $progress) = \tool_crawler\helper::calculate_progress($queuecourse->courseid);
         $html = '';
@@ -70,19 +68,14 @@ if ($mform->is_cancelled()) {
             $html .= "Progress: $progress $br";
             $html .= "Duration: $duration $br";
             $html .= "ETA: $eta $br";
-            $table = new \tool_crawler\table\course_links('course_links', $url, $courseid, $page);
-
+            $runcrawlerurl = new moodle_url('/admin/tool/crawler/coursereport.php', ['courseid' => $course->id]);
+            $html .= html_writer::link($runcrawlerurl, get_string('coursereport', 'tool_crawler'));
         } else {
             $html = get_string('onqueue', 'tool_crawler');
         }
         echo $OUTPUT->notification($html, 'info');
     }
+
     $mform->display();
-
-    if ($table) {
-        $output = $PAGE->get_renderer('tool_crawler');
-        echo $output->render($table);
-    }
-
     echo $OUTPUT->footer();
 }

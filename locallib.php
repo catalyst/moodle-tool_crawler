@@ -259,8 +259,7 @@ function tool_crawler_url_create_page($url, $courseid = 0) {
     $PAGE->set_context($context);
     $PAGE->set_url($navurl);
     $PAGE->set_pagelayout('admin');
-    $PAGE->set_title(get_string('urldetails', 'tool_crawler') );
-
+    $PAGE->set_title(get_string('urldetails', 'tool_crawler'));
     $page = $OUTPUT->header();
 
     $page .= $OUTPUT->heading(get_string('urldetails', 'tool_crawler'));

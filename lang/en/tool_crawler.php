@@ -75,6 +75,7 @@ $string['course'] = 'Course';
 $string['crawler:courseconfig'] = 'User with this permission can configure link checker at course context';
 $string['coursemode'] = 'Course Mode';
 $string['coursemode_desc'] = 'If enabled, only crawl links in courses where the link crawler is enabled. "uselogs" and "seed url" will be ignored. User will need \'tool/crawler:courseconfig\' permission to be able to run the course link checker and receive notification';
+$string['coursereport'] = 'Crawled Link report';
 $string['curcrawlstart'] = 'Current crawl started at';
 $string['crawlend'] = 'Crawl end';
 $string['crawlstart'] = 'Crawl start';

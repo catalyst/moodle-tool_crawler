@@ -157,7 +157,10 @@ function tool_crawler_summary($courseid) {
  * @param context $coursecontext The context of the course
  */
 function tool_crawler_extend_navigation_course($navigation, $course, $coursecontext) {
-    if (has_capability('tool/crawler:courseconfig', $coursecontext)) {
+    $courseconfig = has_capability('tool/crawler:courseconfig', $coursecontext);
+    $siteconfig = has_capability('moodle/site:config', context_system::instance());
+
+    if ($courseconfig) {
         $coursemode = get_config('tool_crawler', 'coursemode');
         if ($coursemode) {
             $url = new moodle_url('/admin/tool/crawler/course.php', array('id' => $course->id));
@@ -173,7 +176,7 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
         return; // Course reports submenu in "course administration" not available.
     }
 
-    if ($coursereports) {
+    if ($coursereports && ($siteconfig || $courseconfig)) {
         $node = $coursereports->add(
             get_string('pluginname', 'tool_crawler'),
             null,
@@ -183,16 +186,30 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
             new pix_icon('i/report', get_string('pluginname', 'tool_crawler'))
         );
 
-        foreach ($reports as $rpt) {
-            $url = new moodle_url('/admin/tool/crawler/report.php', array('report' => $rpt, 'course' => $course->id));
+        if ($courseconfig) {
+            $url = new moodle_url('/admin/tool/crawler/coursereport.php', array('courseid' => $course->id));
             $node->add(
-                get_string($rpt, 'tool_crawler'),
+                get_string('coursereport', 'tool_crawler'),
                 $url,
                 navigation_node::TYPE_SETTING,
                 null,
                 null,
                 new pix_icon('i/report', '')
             );
+        }
+
+        if ($siteconfig) {
+            foreach ($reports as $rpt) {
+                $url = new moodle_url('/admin/tool/crawler/report.php', array('report' => $rpt, 'course' => $course->id));
+                $node->add(
+                    get_string($rpt, 'tool_crawler'),
+                    $url,
+                    navigation_node::TYPE_SETTING,
+                    null,
+                    null,
+                    new pix_icon('i/report', '')
+                );
+            }
         }
     }
 }
