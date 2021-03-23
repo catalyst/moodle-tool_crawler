@@ -532,7 +532,23 @@ class crawler {
 
         // Get an instance of the currently configured lock_factory.
         $lockfactory = \core\lock\lock_config::get_lock_factory('tool_crawler_process_queue');
-
+        if ($config->coursemode == 1 || $config->uselogs == 1) {
+            if (empty($allowedcourses)) {
+                return true;
+            }
+            $courselockfactory = \core\lock\lock_config::get_lock_factory('tool_crawler_process_course_queue');
+            $courseid = 0;
+            foreach ($allowedcourses as $id) {
+                if ($courselock = $courselockfactory->get_lock($id, 0)) {
+                    $courseid = $id;
+                    break;
+                }
+            }
+            // No unlocked course.
+            if (!$courseid) {
+                $courseid = reset($allowedcourses);
+            }
+        }
         // While we are not exceeding the maxcron time, and the queue is not empty.
         while (time() < $cronstop) {
             if (empty($nodes)) {
@@ -540,11 +556,10 @@ class crawler {
                 // in case other workers are already locked and processing items at the front of the queue.
                 // We try each queue item until we find an available one.
                 if ($config->coursemode == 1 || $config->uselogs == 1) {
-                    if (empty($allowedcourses)) {
+                    if (!$courseid) {
                         return true;
                     }
-                    // Only process first course in the queue.
-                    $courseid = reset($allowedcourses);
+
                     $params = ['courseid' => $courseid];
                     $sql = "SELECT *
                               FROM {tool_crawler_url}
@@ -556,6 +571,9 @@ class crawler {
                                    id ASC";
                     $nodes = $DB->get_records_sql($sql, $params, 0, 1000);
                     if (empty($nodes)) {
+                        if ($courselock) {
+                            $courselock->release();
+                        }
                         \tool_crawler\helper::finish_course_crawling($courseid);
                         return true;
                     }
@@ -600,10 +618,16 @@ class crawler {
             try {
                 $this->crawl($node, $verbose);
             } catch (\Throwable $e) {
+                if ($courselock) {
+                    $courselock->release();
+                }
                 throw $e;
             } finally {
                 $lock->release();
             }
+        }
+        if ($courselock) {
+            $courselock->release();
         }
         set_config('crawltick', time(), 'tool_crawler');
         return false;
