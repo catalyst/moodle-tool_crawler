@@ -90,7 +90,7 @@ class course_links extends table_sql implements renderable {
 
         // Set table configs.
         $this->collapsible(false);
-        $this->sortable(true);
+        $this->sortable(true, 'response', SORT_ASC);
         $this->pageable(true);
     }
 
