@@ -44,7 +44,7 @@ class tool_crawler_robot_cleanup_test extends advanced_testcase {
      *
      * @throws coding_exception
      */
-    protected function setUp() {
+    protected function setUp(): void {
         global $DB;
 
         $this->resetAfterTest(true);
