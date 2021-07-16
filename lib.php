@@ -159,9 +159,10 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
     }
 
     if ($coursereports) {
+        $url = new moodle_url('/admin/tool/crawler/report.php', array('report' => 'recent', 'course' => $course->id));
         $node = $coursereports->add(
             get_string('pluginname', 'tool_crawler'),
-            null,
+            $url,
             navigation_node::TYPE_CONTAINER,
             null,
             'linkchecker',
