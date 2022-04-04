@@ -47,7 +47,7 @@ git submodule add https://github.com/catalyst/moodle-auth_basic auth/basic
 
 Install plugin moodle-tool_crawler as a git submodule:
 ```
-git submodule add https://github.com/central-queensland-uni/moodle-tool_crawler.git admin/tool/crawler
+git submodule add https://github.com/catalyst/moodle-tool_crawler.git admin/tool/crawler
 ```
 # Configuration
 
