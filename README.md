@@ -30,10 +30,10 @@ Since the plugin cronjob comes in from outside it needs to authenticate in Moodl
 
 # Branches
 
-| Moodle version     | Branch                |
+| Moodle version    | Branch                |
 | ----------------- | --------------------- |
-| Moodle 3.4 to 3.9 | master                |
 | Moodle 3.10+      | MOODLE_310_STABLE     |
+| Moodle 3.4 to 3.9 | master                |
 | Totara 12+        | master                |
 
 # Installation
