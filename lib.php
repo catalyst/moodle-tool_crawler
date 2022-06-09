@@ -151,34 +151,19 @@ function tool_crawler_summary($courseid) {
  * @param context $coursecontext The context of the course
  */
 function tool_crawler_extend_navigation_course($navigation, $course, $coursecontext) {
-    $reports = array('queued', 'recent', 'broken', 'oversize');
-
     $coursereports = $navigation->get('coursereports');
     if (!$coursereports) {
         return; // Course reports submenu in "course administration" not available.
     }
 
     if ($coursereports) {
-        $url = new moodle_url('/admin/tool/crawler/report.php', array('report' => 'recent', 'course' => $course->id));
-        $node = $coursereports->add(
+        $coursereports->add(
             get_string('pluginname', 'tool_crawler'),
-            $url,
+            new moodle_url('/admin/tool/crawler/report.php', array('report' => 'queued', 'course' => $course->id)),
             navigation_node::TYPE_CONTAINER,
             null,
             'linkchecker',
             new pix_icon('i/report', get_string('pluginname', 'tool_crawler'))
         );
-
-        foreach ($reports as $rpt) {
-            $url = new moodle_url('/admin/tool/crawler/report.php', array('report' => $rpt, 'course' => $course->id));
-            $node->add(
-                get_string($rpt, 'tool_crawler'),
-                $url,
-                navigation_node::TYPE_SETTING,
-                null,
-                null,
-                new pix_icon('i/report', '')
-            );
-        }
     }
 }
