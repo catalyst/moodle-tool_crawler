@@ -224,11 +224,12 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
         $expectedpattern = '@' .
                 preg_quote('<h2>', '@') .
                 '.*' .
-                preg_quote('<a ', '@') .
+                preg_quote('<br><small><a', '@') .
                 '[^>]*' . // XXX: Not *100%* reliable, as '>' *might* be contained in attribute values.
-                preg_quote('href="' . $escapedexpected . '">↗</a><br><small>' . $escapedexpected . '</small>', '@') .
+                preg_quote('href="' . $escapedexpected . '">' . $escapedexpected . '</a></small>', '@') .
                 '@';
-        self::assertRegExp($expectedpattern, $page);
+
+        self::assertMatchesRegularExpression($expectedpattern, $page);
     }
 
     /**
@@ -273,7 +274,7 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
                 '.*' .
                 preg_quote('<br>Redirect: <a href="' . $escapedredirecturl . '">' . $escapedredirecturl . '</a></h2>', '@') .
                 '@';
-        self::assertRegExp($expectedpattern, $page);
+        self::assertMatchesRegularExpression($expectedpattern, $page);
     }
 
     /**
