@@ -49,10 +49,9 @@ function tool_crawler_link($url, $label, $redirect = '', $labelishtml = false) {
         $label = htmlspecialchars($label, ENT_NOQUOTES | ENT_HTML401);
     }
 
-    $html = html_writer::link(new moodle_url('url.php', array('url' => $url)), $label) .
-            ' ' .
-            html_writer::link($url, '↗', array('target' => 'link')) .
-            '<br><small>' . htmlspecialchars($url, ENT_NOQUOTES | ENT_HTML401) . '</small>';
+    $canviewsitelevelreports = has_capability('moodle/site:config', context_system::instance());
+    $html = $canviewsitelevelreports ? html_writer::link(new moodle_url('url.php', array('url' => $url)), $label) : $label;
+    $html .= '<br><small>' . html_writer::link($url, htmlspecialchars($url, ENT_NOQUOTES | ENT_HTML401), ['target' => 'link']) . '</small>';
 
     if ($redirect) {
         $linkhtmlsnippet = html_writer::link($redirect, htmlspecialchars($redirect, ENT_NOQUOTES | ENT_HTML401));
