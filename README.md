@@ -157,7 +157,7 @@ be able to see the line "You are logged in as ".
 Once Basic HTTP auth works test running the robot task from the CLI:
 
 ```
-php admin/tool/task/cli/schedule_task.php --execute='\tool_crawler\task\crawl_task'
+php admin/cli/scheduled_task.php --execute='\tool_crawler\task\crawl_task'
 Execute scheduled task: Parallel crawling task (tool_crawler\task\crawl_task)
 ... used 22 dbqueries
 ... used 0.039698123931885 seconds
@@ -169,7 +169,7 @@ will run in parallel, depending on the crawl_task setting.
 
 You can manually run the adhoc tasks from the CLI with:
 ```
-php admin/tool/task/cli/adhoc_task.php --execute
+php admin/cli/adhoc_task.php --execute
 Execute adhoc task: tool_crawler\task\adhoc_crawl_task
 ... used 5733 dbqueries
 ... used 58.239180088043 seconds
