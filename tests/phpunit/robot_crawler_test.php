@@ -42,7 +42,7 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
     /**
      * Setup robot crawler testcase and parent setup
      */
-    protected function setUp() {
+    protected function setUp(): void {
         parent::setup();
         $this->resetAfterTest(true);
 
