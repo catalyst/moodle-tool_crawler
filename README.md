@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/catalyst/moodle-tool_crawler.svg?branch=master)](https://travis-ci.org/catalyst/moodle-tool_crawler)
+# moodle-tool_crawler
+
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/catalyst/moodle-tool_crawler/ci/master?label=ci)
 
 * [What is this?](#what-is-this)
 * [How does it work?](#how-does-it-work)

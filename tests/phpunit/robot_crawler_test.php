@@ -229,7 +229,8 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
                 preg_quote('href="' . $escapedexpected . '">' . $escapedexpected . '</a></small>', '@') .
                 '@';
 
-        self::assertRegExp($expectedpattern, $page);
+        // Workaround to ensure greater compatbilitiy since assertRegExp is deprecated.
+        self::assertTrue(preg_match($expectedpattern, $page) === 1);
     }
 
     /**
@@ -274,7 +275,9 @@ class tool_crawler_robot_crawler_test extends advanced_testcase {
                 '.*' .
                 preg_quote('<br>Redirect: <a href="' . $escapedredirecturl . '">' . $escapedredirecturl . '</a></h2>', '@') .
                 '@';
-        self::assertRegExp($expectedpattern, $page);
+
+        // Workaround to ensure greater compatbilitiy since assertRegExp is deprecated.
+        self::assertTrue(preg_match($expectedpattern, $page) === 1);
     }
 
     /**
@@ -570,7 +573,7 @@ HTML;
      * Check url validity
      *
      * @param string $url the url to test
-     * @param $expected the expected result
+     * @param bool $expected the expected result
      */
     public function test_invalid_url($url, $expected) {
         $baseurl = 'https://www.example.com/moodle';
@@ -599,8 +602,8 @@ HTML;
      *
      * Test for Issue #143: invalid character in page title.
      *
-     * @param $url the url to test
-     * @param $expected
+     * @param array $node The node to test.
+     * @param string $expected
      */
     public function test_check_page_title_validity($node, $expected) {
         $this->resetAfterTest(true);
