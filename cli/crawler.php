@@ -53,4 +53,5 @@ if ($options['verbose'] && (!is_numeric($options['verbose']) || $options['verbos
 }
 
 tool_crawler_crawl($options['verbose']);
+exit(0);
 

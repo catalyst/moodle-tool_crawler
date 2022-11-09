@@ -15,29 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- *  tool_crawler reset cli
+ * Permission for user to run crawling on a course and receive notification.
  *
- * @package    tool_crawler
- * @author     Brendan Heywood <brendan@catalyst-au.net>
+ * @package tool_crawler
+ * @author  Nathan Nguyen <nathannguyen@catalyst-au.net>
  * @copyright  Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define('CLI_SCRIPT', true);
+defined('MOODLE_INTERNAL') || die();
 
-require(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php');
-require_once($CFG->libdir.'/clilib.php');
-require_once($CFG->dirroot .'/admin/tool/crawler/lib.php');
+$capabilities = array(
+    'tool/crawler:courseconfig' => array(
 
-global $DB;
+        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
 
-unset_config('crawlstart', 'tool_crawler');
-unset_config('crawlend', 'tool_crawler');
-unset_config('crawltick', 'tool_crawler');
-$DB->delete_records('tool_crawler_url');
-$DB->delete_records('tool_crawler_edge');
-$DB->set_field('tool_crawler_course', 'timestart', null);
-$DB->set_field('tool_crawler_course', 'timefinish', null);
-
-@unlink($CFG->dataroot . '/tool_crawler_cookies.txt');
-
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+);

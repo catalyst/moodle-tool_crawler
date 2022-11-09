@@ -177,5 +177,21 @@ function xmldb_tool_crawler_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2020100100, 'tool', 'crawler');
     }
 
+    if ($oldversion < 2020101303) {
+        $table = new xmldb_table('tool_crawler_course');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, true, true, null, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, true, null, null, 'id');
+        $table->add_field('timestart', XMLDB_TYPE_INTEGER, '10', null, false, null, null, 'courseid');
+        $table->add_field('timefinish', XMLDB_TYPE_INTEGER, '10', null, false, null, null, 'timestart');
+
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id'], null, null);
+        $table->add_key('courseid', XMLDB_KEY_FOREIGN_UNIQUE, ['courseid'], 'course', ['id']);
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+        // Crawler savepoint reached.
+        upgrade_plugin_savepoint(true, 2020101303, 'tool', 'crawler');
+    }
+
     return true;
 }

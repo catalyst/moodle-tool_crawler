@@ -142,6 +142,19 @@ useridlistid
                                                       0,
                                                       $options));
 
+
+        $settings->add($setting = new admin_setting_configselect('tool_crawler/coursemode',
+                                                    new lang_string('coursemode',           'tool_crawler'),
+                                                    new lang_string('coursemode_desc',       'tool_crawler'),
+                                                    0,
+                                                    $options));
+
+        $settings->add(new admin_setting_configtext('tool_crawler/emailto',
+                                                    get_string('emailto', 'tool_crawler'),
+                                                    get_string('emailto_desc', 'tool_crawler'),
+                                                    '',
+                                                    PARAM_EMAIL));
+
         $settings->add(new admin_setting_configtext('tool_crawler/recentactivity',
                                                     new lang_string('recentactivity',    'tool_crawler'),
                                                     get_string('recentactivitydesc', 'tool_crawler'), '1'));

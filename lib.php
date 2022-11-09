@@ -54,7 +54,13 @@ function tool_crawler_crawl($verbose = false) {
         $start = time();
         set_config('crawlstart', $start, 'tool_crawler');
 
-        if ($config->uselogs == 1) {
+        if ($config->coursemode == 1) {
+            $courseids = \tool_crawler\helper::get_onqueue_course_ids();
+            foreach ($courseids as $courseid) {
+                $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
+                \tool_crawler\helper::start_course_crawling($courseid);
+            }
+        } else if ($config->uselogs == 1) {
             $recentcourses = $robot->get_recentcourses();
             foreach ($recentcourses as $courseid) {
                 $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
@@ -151,6 +157,18 @@ function tool_crawler_summary($courseid) {
  * @param context $coursecontext The context of the course
  */
 function tool_crawler_extend_navigation_course($navigation, $course, $coursecontext) {
+    $courseconfig = has_capability('tool/crawler:courseconfig', $coursecontext);
+    $siteconfig = has_capability('moodle/site:config', context_system::instance());
+
+    if ($courseconfig) {
+        $coursemode = get_config('tool_crawler', 'coursemode');
+        if ($coursemode) {
+            $url = new moodle_url('/admin/tool/crawler/course.php', array('id' => $course->id));
+            $navigation->add(get_string('pluginname', 'tool_crawler'),
+                $url, $navigation::TYPE_SETTING, null, 'crawler', new pix_icon('i/warning', ''));
+        }
+    }
+
     $reports = array('queued', 'recent', 'broken', 'oversize');
 
     $coursereports = $navigation->get('coursereports');
@@ -158,7 +176,7 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
         return; // Course reports submenu in "course administration" not available.
     }
 
-    if ($coursereports) {
+    if ($coursereports && ($siteconfig || $courseconfig)) {
         $node = $coursereports->add(
             get_string('pluginname', 'tool_crawler'),
             null,
@@ -168,16 +186,30 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
             new pix_icon('i/report', get_string('pluginname', 'tool_crawler'))
         );
 
-        foreach ($reports as $rpt) {
-            $url = new moodle_url('/admin/tool/crawler/report.php', array('report' => $rpt, 'course' => $course->id));
+        if ($courseconfig) {
+            $url = new moodle_url('/admin/tool/crawler/coursereport.php', array('courseid' => $course->id));
             $node->add(
-                get_string($rpt, 'tool_crawler'),
+                get_string('coursereport', 'tool_crawler'),
                 $url,
                 navigation_node::TYPE_SETTING,
                 null,
                 null,
                 new pix_icon('i/report', '')
             );
+        }
+
+        if ($siteconfig) {
+            foreach ($reports as $rpt) {
+                $url = new moodle_url('/admin/tool/crawler/report.php', array('report' => $rpt, 'course' => $course->id));
+                $node->add(
+                    get_string($rpt, 'tool_crawler'),
+                    $url,
+                    navigation_node::TYPE_SETTING,
+                    null,
+                    null,
+                    new pix_icon('i/report', '')
+                );
+            }
         }
     }
 }

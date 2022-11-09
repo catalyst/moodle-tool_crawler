@@ -142,6 +142,24 @@ The same effect could be achieved even without role "Robot nofollow" by
 assigning role "Robot" on the contexts you want to be crawled. But
 using the combination of two roles gives more flexibility.
 
+## Disable site-wide crawling and allow non-admin user to run the tool at course context
+### New settings at '/admin/settings.php?section=tool_crawler'
+- coursemode: enable course link checker for at course level
+- emailto: Notification will be sent to all users with 'tool/crawler:courseconfig' permission and this email address.
+
+### Once enabled the following item will displayed at course admin setting 'Link checker robot'
+- Click on 'run link checking' to add the course to crawling queue
+- Click on 'rerun link checking' if you want to re-run crawling on the the course
+- Click on 'stop link checking' to remove the course from the queue and all crawled links belong to the course
+
+### The bot account should have the following permission:
+- View subjects without participation: moodle/course:view
+- View hidden subjects: moodle/course:viewhiddencourses
+- View hidden sections: moodle/course:viewhiddensections
+- View hidden book chapters: mod/book:viewhiddenchapters
+- View hidden activities: moodle/course:viewhiddenactivities
+- See hidden categoriesmoodle/category:viewhiddencategories
+
 # Testing
 
 ## Test basic authentication with curl

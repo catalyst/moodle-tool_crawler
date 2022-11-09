@@ -42,15 +42,17 @@ defined('MOODLE_INTERNAL') || die();
  * @param string $redirect The final URL if a redirect was served.
  * @param string $labelishtml Whether the $label parameter contains an HTML snippet (if true) or plain text (if false). Defaults to
  *               plain text.
+ * @param int $courseid the course to run crawling on if set <> 0
  * @return string HTML snippet which can be used in output.
  */
-function tool_crawler_link($url, $label, $redirect = '', $labelishtml = false) {
+function tool_crawler_link($url, $label, $redirect = '', $labelishtml = false, $courseid = 0) {
     if (!$labelishtml) {
         $label = htmlspecialchars($label, ENT_NOQUOTES | ENT_HTML401);
     }
 
     $canviewsitelevelreports = has_capability('moodle/site:config', context_system::instance());
-    $html = $canviewsitelevelreports ? html_writer::link(new moodle_url('url.php', array('url' => $url)), $label) : $label;
+    $html = $canviewsitelevelreports ? html_writer::link(new moodle_url('url.php',
+        array('courseid' => $courseid, 'url' => $url)), $label) : $label;
     $html .= '<br><small>' . html_writer::link($url, htmlspecialchars($url, ENT_NOQUOTES | ENT_HTML401), ['target' => 'link']) . '</small>';
 
     if ($redirect) {
@@ -237,14 +239,23 @@ function tool_crawler_url_gen_table($data) {
  * Generates and returns a full HTML page with details about a URL.
  *
  * @param string $url The URL.
+ * @param int $courseid the course to run crawling on if set <> 0
  * @return string A HTML page about the URL.
  */
-function tool_crawler_url_create_page($url) {
+function tool_crawler_url_create_page($url, $courseid = 0) {
     global $PAGE, $OUTPUT, $DB;
 
     require_login(null, false);
     $context = context_system::instance();
-    require_capability('moodle/site:config', $context);
+
+    if (!empty($courseid)) {
+        // Check permisson at course context.
+        $context = context_course::instance($courseid);
+        require_capability('tool/crawler:courseconfig', $context);
+    } else {
+        // Check permisson at site context.
+        require_capability('moodle/site:config', $context);
+    }
 
     $navurl = new moodle_url('/admin/tool/crawler/url.php', array(
         'url' => $url
@@ -252,8 +263,7 @@ function tool_crawler_url_create_page($url) {
     $PAGE->set_context($context);
     $PAGE->set_url($navurl);
     $PAGE->set_pagelayout('admin');
-    $PAGE->set_title(get_string('urldetails', 'tool_crawler') );
-
+    $PAGE->set_title(get_string('urldetails', 'tool_crawler'));
     $page = $OUTPUT->header();
 
     $page .= $OUTPUT->heading(get_string('urldetails', 'tool_crawler'));

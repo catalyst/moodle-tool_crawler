@@ -519,9 +519,11 @@ class crawler {
         global $DB;
         $config = $this::get_config();
 
-        $recentcourses = false;
-        if ($config->uselogs == 1) {
-            $recentcourses = $this->get_recentcourses();
+        $allowedcourses = false;
+        if ($config->coursemode == 1) {
+            $allowedcourses = \tool_crawler\helper::get_onqueue_course_ids();
+        } else if ($config->uselogs == 1) {
+            $allowedcourses = $this->get_recentcourses();
         }
 
         // Iterate through the queue.
@@ -538,17 +540,41 @@ class crawler {
                 // Grab a list of items from the front of the queue. We need the first 1000
                 // in case other workers are already locked and processing items at the front of the queue.
                 // We try each queue item until we find an available one.
-                $nodes = $DB->get_records_sql('
-                                       SELECT *
-                                         FROM {tool_crawler_url}
-                                        WHERE lastcrawled IS NULL
-                                           OR lastcrawled < needscrawl
-                                     ORDER BY priority DESC,
-                                              needscrawl ASC,
-                                              id ASC
-                                    ', null, 0, 1000);
-                if (empty($nodes)) {
-                    return true; // The queue is empty.
+                if ($config->coursemode == 1 || $config->uselogs == 1) {
+                    if (empty($allowedcourses)) {
+                        return true;
+                    }
+                    // Random choose a course to process.
+                    shuffle($allowedcourses);
+                    $courseid = reset($allowedcourses);
+
+                    $params = ['courseid' => $courseid];
+                    $sql = "SELECT *
+                              FROM {tool_crawler_url}
+                             WHERE (lastcrawled IS NULL
+                                OR lastcrawled < needscrawl)
+                               AND courseid = :courseid
+                          ORDER BY priority DESC,
+                                   needscrawl ASC,
+                                   id ASC";
+                    $nodes = $DB->get_records_sql($sql, $params, 0, 1000);
+                    if (empty($nodes)) {
+                        \tool_crawler\helper::finish_course_crawling($courseid);
+                        return true;
+                    }
+                } else {
+                    $sql = "SELECT *
+                              FROM {tool_crawler_url}
+                             WHERE (lastcrawled IS NULL
+                                OR lastcrawled < needscrawl)
+                          ORDER BY priority DESC,
+                                   needscrawl ASC,
+                                   id ASC";
+
+                    $nodes = $DB->get_records_sql($sql, null, 0, 1000);
+                    if (empty($nodes)) {
+                        return true; // The queue is empty.
+                    }
                 }
             }
             $node = array_shift($nodes);
@@ -560,7 +586,7 @@ class crawler {
             }
 
             // If the course id is not in recent courses, remove it from the queue.
-            if ($config->uselogs == 1 && isset($node->courseid) && !in_array($node->courseid, $recentcourses)) {
+            if (($config->uselogs == 1 || $config->coursemode == 1) && isset($node->courseid) && !in_array($node->courseid, $allowedcourses)) {
                 // Will not show up in queue, but still keeps the data.
                 // in case the course becomes recently active in the future.
                 $node->needscrawl = $node->lastcrawled;
