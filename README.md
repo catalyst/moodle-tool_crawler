@@ -43,13 +43,13 @@ Since the plugin cronjob comes in from outside it needs to authenticate in Moodl
 The plugin has a dependency on the [moodle-auth_basic](https://moodle.org/plugins/auth_basic).
 To install the dependency plugin as a git submodule:
 ```
-git submodule add https://github.com/catalyst/moodle-auth_basic auth/basic
+git submodule add git@github.com:catalyst/moodle-auth_basic.git auth/basic
 ```
 
 
 Install plugin moodle-tool_crawler as a git submodule:
 ```
-git submodule add https://github.com/catalyst/moodle-tool_crawler.git admin/tool/crawler
+git submodule add git@github.com:catalyst/moodle-tool_crawler.git admin/tool/crawler
 ```
 # Configuration
 
