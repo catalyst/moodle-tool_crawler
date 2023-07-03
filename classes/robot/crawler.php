@@ -556,6 +556,7 @@ class crawler {
 
             // Get a new zero second timeout lock for the resource.
             if (!$lock = $lockfactory->get_lock($resource, 0)) {
+                $hastime = time() < $cronstop; // Check if we need to break from processing
                 continue; // Try crawl the next node, this one is already being processed.
             }
 
@@ -567,6 +568,7 @@ class crawler {
                 $persistent = new url(0, $node);
                 $persistent->update();
                 $lock->release();
+                $hastime = time() < $cronstop; // Check if we need to break from processing
                 continue;
             }
 
