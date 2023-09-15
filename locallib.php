@@ -45,6 +45,10 @@ defined('MOODLE_INTERNAL') || die();
  * @return string HTML snippet which can be used in output.
  */
 function tool_crawler_link($url, $label, $redirect = '', $labelishtml = false) {
+    if (empty($label)) {
+        // Ensure that label is always at least a string.
+        $label = '';
+    }
     if (!$labelishtml) {
         $label = htmlspecialchars($label, ENT_NOQUOTES | ENT_HTML401);
     }
