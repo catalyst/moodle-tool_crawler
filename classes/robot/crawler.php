@@ -861,8 +861,9 @@ class crawler {
             } while ($walk);
 
             $text = self::clean_html_node_content($e);
+            $text = trim($text);
             if ($verbose > 1) {
-                printf (" - Found link to: %-20s / %-50s => %-50s\n", $text, $e->href, $href);
+                printf (" - Found link to: %-30s -> %s\n", "'$text'", $href);
             }
             $this->link_from_node_to_url($node, $href, $text, $idattr);
         }
