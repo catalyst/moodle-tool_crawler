@@ -1090,7 +1090,12 @@ class crawler {
     public function scrape($url) {
 
         global $CFG;
-        $cookiefilelocation = $CFG->dataroot . '/tool_crawler_cookies.txt';
+
+        static $cookiefilelocaion = '';
+        if (!$cookiefilelocation) {
+            $cookiefilelocation = make_request_directory() . '/tool_crawler_cookies.txt';
+        }
+
         $config = self::get_config();
 
         $version = moodle_major_version();
