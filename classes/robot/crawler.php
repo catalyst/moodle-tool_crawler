@@ -534,6 +534,15 @@ class crawler {
 
         // While we are not exceeding the maxcron time, and the queue is not empty.
         while ($hastime) {
+
+            if (\core\local\cli\shutdown::should_gracefully_exit() ||
+                \core\task\manager::static_caches_cleared_since($cronstart)) {
+                if ($verbose) {
+                    echo "Shutting down crawler early\n";
+                }
+                return true;
+            }
+
             if (empty($nodes)) {
                 // Grab a list of items from the front of the queue. We need the first 1000
                 // in case other workers are already locked and processing items at the front of the queue.
