@@ -1100,7 +1100,7 @@ class crawler {
 
         global $CFG;
 
-        static $cookiefilelocaion = '';
+        static $cookiefilelocation = '';
         if (!$cookiefilelocation) {
             $cookiefilelocation = make_request_directory() . '/tool_crawler_cookies.txt';
         }
