@@ -252,18 +252,18 @@ class helper {
     /**
      * Count broken links
      *
-     * @param $courseid
+     * @param int $courseid
      * @throws \dml_exception
      */
-    public static function count_broken_links($courseid) {
+    public static function count_broken_links(int $courseid) {
         global $DB;
         $sql = "SELECT count(1) AS count
                   FROM {tool_crawler_url}  b
              LEFT JOIN {tool_crawler_edge} l ON l.b = b.id
              LEFT JOIN {tool_crawler_url}  a ON l.a = a.id
              LEFT JOIN {course} c ON c.id = a.courseid
-                 WHERE b.httpcode != '200' AND c.id = $courseid";
-        return $DB->count_records_sql($sql);
+                 WHERE b.httpcode != '200' AND c.id = :courseid";
+        return $DB->count_records_sql($sql, ['courseid'=> $courseid]);
     }
 
 }

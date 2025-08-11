@@ -30,18 +30,21 @@ use renderable;
 use tool_crawler\helper;
 use moodle_url;
 use html_writer;
+use stdClass;
 
 class course_links extends table_sql implements renderable {
 
     private $courseid;
+
+    private $page;
     /**
      * table constructor.
      *
-     * @param $uniqueid table unique id
+     * @param string $uniqueid table unique id
      * @param \moodle_url $url base url
+     * @param int $courseid course id
      * @param int $page current page
      * @param int $perpage number of records per page
-     * @throws \coding_exception
      * @throws \coding_exception
      */
     public function __construct($uniqueid, \moodle_url $url, $courseid, $page = 0, $perpage = 20) {
@@ -165,30 +168,30 @@ class course_links extends table_sql implements renderable {
 
     /**
      *
-     * @param $row
+     * @param stdClass $row
      * @return string
      */
-    protected function col_lastcrawledtime($row) {
+    protected function col_lastcrawledtime(stdClass $row) {
         return userdate($row->lastcrawled);
     }
 
     /**
      *
-     * @param $row
-     * @return string
+     * @param stdClass $row
+     * @return stdClass $row
      * @throws \coding_exception
      */
-    protected function col_priority($row) {
+    protected function col_priority(stdClass $row) {
         return tool_crawler_priority_level($row->priority);
     }
 
     /**
      *
-     * @param $row
+     * @param stdClass $row
      * @return mixed
      * @throws \coding_exception
      */
-    protected function col_httpcode($row) {
+    protected function col_httpcode(stdClass $row) {
         $text = tool_crawler_http_code($row);
         if ($translation = \tool_crawler\helper::translate_httpcode($row->httpcode)) {
             $text .= "<br/>" . $translation;
@@ -198,11 +201,11 @@ class course_links extends table_sql implements renderable {
 
     /**
      *
-     * @param $row
+     * @param stdClass $row
      * @return mixed
      * @throws \coding_exception
      */
-    protected function col_target($row) {
+    protected function col_target(stdClass $row) {
         $text = trim($row->text);
         if ($text == "") {
             $text = get_string('missing', 'tool_crawler');
@@ -216,11 +219,11 @@ class course_links extends table_sql implements renderable {
 
     /**
      *
-     * @param $row
+     * @param stdClass $row
      * @return mixed
      * @throws \coding_exception
      */
-    protected function col_url($row) {
+    protected function col_url(stdClass $row) {
         return tool_crawler_link($row->url, $row->title, $row->redirect, false, $this->courseid);
     }
 

@@ -42,6 +42,7 @@ defined('MOODLE_INTERNAL') || die();
  * @param string $redirect The final URL if a redirect was served.
  * @param string $labelishtml Whether the $label parameter contains an HTML snippet (if true) or plain text (if false). Defaults to
  *               plain text.
+ * @param int $courseid course id
  * @return string HTML snippet which can be used in output.
  */
 function tool_crawler_link($url, $label, $redirect = '', $labelishtml = false, $courseid = 0) {
@@ -241,6 +242,7 @@ function tool_crawler_url_gen_table($data) {
  * Generates and returns a full HTML page with details about a URL.
  *
  * @param string $url The URL.
+ * @param int $courseid course id
  * @return string A HTML page about the URL.
  */
 function tool_crawler_url_create_page($url, $courseid = 0) {

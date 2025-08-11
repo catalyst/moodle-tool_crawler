@@ -29,7 +29,7 @@ class tool_crawler_renderer extends plugin_renderer_base {
 
     /**
      * Render table.
-     * @param dismissed_notice $table dismissed notice table
+     * @param course_links $table course_links table
      * @return false|string
      */
     public function render_course_links(course_links $table) {
