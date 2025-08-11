@@ -52,6 +52,8 @@ if ($options['verbose'] && (!is_numeric($options['verbose']) || $options['verbos
     die();
 }
 
+\core\local\cli\shutdown::script_supports_graceful_exit();
+
 tool_crawler_crawl($options['verbose']);
 exit(0);
 

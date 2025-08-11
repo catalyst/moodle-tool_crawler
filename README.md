@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/catalyst/moodle-tool_crawler.svg?branch=master)](https://travis-ci.org/catalyst/moodle-tool_crawler)
+[![ci](https://github.com/catalyst/moodle-tool_crawler/actions/workflows/ci.yml/badge.svg?branch=MOODLE_310_STABLE)](https://github.com/catalyst/moodle-tool_crawler/actions/workflows/ci.yml?branch=MOODLE_310_STABLE)
+
+# moodle-tool_crawler
 
 * [What is this?](#what-is-this)
 * [How does it work?](#how-does-it-work)
@@ -30,23 +32,24 @@ Since the plugin cronjob comes in from outside it needs to authenticate in Moodl
 
 # Branches
 
-| Moodle verion     | Branch      |
-| ----------------- | ----------- |
-| Moodle 3.4 to 3.8 | master      |
-| Totara 12+        | master      |
+| Moodle version    | Branch                |
+| ----------------- | --------------------- |
+| Moodle 3.10+      | MOODLE_310_STABLE     |
+| Moodle 3.4 to 3.9 | master                |
+| Totara 12+        | master                |
 
 # Installation
 
 The plugin has a dependency on the [moodle-auth_basic](https://moodle.org/plugins/auth_basic).
 To install the dependency plugin as a git submodule:
 ```
-git submodule add https://github.com/catalyst/moodle-auth_basic auth/basic
+git submodule add git@github.com:catalyst/moodle-auth_basic.git auth/basic
 ```
 
 
 Install plugin moodle-tool_crawler as a git submodule:
 ```
-git submodule add https://github.com/central-queensland-uni/moodle-tool_crawler.git admin/tool/crawler
+git submodule add git@github.com:catalyst/moodle-tool_crawler.git admin/tool/crawler
 ```
 # Configuration
 
@@ -156,7 +159,7 @@ be able to see the line "You are logged in as ".
 Once Basic HTTP auth works test running the robot task from the CLI:
 
 ```
-php admin/tool/task/cli/schedule_task.php --execute='\tool_crawler\task\crawl_task'
+php admin/cli/scheduled_task.php --execute='\tool_crawler\task\crawl_task'
 Execute scheduled task: Parallel crawling task (tool_crawler\task\crawl_task)
 ... used 22 dbqueries
 ... used 0.039698123931885 seconds
@@ -168,7 +171,7 @@ will run in parallel, depending on the crawl_task setting.
 
 You can manually run the adhoc tasks from the CLI with:
 ```
-php admin/tool/task/cli/adhoc_task.php --execute
+php admin/cli/adhoc_task.php --execute
 Execute adhoc task: tool_crawler\task\adhoc_crawl_task
 ... used 5733 dbqueries
 ... used 58.239180088043 seconds

@@ -54,10 +54,13 @@ if ($courseid) {
     $coursecontext = context_course::instance($courseid);
     require_capability('moodle/course:update', $coursecontext);
 
+    $coursename = format_string($course->fullname, true, array('context' => $coursecontext));
     $PAGE->set_context($coursecontext);
     $PAGE->set_url($navurl);
-    $PAGE->set_pagelayout('admin');
     $PAGE->set_title( get_string($report, 'tool_crawler') );
+    $PAGE->set_heading($coursename);
+    $PAGE->set_pagelayout('incourse');
+    $PAGE->add_body_class('limitedwidth');
     $sqlfilter = ' AND c.id = '.$courseid;
 
 } else {

@@ -45,6 +45,11 @@ function tool_crawler_crawl($verbose = false) {
     $robot = new crawler();
     $url = new url();
     $config = $robot::get_config();
+
+    if ($config->debugging) {
+        $verbose = $config->debugging;
+    }
+
     $crawlstart = $config->crawlstart;
     $crawlend   = $config->crawlend;
 
@@ -179,7 +184,7 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
     if ($coursereports && ($siteconfig || $courseconfig)) {
         $node = $coursereports->add(
             get_string('pluginname', 'tool_crawler'),
-            null,
+            new moodle_url('/admin/tool/crawler/report.php', array('report' => 'queued', 'course' => $course->id)),
             navigation_node::TYPE_CONTAINER,
             null,
             'linkchecker',

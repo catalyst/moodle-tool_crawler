@@ -40,6 +40,11 @@ defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
 class tool_crawler_robot_cleanup_test extends advanced_testcase {
 
     /**
+     * @var \tool_crawler\robot\crawler Crawler to use in tests.
+     */
+    private $robot;
+
+    /**
      * Prepare the config options for plugin which are used for robot_cleanup task logic
      *
      * @throws coding_exception
