@@ -529,6 +529,7 @@ class crawler {
         // Iterate through the queue.
         $cronstart = time();
         $cronstop = $cronstart + $config->maxcrontime;
+        $hastime = true;
 
         // Get an instance of the currently configured lock_factory.
         $lockfactory = \core\lock\lock_config::get_lock_factory('tool_crawler_process_queue');
@@ -550,7 +551,16 @@ class crawler {
             }
         }
         // While we are not exceeding the maxcron time, and the queue is not empty.
-        while (time() < $cronstop) {
+        while ($hastime) {
+
+            if (\core\local\cli\shutdown::should_gracefully_exit() ||
+                \core\task\manager::static_caches_cleared_since($cronstart)) {
+                if ($verbose) {
+                    echo "Shutting down crawler early\n";
+                }
+                return true;
+            }
+
             if (empty($nodes)) {
                 // Grab a list of items from the front of the queue. We need the first 1000
                 // in case other workers are already locked and processing items at the front of the queue.
@@ -625,6 +635,8 @@ class crawler {
             } finally {
                 $lock->release();
             }
+
+            $hastime = time() < $cronstop;
         }
         if ($courselock) {
             $courselock->release();
@@ -906,8 +918,9 @@ class crawler {
             } while ($walk);
 
             $text = self::clean_html_node_content($e);
+            $text = trim($text);
             if ($verbose > 1) {
-                printf (" - Found link to: %-20s / %-50s => %-50s\n", $text, $e->href, $href);
+                printf (" - Found link to: %-30s -> %s\n", "'$text'", $href);
             }
             $this->link_from_node_to_url($node, $href, $text, $idattr);
         }
@@ -1134,7 +1147,12 @@ class crawler {
     public function scrape($url) {
 
         global $CFG;
-        $cookiefilelocation = $CFG->dataroot . '/tool_crawler_cookies.txt';
+
+        static $cookiefilelocation = '';
+        if (!$cookiefilelocation) {
+            $cookiefilelocation = make_request_directory() . '/tool_crawler_cookies.txt';
+        }
+
         $config = self::get_config();
 
         $version = moodle_major_version();

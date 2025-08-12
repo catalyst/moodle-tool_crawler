@@ -42,17 +42,21 @@ defined('MOODLE_INTERNAL') || die();
  * @param string $redirect The final URL if a redirect was served.
  * @param string $labelishtml Whether the $label parameter contains an HTML snippet (if true) or plain text (if false). Defaults to
  *               plain text.
+ * @param int $courseid course id
  * @return string HTML snippet which can be used in output.
  */
 function tool_crawler_link($url, $label, $redirect = '', $labelishtml = false, $courseid = 0) {
+    if (empty($label)) {
+        // Ensure that label is always at least a string.
+        $label = '';
+    }
     if (!$labelishtml) {
         $label = htmlspecialchars($label, ENT_NOQUOTES | ENT_HTML401);
     }
 
-    $html = html_writer::link(new moodle_url('url.php', array('courseid' => $courseid, 'url' => $url)), $label) .
-            ' ' .
-            html_writer::link($url, '↗', array('target' => 'link')) .
-            '<br><small>' . htmlspecialchars($url, ENT_NOQUOTES | ENT_HTML401) . '</small>';
+    $canviewsitelevelreports = has_capability('moodle/site:config', context_system::instance());
+    $html = $canviewsitelevelreports ? html_writer::link(new moodle_url('url.php', array('courseid' => $courseid, 'url' => $url)), $label) : $label;
+    $html .= '<br><small>' . html_writer::link($url, htmlspecialchars($url, ENT_NOQUOTES | ENT_HTML401), ['target' => 'link']) . '</small>';
 
     if ($redirect) {
         $linkhtmlsnippet = html_writer::link($redirect, htmlspecialchars($redirect, ENT_NOQUOTES | ENT_HTML401));
@@ -175,11 +179,11 @@ function tool_crawler_sql_oversize_filter($tablealias = null) {
         $tbl = '';
     }
 
-    $where = "( ${tbl}filesize > ?
-             OR ( ${tbl}filesize IS NULL
-                  AND ${tbl}lastcrawled IS NOT NULL
+    $where = "( {$tbl}filesize > ?
+             OR ( {$tbl}filesize IS NULL
+                  AND {$tbl}lastcrawled IS NOT NULL
                 )
-             OR ${tbl}filesizestatus = ?
+             OR {$tbl}filesizestatus = ?
               )";
 
     $bigfilesize = get_config('tool_crawler', 'bigfilesize');
@@ -238,6 +242,7 @@ function tool_crawler_url_gen_table($data) {
  * Generates and returns a full HTML page with details about a URL.
  *
  * @param string $url The URL.
+ * @param int $courseid course id
  * @return string A HTML page about the URL.
  */
 function tool_crawler_url_create_page($url, $courseid = 0) {

@@ -18,6 +18,7 @@
  * Link checker robot plugin uninstall script.
  *
  * @package    tool_crawler
+ * @copyright  2019 Nicolas Roeser
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
