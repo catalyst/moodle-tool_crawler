@@ -40,7 +40,6 @@ require_once(__DIR__ . '/../../constants.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class robot_crawler_test extends \advanced_testcase {
-
     /**
      * @var \tool_crawler\robot\crawler Crawler to use in tests.
      */
@@ -55,7 +54,6 @@ final class robot_crawler_test extends \advanced_testcase {
         $this->resetAfterTest(true);
 
         $this->robot = new \tool_crawler\robot\crawler();
-
     }
 
     /**
@@ -136,12 +134,12 @@ final class robot_crawler_test extends \advanced_testcase {
         return [
             [false, 'http://my_moodle.com', 'http://evil.com/blah/http://my_moodle.com'],
             [false, 'http://my_moodle.com', 'http://my_moodle.com.actually.im.evil.com'],
-            [true,  'http://my_moodle.com', 'http://my_moodle.com'],
-            [true,  'http://my_moodle.com', 'http://my_moodle.com/whatever/file1.php'],
+            [true, 'http://my_moodle.com', 'http://my_moodle.com'],
+            [true, 'http://my_moodle.com', 'http://my_moodle.com/whatever/file1.php'],
             [false, 'http://my_moodle.com/subdir', 'http://evil.com/blah/http://my_moodle.com/subdir'],
             [false, 'http://my_moodle.com/subdir', 'http://my_moodle.com/subdir.actually.im.evil.com'],
-            [true,  'http://my_moodle.com/subdir', 'http://my_moodle.com/subdir'],
-            [true,  'http://my_moodle.com/subdir', 'http://my_moodle.com/subdir/whatever/file1.php'],
+            [true, 'http://my_moodle.com/subdir', 'http://my_moodle.com/subdir'],
+            [true, 'http://my_moodle.com/subdir', 'http://my_moodle.com/subdir/whatever/file1.php'],
         ];
     }
 
@@ -336,16 +334,18 @@ final class robot_crawler_test extends \advanced_testcase {
 
         $this->resetAfterTest(true);
 
-        set_config('excludemdldom',
+        set_config(
+            'excludemdldom',
             ".block.block_settings\n.block.block_book_toc\n.block.block_calendar_month\n" .
             ".block.block_navigation\n.block.block_cqu_assessment\n.exclude",
-            'tool_crawler');
+            'tool_crawler'
+        );
 
         $this->robot->parse_html($node, false);
 
         // URL should not exist for crawling.
         $urlstring = 'http://crawler.test/foo/bar.php';
-        $found = $DB->record_exists('tool_crawler_url', ['urlhash' => url::hash_url($urlstring)] );
+        $found = $DB->record_exists('tool_crawler_url', ['urlhash' => url::hash_url($urlstring)]);
         self::assertFalse($found);
     }
 
@@ -398,8 +398,8 @@ HTML;
 
         // Internal node direct child.
         $url = new \moodle_url('/' . $directchildlocalurl);
-        $node = $DB->get_record('tool_crawler_url', ['urlhash' => url::hash_url($url->raw_out())] );
-        $node->url = $CFG->wwwroot.'/'.$directchildlocalurl;
+        $node = $DB->get_record('tool_crawler_url', ['urlhash' => url::hash_url($url->raw_out())]);
+        $node->url = $CFG->wwwroot . '/' . $directchildlocalurl;
         $node->httpcode = 200;
         $node->mimetype = 'text/html';
         $node->externalurl = 0;
@@ -524,28 +524,28 @@ HTML;
      */
     public function crawler_url_string_matches_provider(): array {
         return [
-            ['/index.php',              '/index.php',           true],
-            ['/some/dir/index.php',     '/index.php',           true], // Different from core function.
-            ['/course/view.php',        '/course/view.php',     true],
-            ['/view.php',               '/course/view.php',     false],
-            ['/mod/forum',              '/mod/forum/*',         false],
-            ['/mod/forum/',             '/mod/forum/*',         true],
-            ['/mod/forum/index.php',    '/mod/forum/*',         true],
-            ['/mod/forum/foo.php',      '/mod/forum/*',         true],
-            ['/mod/forum/view.php',     '/mod/*/view.php',      true],
-            ['/mod/one/two/view.php',   '/mod/*/view.php',      true],
-            ['/view.php',               '*/view.php',           true],
-            ['/mod/one/two/view.php',   '*/view.php',           true],
-            ['/foo.php',                '/foo.php,/bar.php',    true],
-            ['/bar.php',                '/foo.php,/bar.php',    true],
-            ['/foo/bar.php',            "/foo.php,/bar.php",    true], // Different from core function.
-            ['/foo/bar.php',            "/foo.php,*/bar.php",   true],
-            ['/foo/bar.php',            "/foo*.php,/bar.php",   true],
-            ['/foo.php',                "/foo.php\n/bar.php",   false], // Different from core function.
-            ['/bar.php',                "/foo.php\n/bar.php",   false], // Different from core function.
-            ['/foo/bar.php',            "/foo.php\n/bar.php",   false],
-            ['/foo/bar.php',            "/foo.php\n*/bar.php",  false], // Different from core function.
-            ['/foo/bar.php',            "/foo*.php\n/bar.php",  false], // Different from core function.
+            ['/index.php', '/index.php', true],
+            ['/some/dir/index.php', '/index.php', true], // Different from core function.
+            ['/course/view.php', '/course/view.php', true],
+            ['/view.php', '/course/view.php', false],
+            ['/mod/forum', '/mod/forum/*', false],
+            ['/mod/forum/', '/mod/forum/*', true],
+            ['/mod/forum/index.php', '/mod/forum/*', true],
+            ['/mod/forum/foo.php', '/mod/forum/*', true],
+            ['/mod/forum/view.php', '/mod/*/view.php', true],
+            ['/mod/one/two/view.php', '/mod/*/view.php', true],
+            ['/view.php', '*/view.php', true],
+            ['/mod/one/two/view.php', '*/view.php', true],
+            ['/foo.php', '/foo.php,/bar.php', true],
+            ['/bar.php', '/foo.php,/bar.php', true],
+            ['/foo/bar.php', "/foo.php,/bar.php", true], // Different from core function.
+            ['/foo/bar.php', "/foo.php,*/bar.php", true],
+            ['/foo/bar.php', "/foo*.php,/bar.php", true],
+            ['/foo.php', "/foo.php\n/bar.php", false], // Different from core function.
+            ['/bar.php', "/foo.php\n/bar.php", false], // Different from core function.
+            ['/foo/bar.php', "/foo.php\n/bar.php", false],
+            ['/foo/bar.php', "/foo.php\n*/bar.php", false], // Different from core function.
+            ['/foo/bar.php', "/foo*.php\n/bar.php", false], // Different from core function.
         ];
     }
 
@@ -620,6 +620,5 @@ HTML;
         $node = (object) array_merge((array) $node);
         $result = $this->robot->parse_html($node, false);
         self::assertSame($expected, $result->title);
-
     }
 }

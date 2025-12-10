@@ -54,5 +54,3 @@ class adhoc_crawl_task extends \core\task\adhoc_task {
         tool_crawler_crawl();
     }
 }
-
-

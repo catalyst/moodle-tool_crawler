@@ -39,7 +39,6 @@ function xmldb_tool_crawler_upgrade($oldversion) {
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2019022000) {
-
         core_php_time_limit::raise();
 
         $tablename = 'tool_crawler_url';
@@ -62,8 +61,16 @@ function xmldb_tool_crawler_upgrade($oldversion) {
 
     if ($oldversion < 2019072600) {
         $table = new xmldb_table('tool_crawler_url');
-        $field = new xmldb_field('filesizestatus', XMLDB_TYPE_INTEGER, 1, null, false, false, TOOL_CRAWLER_FILESIZE_EXACT,
-                'filesize');
+        $field = new xmldb_field(
+            'filesizestatus',
+            XMLDB_TYPE_INTEGER,
+            1,
+            null,
+            false,
+            false,
+            TOOL_CRAWLER_FILESIZE_EXACT,
+            'filesize'
+        );
 
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
@@ -97,7 +104,6 @@ function xmldb_tool_crawler_upgrade($oldversion) {
     }
 
     if ($oldversion < 2020012300) {
-
         // Define field level to be added to tool_crawler_url.
         $table = new xmldb_table('tool_crawler_url');
         $field = new xmldb_field('level', XMLDB_TYPE_INTEGER, '1', null, null, null, '2', 'priority');

@@ -27,11 +27,11 @@ use tool_crawler\local\url;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/admin/tool/crawler/lib.php');
-require_once($CFG->dirroot.'/admin/tool/crawler/locallib.php');
-require_once($CFG->dirroot.'/admin/tool/crawler/extlib/simple_html_dom.php');
-require_once($CFG->dirroot.'/user/lib.php');
-require_once($CFG->dirroot.'/lib/xhprof/xhprof_moodle.php');
+require_once($CFG->dirroot . '/admin/tool/crawler/lib.php');
+require_once($CFG->dirroot . '/admin/tool/crawler/locallib.php');
+require_once($CFG->dirroot . '/admin/tool/crawler/extlib/simple_html_dom.php');
+require_once($CFG->dirroot . '/user/lib.php');
+require_once($CFG->dirroot . '/lib/xhprof/xhprof_moodle.php');
 
 /**
  * How many bytes to download at most per linked HTML document stored on external hosts.
@@ -73,7 +73,6 @@ define('TOOL_CRAWLER_HEADER_LIMIT', 16 * 1024);
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class crawler {
-
     /**
      * Returns configuration object if it has been initialised.
      * If it is not initialises then it creates and returns it.
@@ -88,7 +87,7 @@ class crawler {
             'retentionperiod' => 86400, // 1 week.
             'recentactivity' => 1,
         ];
-        $config = (object) array_merge( $defaults, (array) get_config('tool_crawler') );
+        $config = (object) array_merge($defaults, (array) get_config('tool_crawler'));
         return $config;
     }
 
@@ -106,26 +105,32 @@ class crawler {
             return get_string('configmissing', 'tool_crawler');
         }
         $botuser = $DB->get_record('user', ['username' => $botusername]);
-        if ( !$botuser ) {
+        if (!$botuser) {
             return get_string('botusermissing', 'tool_crawler') .
                 ' <a href="?action=makebot">' . get_string('autocreate', 'tool_crawler') . '</a>';
         }
 
         // Do a test crawl over the network.
-        $result = $this->scrape($CFG->wwwroot.'/admin/tool/crawler/tests/test1.php');
+        $result = $this->scrape($CFG->wwwroot . '/admin/tool/crawler/tests/test1.php');
         if ($result->httpcode != '200') {
             return get_string('botcantgettestpage', 'tool_crawler');
         }
         if ($result->redirect) {
-            return get_string('bottestpageredirected', 'tool_crawler',
-                ['resredirect' => htmlspecialchars($result->redirect, ENT_NOQUOTES | ENT_HTML401)]);
+            return get_string(
+                'bottestpageredirected',
+                'tool_crawler',
+                ['resredirect' => htmlspecialchars($result->redirect, ENT_NOQUOTES | ENT_HTML401)]
+            );
         }
 
         // When the bot successfully scraped the test page (see above), it was logged in and used its own language. So we have to
         // retrieve the expected string in the language set for the _crawler user_, and not in the _current user’s_ language.
         $oldforcelang = force_current_language($botuser->lang);
-        $expectedcontent = get_string('hellorobot', 'tool_crawler',
-                ['botusername' => self::get_config()->botusername]);
+        $expectedcontent = get_string(
+            'hellorobot',
+            'tool_crawler',
+            ['botusername' => self::get_config()->botusername]
+        );
         force_current_language($oldforcelang);
 
         $hello = strpos($result->contents, $expectedcontent);
@@ -144,7 +149,7 @@ class crawler {
         // TODO roles?
 
         $botusername  = self::get_config()->botusername;
-        $botuser = $DB->get_record('user', ['username' => $botusername] );
+        $botuser = $DB->get_record('user', ['username' => $botusername]);
         if ($botuser) {
             return $botuser;
         } else {
@@ -181,7 +186,7 @@ class crawler {
 
         // Handle links which are only queries or anchors.
         if ($rel && ($rel[0] == '#' || $rel[0] == '?')) {
-            return $base.$rel;
+            return $base . $rel;
         }
 
         $parts = parse_url($base);
@@ -204,7 +209,6 @@ class crawler {
                 $abs = $host . $rel;
             }
         } else {
-
             // Remove non-directory element from path.
             $path = preg_replace('#/[^/]*$#', '', $path);
 
@@ -223,7 +227,7 @@ class crawler {
         } while ($n > 0);
 
         // Absolute URL is ready!
-        return $scheme.'://'.$abs;
+        return $scheme . '://' . $abs;
     }
 
     /**
@@ -280,8 +284,13 @@ class crawler {
      * @return object|boolean The node record if the resource pointed to by the URL can and should be considered; or `false` if the
      *     URL is invalid or excluded.
      */
-    public function mark_for_crawl($baseurl, $url, $courseid = null, $priority = TOOL_CRAWLER_PRIORITY_DEFAULT,
-            $level = TOOL_CRAWLER_NODE_LEVEL_PARENT) {
+    public function mark_for_crawl(
+        $baseurl,
+        $url,
+        $courseid = null,
+        $priority = TOOL_CRAWLER_PRIORITY_DEFAULT,
+        $level = TOOL_CRAWLER_NODE_LEVEL_PARENT
+    ) {
 
         global $DB, $CFG;
 
@@ -301,10 +310,11 @@ class crawler {
 
         // Filter out non http protocols like mailto:cqulibrary@cqu.edu.au etc.
         $bits = parse_url($url);
-        if (array_key_exists('scheme', $bits)
+        if (
+            array_key_exists('scheme', $bits)
             && $bits['scheme'] != 'http'
             && $bits['scheme'] != 'https'
-            ) {
+        ) {
             return false;
         }
 
@@ -340,19 +350,19 @@ class crawler {
         // Some special logic, if it looks like a course URL or module URL
         // then avoid scraping the URL at all, if it has been excluded.
         $shortname = '';
-        if (preg_match('/\/course\/(info|view).php\?id=(\d+)/', $url , $matches) ) {
+        if (preg_match('/\/course\/(info|view).php\?id=(\d+)/', $url, $matches)) {
             $course = $DB->get_record('course', ['id' => $matches[2]]);
             if ($course) {
                 $shortname = $course->shortname;
             }
         }
-        if (preg_match('/\/enrol\/index.php\?id=(\d+)/', $url , $matches) ) {
+        if (preg_match('/\/enrol\/index.php\?id=(\d+)/', $url, $matches)) {
             $course = $DB->get_record('course', ['id' => $matches[1]]);
             if ($course) {
                 $shortname = $course->shortname;
             }
         }
-        if (preg_match('/\/mod\/(\w+)\/(index|view).php\?id=(\d+)/', $url , $matches) ) {
+        if (preg_match('/\/mod\/(\w+)\/(index|view).php\?id=(\d+)/', $url, $matches)) {
             $cm = $DB->get_record_sql("
                     SELECT cm.*,
                            c.shortname
@@ -363,7 +373,7 @@ class crawler {
                 $shortname = $cm->shortname;
             }
         }
-        if (preg_match('/\/course\/(.*?)\//', $url, $matches) ) {
+        if (preg_match('/\/course\/(.*?)\//', $url, $matches)) {
             $course = $DB->get_record('course', ['shortname' => $matches[1]]);
             if ($course) {
                 $shortname = $course->shortname;
@@ -435,11 +445,13 @@ class crawler {
     public function get_num_links() {
         global $DB;
 
-        return $DB->get_field_sql("
+        return $DB->get_field_sql(
+            "
                 SELECT COUNT(*)
                   FROM {tool_crawler_edge}
                  WHERE lastmod >= ?",
-                [self::get_config()->crawlstart]);
+            [self::get_config()->crawlstart]
+        );
     }
 
     /**
@@ -499,11 +511,13 @@ class crawler {
         global $DB;
 
         // TODO this logic is wrong and will pick up multiple previous sessions.
-        return $DB->get_field_sql("
+        return $DB->get_field_sql(
+            "
                 SELECT COUNT(*)
                   FROM {tool_crawler_url}
                  WHERE lastcrawled < ?",
-               [self::get_config()->crawlstart]);
+            [self::get_config()->crawlstart]
+        );
     }
 
     /**
@@ -534,9 +548,10 @@ class crawler {
 
         // While we are not exceeding the maxcron time, and the queue is not empty.
         while ($hastime) {
-
-            if (\core\local\cli\shutdown::should_gracefully_exit() ||
-                \core\task\manager::static_caches_cleared_since($cronstart)) {
+            if (
+                \core\local\cli\shutdown::should_gracefully_exit() ||
+                \core\task\manager::static_caches_cleared_since($cronstart)
+            ) {
                 if ($verbose) {
                     echo "Shutting down crawler early\n";
                 }
@@ -628,7 +643,6 @@ class crawler {
             echo "($result->httpcode) ";
         }
         if ($result->httpcode == '200') {
-
             if ($result->mimetype == 'text/html') {
                 if ($verbose) {
                     echo "html\n";
@@ -841,13 +855,13 @@ class crawler {
             $href = htmlspecialchars_decode($href);
 
             // We ignore links which are internal to this page.
-            if (substr ($href, 0, 1) === '#') {
+            if (substr($href, 0, 1) === '#') {
                 continue;
             }
 
             $href = $this->absolute_url($node->url, $href);
 
-            if (array_key_exists($href, $seen ) ) {
+            if (array_key_exists($href, $seen)) {
                 continue;
             }
             $seen[$href] = 1;
@@ -872,7 +886,7 @@ class crawler {
             $text = self::clean_html_node_content($e);
             $text = trim($text);
             if ($verbose > 1) {
-                printf (" - Found link to: %-30s -> %s\n", "'$text'", $href);
+                printf(" - Found link to: %-30s -> %s\n", "'$text'", $href);
             }
             $this->link_from_node_to_url($node, $href, $text, $idattr);
         }
@@ -1120,18 +1134,18 @@ class crawler {
         }
 
         $s = curl_init();
-        curl_setopt($s, CURLOPT_TIMEOUT,         $config->maxtime);
-        if ( $this->should_be_authenticated($url) ) {
-            curl_setopt($s, CURLOPT_USERPWD,     $config->botusername . ':' . $config->botpassword);
+        curl_setopt($s, CURLOPT_TIMEOUT, $config->maxtime);
+        if ($this->should_be_authenticated($url)) {
+            curl_setopt($s, CURLOPT_USERPWD, $config->botusername . ':' . $config->botpassword);
         }
-        curl_setopt($s, CURLOPT_USERAGENT,       $useragent);
-        curl_setopt($s, CURLOPT_MAXREDIRS,       5);
-        curl_setopt($s, CURLOPT_FOLLOWLOCATION,  true);
-        curl_setopt($s, CURLOPT_FRESH_CONNECT,   false);
-        curl_setopt($s, CURLOPT_COOKIEJAR,       $cookiefilelocation);
-        curl_setopt($s, CURLOPT_COOKIEFILE,      $cookiefilelocation);
-        curl_setopt($s, CURLOPT_SSL_VERIFYHOST,  0);
-        curl_setopt($s, CURLOPT_SSL_VERIFYPEER,  0);
+        curl_setopt($s, CURLOPT_USERAGENT, $useragent);
+        curl_setopt($s, CURLOPT_MAXREDIRS, 5);
+        curl_setopt($s, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($s, CURLOPT_FRESH_CONNECT, false);
+        curl_setopt($s, CURLOPT_COOKIEJAR, $cookiefilelocation);
+        curl_setopt($s, CURLOPT_COOKIEFILE, $cookiefilelocation);
+        curl_setopt($s, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($s, CURLOPT_SSL_VERIFYPEER, 0);
 
         $sizelimit = TOOL_CRAWLER_REDIRECTION_DOWNLOAD_LIMIT; // Assume at first that we will be redirected.
         $abortdownload = false;
@@ -1140,8 +1154,8 @@ class crawler {
         $targetisexternal = null; // Cache for whether target resource is external.
         $targetishtml = null; // Cache for whether target resource is an HTML document.
         $targetlengthknown = null; // Cache for whether target resource length is known.
-        curl_setopt($s, CURLOPT_WRITEFUNCTION, function($hdl, $content)
-          use (&$chunks, &$sizelimit, &$targetisexternal, &$targetishtml, &$targetlengthknown, &$config, &$abortdownload) {
+        curl_setopt($s, CURLOPT_WRITEFUNCTION, function ($hdl, $content)
+ use (&$chunks, &$sizelimit, &$targetisexternal, &$targetishtml, &$targetlengthknown, &$config, &$abortdownload) {
             // Target resource reached, switch to non-redirection size limit.
             if ($config->networkstrain == TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE) {
                 $sizelimit = TOOL_CRAWLER_DOWNLOAD_LIMIT;
@@ -1222,8 +1236,8 @@ class crawler {
         // by using the TE header field. However, RFC 7230 does not forbid servers to send trailers if the client does not like
         // them; it also does not REQUIRE servers to send a Trailer header field. The RFC only contains SHOULD NOT/SHOULD rules for
         // that (see sections 4.1.2 and 4.4).
-        curl_setopt($s, CURLOPT_HEADERFUNCTION, function($hdl, $header)
-            use (&$firstheaderline, &$httpmsg, &$headersize, &$abortdownload) {
+        curl_setopt($s, CURLOPT_HEADERFUNCTION, function ($hdl, $header)
+ use (&$firstheaderline, &$httpmsg, &$headersize, &$abortdownload) {
                 $len = strlen($header);
 
             if ($header === "\r\n") {
@@ -1253,8 +1267,8 @@ class crawler {
         });
 
         curl_setopt($s, CURLOPT_NOPROGRESS, false);
-        curl_setopt($s, CURLOPT_PROGRESSFUNCTION, function($resource, $expecteddownbytes, $downbytes, $expectedupbytes, $upbytes)
-            use (&$abortdownload, &$sizelimit, &$targetisexternal) {
+        curl_setopt($s, CURLOPT_PROGRESSFUNCTION, function ($resource, $expecteddownbytes, $downbytes, $expectedupbytes, $upbytes)
+ use (&$abortdownload, &$sizelimit, &$targetisexternal) {
                 // Do not enforce size limit for internal resources.
             if ($targetisexternal !== null) {
                 // We have already reached the target resource and can utilize the cached computed value from the write callback
@@ -1450,23 +1464,23 @@ class crawler {
         unset($charset);
 
         /* 1: HTTP Content-Type: header */
-        preg_match( '@([\w/+]+)(;\s*charset=(\S+))?@i', $contenttype, $matches );
-        if ( isset( $matches[3] ) ) {
+        preg_match('@([\w/+]+)(;\s*charset=(\S+))?@i', $contenttype, $matches);
+        if (isset($matches[3])) {
             $charset = $matches[3];
         }
 
         /* 2: <meta> element in the page */
         if (!isset($charset)) {
-            preg_match( '@<meta\s+http-equiv="Content-Type"\s+content="([\w/]+)(;\s*charset=([^\s"]+))?@i', $data, $matches );
-            if ( isset( $matches[3] ) ) {
+            preg_match('@<meta\s+http-equiv="Content-Type"\s+content="([\w/]+)(;\s*charset=([^\s"]+))?@i', $data, $matches);
+            if (isset($matches[3])) {
                 $charset = $matches[3];
             }
         }
 
         /* 3: <xml> element in the page */
         if (!isset($charset)) {
-            preg_match( '@<\?xml.+encoding="([^\s"]+)@si', $data, $matches );
-            if ( isset( $matches[1] ) ) {
+            preg_match('@<\?xml.+encoding="([^\s"]+)@si', $data, $matches);
+            if (isset($matches[1])) {
                 $charset = $matches[1];
             }
         }

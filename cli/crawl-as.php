@@ -31,18 +31,20 @@
 
 define('CLI_SCRIPT', true);
 
-require(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php');
-require_once($CFG->libdir.'/clilib.php');
-require_once($CFG->dirroot .'/admin/tool/crawler/lib.php');
+require(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/config.php');
+require_once($CFG->libdir . '/clilib.php');
+require_once($CFG->dirroot . '/admin/tool/crawler/lib.php');
 
-list($options, $unrecognized) = cli_get_params([
+[$options, $unrecognized] = cli_get_params(
+    [
     'help'      => false,
     'url'   => null,
-],
-[
+    ],
+    [
     'h' => 'help',
     'u' => 'url',
-]);
+    ]
+);
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
@@ -76,4 +78,3 @@ $url    = $options['url'];
 $node   = $robot->mark_for_crawl($url, $url);
 $res    = $robot->scrape($url);
 $robot->crawl($node, 2);
-

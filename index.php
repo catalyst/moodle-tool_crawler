@@ -39,9 +39,7 @@ $url = new \tool_crawler\local\url();
 $config = $robot::get_config();
 
 if ($action == 'makebot') {
-
     $botuser = $robot->auto_create_bot();
-
 }
 
 $crawlstart     = $config->crawlstart;
@@ -78,10 +76,14 @@ $table->data = [
         get_string('botuser', 'tool_crawler'),
         $robot->username
         . ' | ' . ($boterror ? $boterror : get_string('good', 'tool_crawler'))
-        . ' | ' . html_writer::link(new moodle_url('/user/editadvanced.php',
-                ['id' => $robot->id, 'courseid' => 1]), get_string('useraccount', 'tool_crawler'))
-        . ' | ' . html_writer::link(new moodle_url('/admin/roles/usersroles.php',
-                ['userid' => $robot->id, 'courseid' => 1]), get_string('roles')),
+        . ' | ' . html_writer::link(new moodle_url(
+            '/user/editadvanced.php',
+            ['id' => $robot->id, 'courseid' => 1]
+        ), get_string('useraccount', 'tool_crawler'))
+        . ' | ' . html_writer::link(new moodle_url(
+            '/admin/roles/usersroles.php',
+            ['userid' => $robot->id, 'courseid' => 1]
+        ), get_string('roles')),
     ],
     [
         get_string('progress', 'tool_crawler'),
@@ -89,20 +91,22 @@ $table->data = [
             'percent' => sprintf('%.2f%%', $progress * 100),
             'eta' => userdate($eta),
         ])
-        . ' | ' . html_writer::link(new moodle_url('/admin/tool/crawler/resetprogress.php'),
-            get_string('resetprogress', 'tool_crawler')),
+        . ' | ' . html_writer::link(
+            new moodle_url('/admin/tool/crawler/resetprogress.php'),
+            get_string('resetprogress', 'tool_crawler')
+        ),
     ],
     [
         get_string('curcrawlstart', 'tool_crawler'),
-        $crawlstart ? userdate( $crawlstart) : get_string('neverrun', 'tool_crawler'),
+        $crawlstart ? userdate($crawlstart) : get_string('neverrun', 'tool_crawler'),
     ],
     [
         get_string('lastcrawlend', 'tool_crawler'),
-        $crawlend ? userdate( $crawlend) : get_string('neverfinished', 'tool_crawler'),
+        $crawlend ? userdate($crawlend) : get_string('neverfinished', 'tool_crawler'),
     ],
     [
         get_string('lastcrawlproc', 'tool_crawler'),
-        $crawltick ? userdate( $crawltick) : '-',
+        $crawltick ? userdate($crawltick) : '-',
     ],
     [
         get_string('lastqueuesize', 'tool_crawler'),

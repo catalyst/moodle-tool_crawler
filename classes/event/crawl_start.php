@@ -33,7 +33,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class crawl_start extends \core\event\base {
-
     /**
      * Init method.
      *
@@ -50,7 +49,7 @@ class crawl_start extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return get_string('event:crawlstartdesc', 'tool_crawler', userdate( $this->other['start'] ) );
+        return get_string('event:crawlstartdesc', 'tool_crawler', userdate($this->other['start']));
     }
 
     /**
@@ -72,4 +71,3 @@ class crawl_start extends \core\event\base {
         return $url;
     }
 }
-

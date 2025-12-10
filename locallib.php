@@ -104,7 +104,7 @@ function tool_crawler_http_code($row) {
 
     $code = $row->httpcode;
     $cc = substr($code, 0, 1);
-    $code = "$msg<br><small class='link-$cc"."xx'>$code</small>";
+    $code = "$msg<br><small class='link-$cc" . "xx'>$code</small>";
     return $code;
 }
 
@@ -256,7 +256,7 @@ function tool_crawler_url_create_page($url) {
     $PAGE->set_context($context);
     $PAGE->set_url($navurl);
     $PAGE->set_pagelayout('admin');
-    $PAGE->set_title(get_string('urldetails', 'tool_crawler') );
+    $PAGE->set_title(get_string('urldetails', 'tool_crawler'));
 
     $page = $OUTPUT->header();
 
@@ -271,7 +271,7 @@ function tool_crawler_url_create_page($url) {
 
     $page .= '<h3>' . htmlspecialchars(get_string('outgoingurls', 'tool_crawler'), ENT_NOQUOTES | ENT_HTML401) . '</h3>';
 
-    $data  = $DB->get_records_sql("
+    $data = $DB->get_records_sql("
          SELECT concat(l.a, '-', l.b) AS id,
                 l.text,
                 l.idattr,
@@ -296,7 +296,7 @@ function tool_crawler_url_create_page($url) {
 
     $page .= '<h3>' . htmlspecialchars(get_string('incomingurls', 'tool_crawler'), ENT_NOQUOTES | ENT_HTML401) . '</h3>';
 
-    $data  = $DB->get_records_sql("
+    $data = $DB->get_records_sql("
          SELECT concat(l.a, '-', l.b) AS id,
                 l.text,
                 l.idattr,

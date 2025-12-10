@@ -170,7 +170,6 @@ class url extends \core\persistent {
         global $DB;
 
         if ($node = new url($nodeid)) {
-
             $time = crawler::get_config()->crawlstart;
 
             // Mark all nodes that link to this as needing a recrawl.
@@ -193,7 +192,7 @@ class url extends \core\persistent {
             // Delete all edges that point to this node.
             $DB->delete_records('tool_crawler_edge', ['b' => $nodeid]);
             // Delete the 'to' node as it may be completely wrong.
-            $DB->delete_records('tool_crawler_url', ['id' => $nodeid] );
+            $DB->delete_records('tool_crawler_url', ['id' => $nodeid]);
         }
     }
 
@@ -220,11 +219,13 @@ class url extends \core\persistent {
     public function get_processed() {
         global $DB;
 
-        return $DB->get_field_sql("
+        return $DB->get_field_sql(
+            "
                 SELECT COUNT(*)
                   FROM {tool_crawler_url}
                  WHERE lastcrawled >= ?",
-                                  [crawler::get_config()->crawlstart]);
+            [crawler::get_config()->crawlstart]
+        );
     }
 
     /**

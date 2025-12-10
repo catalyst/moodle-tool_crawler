@@ -55,7 +55,6 @@ function tool_crawler_crawl($verbose = false) {
 
     // If we need to start a new crawl, add new items to the queue.
     if (!$crawlstart || $crawlstart <= $crawlend) {
-
         $start = time();
         set_config('crawlstart', $start, 'tool_crawler');
 
@@ -65,7 +64,7 @@ function tool_crawler_crawl($verbose = false) {
                 $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
             }
         } else {
-            $robot->mark_for_crawl($CFG->wwwroot.'/', $config->seedurl);
+            $robot->mark_for_crawl($CFG->wwwroot . '/', $config->seedurl);
         }
         // Create a new history record.
         $history = new stdClass();
@@ -126,7 +125,7 @@ function tool_crawler_summary($courseid) {
       LEFT JOIN {course}            c ON c.id = a.courseid
           WHERE a.courseid = :course
        GROUP BY substr(b.httpcode,0,2)
-    ", ['course' => $courseid] );
+    ", ['course' => $courseid]);
 
     $e = (object) ['count' => 0];
     if (!array_key_exists('0', $result['broken'])) {

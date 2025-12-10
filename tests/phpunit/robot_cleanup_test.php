@@ -40,7 +40,6 @@ defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class robot_cleanup_test extends \advanced_testcase {
-
     /**
      * @var \tool_crawler\robot\crawler Crawler to use in tests.
      */

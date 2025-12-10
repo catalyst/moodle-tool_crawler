@@ -25,23 +25,41 @@
 defined('MOODLE_INTERNAL') || die();
 
 $adminrows = [
-    new tabobject('settings', new moodle_url('/admin/settings.php?section=tool_crawler'),
-        get_string('settings', 'tool_crawler')),
-    new tabobject('index',    new moodle_url('/admin/tool/crawler/index.php'),
-        get_string('status',   'tool_crawler')),
+    new tabobject(
+        'settings',
+        new moodle_url('/admin/settings.php?section=tool_crawler'),
+        get_string('settings', 'tool_crawler')
+    ),
+    new tabobject(
+        'index',
+        new moodle_url('/admin/tool/crawler/index.php'),
+        get_string('status', 'tool_crawler')
+    ),
 ];
 
 $courseid = optional_param('course', 0, PARAM_INT);
 $courseparam = $courseid ? ['course' => $courseid] : [];
 $courserows = [
-    new tabobject('queued',   new moodle_url('/admin/tool/crawler/report.php', ['report' => 'queued'] + $courseparam),
-        get_string('queued',   'tool_crawler')),
-    new tabobject('recent',   new moodle_url('/admin/tool/crawler/report.php', ['report' => 'recent'] + $courseparam),
-        get_string('recent',   'tool_crawler')),
-    new tabobject('broken',   new moodle_url('/admin/tool/crawler/report.php', ['report' => 'broken'] + $courseparam),
-        get_string('broken',   'tool_crawler')),
-    new tabobject('oversize', new moodle_url('/admin/tool/crawler/report.php', ['report' => 'oversize'] + $courseparam),
-        get_string('oversize', 'tool_crawler')),
+    new tabobject(
+        'queued',
+        new moodle_url('/admin/tool/crawler/report.php', ['report' => 'queued'] + $courseparam),
+        get_string('queued', 'tool_crawler')
+    ),
+    new tabobject(
+        'recent',
+        new moodle_url('/admin/tool/crawler/report.php', ['report' => 'recent'] + $courseparam),
+        get_string('recent', 'tool_crawler')
+    ),
+    new tabobject(
+        'broken',
+        new moodle_url('/admin/tool/crawler/report.php', ['report' => 'broken'] + $courseparam),
+        get_string('broken', 'tool_crawler')
+    ),
+    new tabobject(
+        'oversize',
+        new moodle_url('/admin/tool/crawler/report.php', ['report' => 'oversize'] + $courseparam),
+        get_string('oversize', 'tool_crawler')
+    ),
 ];
 
 $rows = array_merge(
@@ -57,4 +75,3 @@ if (empty($report)) {
     $report = '';
 }
 $tabs = $OUTPUT->tabtree($rows, $report);
-

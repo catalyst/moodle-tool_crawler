@@ -25,18 +25,20 @@
 
 define('CLI_SCRIPT', true);
 
-require(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php');
-require_once($CFG->libdir.'/clilib.php');
-require_once($CFG->dirroot .'/admin/tool/crawler/lib.php');
+require(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/config.php');
+require_once($CFG->libdir . '/clilib.php');
+require_once($CFG->dirroot . '/admin/tool/crawler/lib.php');
 
-list($options, $unrecognized) = cli_get_params([
-    'help'      => false,
-    'url'   => null,
-],
-[
-    'h' => 'help',
-    'u' => 'url',
-]);
+[$options, $unrecognized] = cli_get_params(
+    [
+        'help'      => false,
+        'url'   => null,
+    ],
+    [
+        'h' => 'help',
+        'u' => 'url',
+    ]
+);
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
@@ -71,5 +73,3 @@ $dump = $node->contents;
 unset($node->contents);
 print $dump;
 var_dump($node);
-
-

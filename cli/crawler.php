@@ -25,17 +25,19 @@
 
 define('CLI_SCRIPT', true);
 
-require(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php');
-require_once($CFG->libdir.'/clilib.php');
-require_once($CFG->dirroot .'/admin/tool/crawler/lib.php');
+require(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/config.php');
+require_once($CFG->libdir . '/clilib.php');
+require_once($CFG->dirroot . '/admin/tool/crawler/lib.php');
 
-list($options, $unrecognized) = cli_get_params([
+[$options, $unrecognized] = cli_get_params(
+    [
         'help'      => false,
         'verbose'   => 1,
-],
-        [
-                'h' => 'help',
-        ]);
+    ],
+    [
+        'h' => 'help',
+    ]
+);
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
@@ -55,4 +57,3 @@ if ($options['verbose'] && (!is_numeric($options['verbose']) || $options['verbos
 \core\local\cli\shutdown::script_supports_graceful_exit();
 
 tool_crawler_crawl($options['verbose']);
-

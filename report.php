@@ -22,17 +22,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
+require(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once('locallib.php');
 
 require_login(null, false);
 
-$report     = optional_param('report',  '', PARAM_ALPHANUMEXT);
-$page       = optional_param('page',    0,  PARAM_INT);
+$report     = optional_param('report', '', PARAM_ALPHANUMEXT);
+$page       = optional_param('page', 0, PARAM_INT);
 $perpage    = optional_param('perpage', 50, PARAM_INT);
-$courseid   = optional_param('course',  0,  PARAM_INT);
-$retryid    = optional_param('retryid', 0,  PARAM_INT);
+$courseid   = optional_param('course', 0, PARAM_INT);
+$retryid    = optional_param('retryid', 0, PARAM_INT);
 $start = $page * $perpage;
 
 $sqlfilter = '';
@@ -58,17 +58,15 @@ if ($courseid) {
     $coursename = format_string($course->fullname, true, ['context' => $coursecontext]);
     $PAGE->set_context($coursecontext);
     $PAGE->set_url($navurl);
-    $PAGE->set_title( get_string($report, 'tool_crawler') );
+    $PAGE->set_title(get_string($report, 'tool_crawler'));
     $PAGE->set_heading($coursename);
     $PAGE->set_pagelayout('incourse');
     $PAGE->add_body_class('limitedwidth');
-    $sqlfilter = ' AND c.id = '.$courseid;
-
+    $sqlfilter = ' AND c.id = ' . $courseid;
 } else {
-
     // If no course then this is an admin only report.
     require_capability('moodle/site:config', context_system::instance());
-    admin_externalpage_setup('tool_crawler_'.$report);
+    admin_externalpage_setup('tool_crawler_' . $report);
 }
 echo $OUTPUT->header();
 
@@ -83,7 +81,6 @@ if ($retryid) {
 $datetimeformat = get_string('strftimerecentsecondshtml', 'tool_crawler');
 
 if ($report == 'broken') {
-
     $sql = " FROM {tool_crawler_url}  b
        LEFT JOIN {tool_crawler_edge} l ON l.b = b.id
        LEFT JOIN {tool_crawler_url}  a ON l.a = a.id
@@ -91,28 +88,30 @@ if ($report == 'broken') {
            WHERE b.httpcode != ? $sqlfilter";
 
     $opts = ['200'];
-    $data  = $DB->get_records_sql("SELECT concat(b.id, '-', l.id, '-', a.id) AS id,
-                                          b.url target,
-                                          b.httpcode,
-                                          b.httpmsg,
-                                          b.errormsg,
-                                          b.lastcrawled,
-                                          b.priority,
-                                          b.id AS toid,
-                                          l.id linkid,
-                                          l.text,
-                                          a.url,
-                                          a.title,
-                                          a.redirect,
-                                          a.courseid,
-                                          c.shortname $sql
-                                 ORDER BY httpcode DESC,
-                                          c.shortname ASC",
-                                          $opts,
-                                          $start,
-                                          $perpage);
+    $data  = $DB->get_records_sql(
+        "SELECT concat(b.id, '-', l.id, '-', a.id) AS id,
+                b.url target,
+                b.httpcode,
+                b.httpmsg,
+                b.errormsg,
+                b.lastcrawled,
+                b.priority,
+                b.id AS toid,
+                l.id linkid,
+                l.text,
+                a.url,
+                a.title,
+                a.redirect,
+                a.courseid,
+                c.shortname $sql
+       ORDER BY httpcode DESC,
+                c.shortname ASC",
+        $opts,
+        $start,
+        $perpage
+    );
 
-    $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
+    $count = $DB->get_field_sql("SELECT count(*) AS count" . $sql, $opts);
 
     $table = new html_table();
     $table->head = [
@@ -137,8 +136,10 @@ if ($report == 'broken') {
             $text = htmlspecialchars($text, ENT_NOQUOTES | ENT_HTML401);
         }
         $data = [
-            html_writer::link(new moodle_url($baseurl, ['retryid' => $row->toid ]),
-                get_string('retry', 'tool_crawler')),
+            html_writer::link(
+                new moodle_url($baseurl, ['retryid' => $row->toid ]),
+                get_string('retry', 'tool_crawler')
+            ),
             userdate($row->lastcrawled, $datetimeformat),
             tool_crawler_priority_level($row->priority),
             tool_crawler_http_code($row),
@@ -147,36 +148,36 @@ if ($report == 'broken') {
         ];
         if (!$courseid) {
             $escapedshortname = htmlspecialchars($row->shortname, ENT_NOQUOTES | ENT_HTML401);
-            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $escapedshortname) );
+            array_push($data, html_writer::link('/course/view.php?id=' . $row->courseid, $escapedshortname));
         }
         $table->data[] = $data;
     }
-
 } else if ($report == 'queued') {
-
     $sql = " FROM {tool_crawler_url} a
        LEFT JOIN {course} c ON c.id = a.courseid
            WHERE (a.lastcrawled IS NULL OR a.lastcrawled < needscrawl)
                  $sqlfilter";
 
     $opts = [];
-    $data  = $DB->get_records_sql("SELECT a.id,
-                                          a.url target,
-                                          a.title,
-                                          a.redirect,
-                                          a.lastcrawled,
-                                          a.needscrawl,
-                                          a.courseid,
-                                          a.priority,
-                                          c.shortname $sql
-                                 ORDER BY a.priority DESC,
-                                          a.needscrawl ASC,
-                                          a.id ASC",
-                                          $opts,
-                                          $start,
-                                          $perpage);
+    $data = $DB->get_records_sql(
+        "SELECT a.id,
+                a.url target,
+                a.title,
+                a.redirect,
+                a.lastcrawled,
+                a.needscrawl,
+                a.courseid,
+                a.priority,
+                c.shortname $sql
+       ORDER BY a.priority DESC,
+                a.needscrawl ASC,
+                a.id ASC",
+        $opts,
+        $start,
+        $perpage
+    );
 
-    $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
+    $count = $DB->get_field_sql("SELECT count(*) AS count" . $sql, $opts);
 
     $table = new html_table();
 
@@ -202,40 +203,40 @@ if ($report == 'broken') {
         ];
         if (!$courseid) {
             $escapedshortname = htmlspecialchars($row->shortname, ENT_NOQUOTES | ENT_HTML401);
-            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $escapedshortname) );
+            array_push($data, html_writer::link('/course/view.php?id=' . $row->courseid, $escapedshortname));
         }
         $table->data[] = $data;
     }
-
 } else if ($report == 'recent') {
-
     $sql = " FROM {tool_crawler_url}  b
        LEFT JOIN {course} c ON c.id = b.courseid
            WHERE b.lastcrawled IS NOT NULL
                  $sqlfilter";
 
     $opts = [];
-    $data  = $DB->get_records_sql("SELECT b.id,
-                                          b.url target,
-                                          b.lastcrawled,
-                                          b.filesize,
-                                          b.filesizestatus,
-                                          b.httpcode,
-                                          b.httpmsg,
-                                          b.errormsg,
-                                          b.title,
-                                          b.redirect,
-                                          b.mimetype,
-                                          b.courseid,
-                                          b.priority,
-                                          c.shortname
-                                          $sql
-                                 ORDER BY b.lastcrawled DESC",
-                                          $opts,
-                                          $start,
-                                          $perpage);
+    $data = $DB->get_records_sql(
+        "SELECT b.id,
+                b.url target,
+                b.lastcrawled,
+                b.filesize,
+                b.filesizestatus,
+                b.httpcode,
+                b.httpmsg,
+                b.errormsg,
+                b.title,
+                b.redirect,
+                b.mimetype,
+                b.courseid,
+                b.priority,
+                c.shortname
+                $sql
+       ORDER BY b.lastcrawled DESC",
+        $opts,
+        $start,
+        $perpage
+    );
 
-    $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
+    $count = $DB->get_field_sql("SELECT count(*) AS count" . $sql, $opts);
 
     $table = new html_table();
     $table->head = [
@@ -266,13 +267,11 @@ if ($report == 'broken') {
         ];
         if (!$courseid) {
             $escapedshortname = htmlspecialchars($row->shortname, ENT_NOQUOTES | ENT_HTML401);
-            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $escapedshortname) );
+            array_push($data, html_writer::link('/course/view.php?id=' . $row->courseid, $escapedshortname));
         }
         $table->data[] = $data;
     }
-
 } else if ($report == 'oversize') {
-
     $oversizesqlfilter = tool_crawler_sql_oversize_filter('b');
 
     $sql = " FROM {tool_crawler_url} b
@@ -283,29 +282,31 @@ if ($report == 'broken') {
                  $sqlfilter";
 
     $opts = $oversizesqlfilter['params'];
-    $data  = $DB->get_records_sql("SELECT concat(b.id, '-', a.id, '-', l.id) id,
-                                          b.url target,
-                                          b.filesize,
-                                          b.filesizestatus,
-                                          b.lastcrawled,
-                                          b.mimetype,
-                                          b.priority,
-                                          l.text,
-                                          a.title,
-                                          a.url,
-                                          a.redirect,
-                                          a.courseid,
-                                          c.shortname
-                                          $sql
-                                 ORDER BY b.filesize DESC,
-                                          b.filesizestatus DESC,
-                                          l.text,
-                                          a.id",
-                                          $opts,
-                                          $start,
-                                          $perpage);
+    $data = $DB->get_records_sql(
+        "SELECT concat(b.id, '-', a.id, '-', l.id) id,
+                b.url target,
+                b.filesize,
+                b.filesizestatus,
+                b.lastcrawled,
+                b.mimetype,
+                b.priority,
+                l.text,
+                a.title,
+                a.url,
+                a.redirect,
+                a.courseid,
+                c.shortname
+                $sql
+       ORDER BY b.filesize DESC,
+                b.filesizestatus DESC,
+                l.text,
+                a.id",
+        $opts,
+        $start,
+        $perpage
+    );
 
-    $count = $DB->get_field_sql  ("SELECT count(*) AS count" . $sql, $opts);
+    $count = $DB->get_field_sql("SELECT count(*) AS count" . $sql, $opts);
 
     $table = new html_table();
 
@@ -342,14 +343,15 @@ if ($report == 'broken') {
         ];
         if (!$courseid) {
             $escapedshortname = htmlspecialchars($row->shortname, ENT_NOQUOTES | ENT_HTML401);
-            array_push($data, html_writer::link('/course/view.php?id='.$row->courseid, $escapedshortname) );
+            array_push($data, html_writer::link('/course/view.php?id=' . $row->courseid, $escapedshortname));
         }
         $table->data[] = $data;
     }
-
 }
 
-echo $OUTPUT->heading(get_string('numberurlsfound', 'tool_crawler',
+echo $OUTPUT->heading(get_string(
+    'numberurlsfound',
+    'tool_crawler',
     [
         'reports_number' => $count,
         'report_type' => $report,
@@ -359,4 +361,3 @@ echo get_string($report . '_header', 'tool_crawler');
 echo html_writer::table($table);
 echo $OUTPUT->paging_bar($count, $page, $perpage, $baseurl);
 echo $OUTPUT->footer();
-
