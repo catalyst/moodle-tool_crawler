@@ -83,8 +83,8 @@ $datetimeformat = get_string('strftimerecentsecondshtml', 'tool_crawler');
 
 if ($report == 'broken') {
     $sql = " FROM {tool_crawler_url}  b
-       LEFT JOIN {tool_crawler_edge} l ON l.b = b.id
-       LEFT JOIN {tool_crawler_url}  a ON l.a = a.id
+            JOIN {tool_crawler_edge} l ON l.b = b.id
+            JOIN {tool_crawler_url}  a ON l.a = a.id
        LEFT JOIN {course} c ON c.id = a.courseid
            WHERE b.httpcode != ? $sqlfilter";
 
@@ -106,7 +106,8 @@ if ($report == 'broken') {
                 a.courseid,
                 c.shortname $sql
        ORDER BY httpcode DESC,
-                c.shortname ASC",
+                c.shortname ASC,
+                id DESC",
         $opts,
         $start,
         $perpage
@@ -276,8 +277,8 @@ if ($report == 'broken') {
     $oversizesqlfilter = tool_crawler_sql_oversize_filter('b');
 
     $sql = " FROM {tool_crawler_url} b
-       LEFT JOIN {tool_crawler_edge} l ON l.b = b.id
-       LEFT JOIN {tool_crawler_url}  a ON l.a = a.id
+            JOIN {tool_crawler_edge} l ON l.b = b.id
+            JOIN {tool_crawler_url}  a ON l.a = a.id
        LEFT JOIN {course} c ON c.id = a.courseid
            WHERE {$oversizesqlfilter['wherecondition']}
                  $sqlfilter";

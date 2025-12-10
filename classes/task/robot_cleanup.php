@@ -79,6 +79,16 @@ class robot_cleanup extends \core\task\scheduled_task {
                   AND lastcrawled <= :expiredate';
             $numrecsdeleted = $DB->count_records_select('tool_crawler_url', $where, $param);
             $DB->delete_records_select('tool_crawler_url', $where, $param);
+
+            if ($numrecsdeleted) {
+                // Delete orphaned edges.
+                $subquery = "SELECT l.id
+                               FROM {tool_crawler_edge} l
+                          LEFT JOIN {tool_crawler_url} a ON a.id = l.a
+                          LEFT JOIN {tool_crawler_url} b ON b.id = l.b
+                              WHERE a.id IS NULL OR b.id IS NULL";
+                $DB->delete_records_subquery('tool_crawler_edge', 'id', 'id', $subquery);
+            }
         }
 
         // Throw and log event that robot_cleanup task was finished and pass number of deleted records.

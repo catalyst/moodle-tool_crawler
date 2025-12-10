@@ -483,6 +483,7 @@ class crawler {
                 SELECT COUNT(*)
                   FROM {tool_crawler_url} b
                   JOIN {tool_crawler_edge} l ON l.b = b.id
+                  JOIN {tool_crawler_url} a ON l.a = a.id
                  WHERE b.httpcode != '200'");
     }
 
