@@ -102,7 +102,7 @@ function tool_crawler_http_code($row) {
     }
     $msg = htmlspecialchars($msg, ENT_NOQUOTES | ENT_HTML401);
 
-    $code = $row->httpcode;
+    $code = $row->httpcode ?? '';
     $cc = substr($code, 0, 1);
     $code = "$msg<br><small class='link-$cc" . "xx'>$code</small>";
     return $code;
@@ -217,7 +217,7 @@ function tool_crawler_url_gen_table($data) {
     $datetimeformat = get_string('strftimerecentsecondshtml', 'tool_crawler');
     $table->data = [];
     foreach ($data as $row) {
-        $title = trim($row->title);
+        $title = trim($row->title ?? '');
         if ($title == "") {
             $title = get_string('unknown', 'tool_crawler');
         }
@@ -230,7 +230,7 @@ function tool_crawler_url_gen_table($data) {
             $code,
             htmlspecialchars(tool_crawler_displaysize($row), ENT_NOQUOTES | ENT_HTML401),
             tool_crawler_link($row->target, $title, $row->redirect),
-            htmlspecialchars($row->mimetype, ENT_NOQUOTES | ENT_HTML401),
+            htmlspecialchars($row->mimetype ?? '', ENT_NOQUOTES | ENT_HTML401),
         ];
         $table->data[] = $data;
     }

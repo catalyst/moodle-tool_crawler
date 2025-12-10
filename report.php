@@ -25,6 +25,7 @@
 require(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once('locallib.php');
+require_once('lib.php');
 
 require_login(null, false);
 
@@ -192,7 +193,7 @@ if ($report == 'broken') {
     }
     $table->data = [];
     foreach ($data as $row) {
-        $title = trim($row->title);
+        $title = trim($row->title ?? '');
         if ($title == "") {
             $title = get_string('notyetknown', 'tool_crawler');
         }
@@ -252,7 +253,7 @@ if ($report == 'broken') {
     }
     $table->data = [];
     foreach ($data as $row) {
-        $title = trim($row->title);
+        $title = trim($row->title ?? '');
         if ($title == "") {
             $title = get_string('unknown', 'tool_crawler');
         }
