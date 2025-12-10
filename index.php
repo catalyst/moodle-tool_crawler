@@ -143,6 +143,9 @@ $table->data = [
 $report = 'index';
 require('tabs.php');
 echo $tabs;
+if ($boterror) {
+    $table->rowclasses[0] = 'table-warning';
+}
 echo html_writer::table($table);
 
 $table = new html_table();
