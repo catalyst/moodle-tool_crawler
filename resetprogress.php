@@ -42,6 +42,7 @@ if ($data = $form->get_data()) {
         unset_config('crawlstart', 'tool_crawler');
         unset_config('crawlend', 'tool_crawler');
         unset_config('crawltick', 'tool_crawler');
+        unset_config('crawlnext', 'tool_crawler');
         $DB->delete_records('tool_crawler_url');
         $DB->delete_records('tool_crawler_edge');
 

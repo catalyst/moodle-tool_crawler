@@ -235,6 +235,18 @@ useridlistid
             $options
         ));
 
+        $setting = new admin_setting_configtext(
+            'tool_crawler/nextcrawlstart',
+            get_string('nextcrawlstart', 'tool_crawler'),
+            get_string('nextcrawlstartdesc', 'tool_crawler'),
+            'next Saturday 1am',
+            PARAM_TEXT
+        );
+        $setting->set_updatedcallback(function () {
+            \tool_crawler\robot\crawler::update_next_crawl_start();
+        });
+        $settings->add($setting);
+
         $options = [
             86400 => new lang_string('secondstotime86400'),
             604800 => new lang_string('secondstotime604800'),

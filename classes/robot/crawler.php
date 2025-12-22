@@ -84,6 +84,7 @@ class crawler {
             'crawlstart' => 0,
             'crawlend' => 0,
             'crawltick' => 0,
+            'crawlnext' => 0,
             'retentionperiod' => 86400, // 1 week.
             'recentactivity' => 1,
         ];
@@ -1555,5 +1556,14 @@ class crawler {
         $rs->close();
 
         return $recentcourses;
+    }
+
+    /**
+     * Updates the next crawl start time.
+     */
+    public static function update_next_crawl_start() {
+        $config = self::get_config();
+        $nextcrawl = strtotime($config->nextcrawlstart) ?: time() + WEEKSECS;
+        set_config('crawlnext', $nextcrawl, 'tool_crawler');
     }
 }

@@ -45,6 +45,7 @@ if ($action == 'makebot') {
 $crawlstart     = $config->crawlstart;
 $crawlend       = $config->crawlend;
 $crawltick      = $config->crawltick;
+$crawlnext      = $config->crawlnext;
 $boterror       = $robot->is_bot_valid();
 $queuesize      = $url->get_queue_size();
 $recent         = $url->get_processed();
@@ -103,6 +104,10 @@ $table->data = [
     [
         get_string('lastcrawlend', 'tool_crawler'),
         $crawlend ? userdate($crawlend) : get_string('neverfinished', 'tool_crawler'),
+    ],
+    [
+        get_string('nextcrawldue', 'tool_crawler'),
+        $crawlnext ? userdate($crawlnext) : '-',
     ],
     [
         get_string('lastcrawlproc', 'tool_crawler'),

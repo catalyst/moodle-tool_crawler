@@ -39,7 +39,6 @@ require_once(__DIR__ . '/constants.php');
  * @param boolean $verbose show verbose feedback
  */
 function tool_crawler_crawl($verbose = false) {
-
     global $CFG, $DB;
 
     $robot = new crawler();
@@ -51,10 +50,10 @@ function tool_crawler_crawl($verbose = false) {
     }
 
     $crawlstart = $config->crawlstart;
-    $crawlend   = $config->crawlend;
+    $history = $crawlstart ? $DB->get_record('tool_crawler_history', ['startcrawl' => $crawlstart]) : false;
 
-    // If we need to start a new crawl, add new items to the queue.
-    if (!$crawlstart || $crawlstart <= $crawlend) {
+    // Only start a new crawl when the previous crawl has finished and the next crawl is due.
+    if (!$history || ($history->endcrawl && $config->crawlnext < time())) {
         $start = time();
         set_config('crawlstart', $start, 'tool_crawler');
 
@@ -75,12 +74,8 @@ function tool_crawler_crawl($verbose = false) {
         $history->oversize = 0;
         $history->cronticks = 0;
         $history->id = $DB->insert_record('tool_crawler_history', $history);
-    } else {
-        $history = $DB->get_record('tool_crawler_history', ['startcrawl' => $crawlstart]);
+        crawler::update_next_crawl_start();
     }
-
-    $cronstart = time();
-    $cronstop = $cronstart + $config->maxcrontime;
 
     $hastime = $robot->process_queue($verbose);
 
@@ -90,6 +85,9 @@ function tool_crawler_crawl($verbose = false) {
         // Mark the crawl as ended.
         $history->endcrawl = time();
         set_config('crawlend', time(), 'tool_crawler');
+    } else {
+        // Explicitly remove the end crawl time.
+        $history->endcrawl = null;
     }
     $history->urls = $url->get_processed();
     $history->links = $robot->get_num_links();
