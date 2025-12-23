@@ -55,6 +55,12 @@ if ($hassiteconfig) {
     ));
 
     $ADMIN->add('tool_crawler_cat', new admin_externalpage(
+        'tool_crawler_reference',
+        get_string('reference', 'tool_crawler'),
+        $CFG->wwwroot . '/admin/tool/crawler/report.php?report=reference'
+    ));
+
+    $ADMIN->add('tool_crawler_cat', new admin_externalpage(
         'tool_crawler_oversize',
         get_string('oversize', 'tool_crawler'),
         $CFG->wwwroot . '/admin/tool/crawler/report.php?report=oversize'

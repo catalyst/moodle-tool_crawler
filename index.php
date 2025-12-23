@@ -131,8 +131,8 @@ $table->data = [
     ],
     [
         get_string('broken', 'tool_crawler'),
-        "<a href=\"report.php?report=broken\">" . tool_crawler_numberformat($numpageswithurlsbroken)
-                . " / " . tool_crawler_numberformat($numurlsbroken) . "</a>",
+        "<a href=\"report.php?report=reference\">" . tool_crawler_numberformat($numpageswithurlsbroken) . "</a>" .
+            " / " . "<a href=\"report.php?report=broken\">" . tool_crawler_numberformat($numurlsbroken) . "</a>",
     ],
     [
         get_string('oversize', 'tool_crawler'),

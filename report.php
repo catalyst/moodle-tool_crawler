@@ -81,39 +81,48 @@ if ($retryid) {
 
 $datetimeformat = get_string('strftimerecentsecondshtml', 'tool_crawler');
 
-if ($report == 'broken') {
-    $sql = " FROM {tool_crawler_url}  b
-            JOIN {tool_crawler_edge} l ON l.b = b.id
-            JOIN {tool_crawler_url}  a ON l.a = a.id
-       LEFT JOIN {course} c ON c.id = a.courseid
-           WHERE b.httpcode != ? $sqlfilter";
+if ($report == 'broken' || $report == 'reference') {
+    $reference = $report == 'reference';
+    $basesql = " FROM {tool_crawler_url}  b
+                 JOIN {tool_crawler_edge} l ON l.b = b.id
+                 JOIN {tool_crawler_url}  a ON l.a = a.id
+            LEFT JOIN {course} c ON c.id = a.courseid
+                WHERE b.httpcode != ? $sqlfilter";
 
     $opts = ['200'];
-    $data  = $DB->get_records_sql(
-        "SELECT concat(b.id, '-', l.id, '-', a.id) AS id,
-                b.url target,
-                b.httpcode,
-                b.httpmsg,
-                b.errormsg,
-                b.lastcrawled,
-                b.priority,
-                b.id AS toid,
-                l.id linkid,
-                l.text,
-                a.url,
-                a.title,
-                a.redirect,
-                a.courseid,
-                c.shortname $sql
-       ORDER BY httpcode DESC,
-                c.shortname ASC,
-                id DESC",
-        $opts,
-        $start,
-        $perpage
-    );
+    $baseselect = "b.url AS target,
+                   b.httpcode,
+                   b.httpmsg,
+                   b.lastcrawled,
+                   b.priority,
+                   b.id AS toid";
 
-    $count = $DB->get_field_sql("SELECT count(*) AS count" . $sql, $opts);
+    if ($reference) {
+        $sql = "SELECT concat(b.id, '-', l.id, '-', a.id) AS id,
+                       $baseselect,
+                       l.text,
+                       a.url,
+                       a.title,
+                       a.redirect,
+                       a.courseid,
+                       c.shortname $basesql
+              ORDER BY httpcode DESC,
+                       c.shortname ASC,
+                       id DESC";
+        $countselect = '*';
+    } else {
+        $sql = "SELECT b.id AS id,
+                       $baseselect,
+                       MIN(l.text) AS text,
+                       COUNT(a.id) AS links $basesql
+              GROUP BY b.id
+              ORDER BY httpcode DESC,
+                       id DESC";
+        $countselect = 'DISTINCT b.id';
+    }
+
+    $data = $DB->get_records_sql($sql, $opts, $start, $perpage);
+    $count = $DB->get_field_sql("SELECT count($countselect) AS count" . $basesql, $opts);
 
     $table = new html_table();
     $table->head = [
@@ -122,9 +131,9 @@ if ($report == 'broken') {
         get_string('priority', 'tool_crawler'),
         get_string('response', 'tool_crawler'),
         get_string('broken', 'tool_crawler'),
-        get_string('frompage', 'tool_crawler'),
+        get_string($reference ? 'frompage' : 'references', 'tool_crawler'),
     ];
-    if (!$courseid) {
+    if ($reference && !$courseid) {
         array_push($table->head, get_string('course', 'tool_crawler'));
     }
     $table->data = [];
@@ -145,10 +154,12 @@ if ($report == 'broken') {
             userdate($row->lastcrawled, $datetimeformat),
             tool_crawler_priority_level($row->priority),
             tool_crawler_http_code($row),
-            tool_crawler_link($row->target, $text, $row->redirect, true),
-            tool_crawler_link($row->url, $row->title, $row->redirect),
+            tool_crawler_link($row->target, $text, $row->redirect ?? '', true),
+            $reference
+                ? tool_crawler_link($row->url, $row->title, $row->redirect)
+                : tool_crawler_numberformat($row->links),
         ];
-        if (!$courseid) {
+        if ($reference && !$courseid) {
             $escapedshortname = htmlspecialchars($row->shortname, ENT_NOQUOTES | ENT_HTML401);
             array_push($data, html_writer::link('/course/view.php?id=' . $row->courseid, $escapedshortname));
         }
