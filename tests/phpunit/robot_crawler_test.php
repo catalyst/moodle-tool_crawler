@@ -54,6 +54,7 @@ final class robot_crawler_test extends \advanced_testcase {
         $this->resetAfterTest(true);
 
         $this->robot = new \tool_crawler\robot\crawler();
+        set_config('disablebot', 0, 'tool_crawler');
     }
 
     /**

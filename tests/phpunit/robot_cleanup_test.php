@@ -58,6 +58,7 @@ final class robot_cleanup_test extends \advanced_testcase {
         $this->robot = new \tool_crawler\robot\crawler();
         set_config('crawlend', strtotime("16-05-2016 14:51:00"), 'tool_crawler');
         set_config('retentionperiod', 600, 'tool_crawler');
+        set_config('disablebot', 0, 'tool_crawler');
 
         // Add 3 test records to table {tool_crawler_url}: 2 old ones and 1 item not older than configured retention period.
         $dataobjects = [
