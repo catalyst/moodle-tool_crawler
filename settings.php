@@ -133,7 +133,9 @@ http://www.contentquality.com/'
 /report
 /rss
 /user
-/tag/"
+/tag/
+/mod/book/tool/print/
+"
         ));
 
         $settings->add(new admin_setting_configtextarea(
@@ -144,6 +146,7 @@ http://www.contentquality.com/'
 time
 lang
 useridlistid
+forceview
 "
         ));
 
