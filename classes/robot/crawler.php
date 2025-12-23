@@ -1346,7 +1346,7 @@ class crawler {
 
             $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
             if ($final != $url) {
-                $result->redirect = $final;
+                $result->redirect = clean_param($final, PARAM_URL);
             } else {
                 $result->redirect = '';
             }
