@@ -22,8 +22,6 @@
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The crawler has determined the exact size of the requested resource. This value does not indicate that the crawler has indeed
  * fully downloaded the resource; it may also rely on header fields that it has seen.

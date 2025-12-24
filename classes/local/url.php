@@ -27,8 +27,6 @@ namespace tool_crawler\local;
 
 use tool_crawler\robot\crawler;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * url class.
  *

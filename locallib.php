@@ -24,8 +24,6 @@
 
 use tool_crawler\local\url;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Renders a link as HTML.
  *
@@ -55,7 +53,9 @@ function tool_crawler_link($url, $label, $redirect = '', $labelishtml = false) {
 
     $canviewsitelevelreports = has_capability('moodle/site:config', context_system::instance());
     $html = $canviewsitelevelreports ? html_writer::link(new moodle_url('url.php', ['url' => $url]), $label) : $label;
-    $html .= '<br><small>' . html_writer::link($url, htmlspecialchars($url, ENT_NOQUOTES | ENT_HTML401), ['target' => 'link']) . '</small>';
+    $html .= '<br><small>';
+    $html .= html_writer::link($url, htmlspecialchars($url, ENT_NOQUOTES | ENT_HTML401), ['target' => 'link']);
+    $html .= '</small>';
 
     if ($redirect) {
         $linkhtmlsnippet = html_writer::link($redirect, htmlspecialchars($redirect, ENT_NOQUOTES | ENT_HTML401));

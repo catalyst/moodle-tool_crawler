@@ -24,8 +24,6 @@
 
 namespace tool_crawler\task;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * robot_cleanup
  *

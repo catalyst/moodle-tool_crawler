@@ -26,8 +26,6 @@ namespace tool_crawler;
 
 use tool_crawler\local\url;
 
-defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
-
 /**
  * Unit test for scheduled task robot_cleanup.
  *
