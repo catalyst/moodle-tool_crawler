@@ -57,10 +57,13 @@ $oversize       = $robot->get_num_oversize();
 
 if ($queuesize == 0 || $recent == 0) {
     $progress = 1;
+    $message = '';
 } else if ($oldqueuesize == 0) {
     $progress = $recent / ($recent + $queuesize);
+    $message = $recent . ' / ' . ($recent + $queuesize);
 } else {
     $progress = $recent / ($recent + max($oldqueuesize, $queuesize));
+    $message = $recent . ' / ' . ($recent + max($oldqueuesize, $queuesize));
 }
 
 // If old queue is zero the use current queue.
@@ -88,7 +91,12 @@ $table->data = [
     ],
     [
         get_string('progress', 'tool_crawler'),
-        get_string('progresseta', 'tool_crawler', [
+
+        $OUTPUT->render_from_template('core/progress_bar', [
+            'value' => round($progress * 100, 1),
+            'message' => $message,
+        ])
+        . get_string('progresseta', 'tool_crawler', [
             'percent' => sprintf('%.2f%%', $progress * 100),
             'eta' => userdate($eta),
         ])
