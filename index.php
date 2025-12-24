@@ -166,7 +166,10 @@ foreach ($history as $record) {
     } else {
         $delta = time() - $record->startcrawl;
     }
-    $duration = sprintf('%02d:%02d:%02d', $delta / 60 / 60, $delta / 60 % 60, $delta % 60);
+    $duration = sprintf('%02d:%02d:%02d',
+        floor($delta / 60 / 60),
+        floor($delta / 60) % 60,
+        floor($delta) % 60);
     $table->data[] = [
         userdate($record->startcrawl, $datetimeformat),
         $record->endcrawl ? userdate($record->endcrawl, $datetimeformat) : '-',
