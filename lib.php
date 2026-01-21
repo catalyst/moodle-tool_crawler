@@ -39,7 +39,6 @@ require_once(__DIR__ . '/constants.php');
  * @param boolean $verbose show verbose feedback
  */
 function tool_crawler_crawl($verbose = false) {
-
     global $CFG, $DB;
 
     $robot = new crawler();
@@ -51,10 +50,10 @@ function tool_crawler_crawl($verbose = false) {
     }
 
     $crawlstart = $config->crawlstart;
-    $crawlend   = $config->crawlend;
+    $history = $crawlstart ? $DB->get_record('tool_crawler_history', ['startcrawl' => $crawlstart]) : false;
 
-    // If we need to start a new crawl, add new items to the queue.
-    if (!$crawlstart || $crawlstart <= $crawlend) {
+    // Only start a new crawl when the previous crawl has finished and the next crawl is due.
+    if (!$history || ($history->endcrawl && $config->crawlnext < time())) {
         $start = time();
         set_config('crawlstart', $start, 'tool_crawler');
 
@@ -81,12 +80,8 @@ function tool_crawler_crawl($verbose = false) {
         $history->oversize = 0;
         $history->cronticks = 0;
         $history->id = $DB->insert_record('tool_crawler_history', $history);
-    } else {
-        $history = $DB->get_record('tool_crawler_history', ['startcrawl' => $crawlstart]);
+        crawler::update_next_crawl_start();
     }
-
-    $cronstart = time();
-    $cronstop = $cronstart + $config->maxcrontime;
 
     $hastime = $robot->process_queue($verbose);
 
@@ -96,6 +91,9 @@ function tool_crawler_crawl($verbose = false) {
         // Mark the crawl as ended.
         $history->endcrawl = time();
         set_config('crawlend', time(), 'tool_crawler');
+    } else {
+        // Explicitly remove the end crawl time.
+        $history->endcrawl = null;
     }
     $history->urls = $url->get_processed();
     $history->links = $robot->get_num_links();
@@ -167,19 +165,13 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
     if ($courseconfig) {
         $coursemode = get_config('tool_crawler', 'coursemode');
         if ($coursemode) {
-            $url = new moodle_url('/admin/tool/crawler/course.php', ['id' => $course->id]);
-            $navigation->add(
-                get_string('pluginname', 'tool_crawler'),
-                $url,
-                $navigation::TYPE_SETTING,
-                null,
-                'crawler',
-                new pix_icon('i/warning', '')
-            );
+            $url = new moodle_url('/admin/tool/crawler/course.php', array('id' => $course->id));
+            $navigation->add(get_string('pluginname', 'tool_crawler'),
+                $url, $navigation::TYPE_SETTING, null, 'crawler', new pix_icon('i/warning', ''));
         }
     }
 
-    $reports = ['queued', 'recent', 'broken', 'oversize'];
+    $reports = array('queued', 'recent', 'broken', 'oversize');
 
     $coursereports = $navigation->get('coursereports');
     if (!$coursereports) {
@@ -189,7 +181,7 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
     if ($coursereports && ($siteconfig || $courseconfig)) {
         $node = $coursereports->add(
             get_string('pluginname', 'tool_crawler'),
-            new moodle_url('/admin/tool/crawler/report.php', ['report' => 'queued', 'course' => $course->id]),
+            new moodle_url('/admin/tool/crawler/report.php', array('report' => 'queued', 'course' => $course->id)),
             navigation_node::TYPE_CONTAINER,
             null,
             'linkchecker',
@@ -197,7 +189,7 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
         );
 
         if ($courseconfig) {
-            $url = new moodle_url('/admin/tool/crawler/coursereport.php', ['courseid' => $course->id]);
+            $url = new moodle_url('/admin/tool/crawler/coursereport.php', array('courseid' => $course->id));
             $node->add(
                 get_string('coursereport', 'tool_crawler'),
                 $url,
@@ -210,7 +202,7 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
 
         if ($siteconfig) {
             foreach ($reports as $rpt) {
-                $url = new moodle_url('/admin/tool/crawler/report.php', ['report' => $rpt, 'course' => $course->id]);
+                $url = new moodle_url('/admin/tool/crawler/report.php', array('report' => $rpt, 'course' => $course->id));
                 $node->add(
                     get_string($rpt, 'tool_crawler'),
                     $url,

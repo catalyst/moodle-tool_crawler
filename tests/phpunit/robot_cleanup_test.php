@@ -22,9 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use tool_crawler\local\url;
+namespace tool_crawler;
 
-defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
+use tool_crawler\local\url;
 
 /**
  * Unit test for scheduled task robot_cleanup.
@@ -37,7 +37,7 @@ defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
  * @copyright  2016 Suan Kan <suankan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class robot_cleanup_test extends advanced_testcase {
+final class robot_cleanup_test extends \advanced_testcase {
     /**
      * @var \tool_crawler\robot\crawler Crawler to use in tests.
      */
@@ -46,7 +46,7 @@ final class robot_cleanup_test extends advanced_testcase {
     /**
      * Prepare the config options for plugin which are used for robot_cleanup task logic
      *
-     * @throws coding_exception
+     * @throws \coding_exception
      */
     protected function setUp(): void {
         global $DB;
@@ -56,6 +56,7 @@ final class robot_cleanup_test extends advanced_testcase {
         $this->robot = new \tool_crawler\robot\crawler();
         set_config('crawlend', strtotime("16-05-2016 14:51:00"), 'tool_crawler');
         set_config('retentionperiod', 600, 'tool_crawler');
+        set_config('disablebot', 0, 'tool_crawler');
 
         // Add 3 test records to table {tool_crawler_url}: 2 old ones and 1 item not older than configured retention period.
         $dataobjects = [
@@ -129,7 +130,7 @@ final class robot_cleanup_test extends advanced_testcase {
                 $persistent = new url(0, (object)$dataobject);
                 $persistent->create();
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             echo 'Caught exception: ', $e->getMessage(), "\n";
         }
     }

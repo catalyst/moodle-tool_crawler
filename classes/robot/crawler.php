@@ -84,6 +84,7 @@ class crawler {
             'crawlstart' => 0,
             'crawlend' => 0,
             'crawltick' => 0,
+            'crawlnext' => 0,
             'retentionperiod' => 86400, // 1 week.
             'recentactivity' => 1,
         ];
@@ -482,6 +483,7 @@ class crawler {
                 SELECT COUNT(*)
                   FROM {tool_crawler_url} b
                   JOIN {tool_crawler_edge} l ON l.b = b.id
+                  JOIN {tool_crawler_url} a ON l.a = a.id
                  WHERE b.httpcode != '200'");
     }
 
@@ -573,7 +575,9 @@ class crawler {
                 if ($verbose) {
                     echo "Shutting down crawler early\n";
                 }
-                return true;
+                // False means we still have more in the queue to process.
+                set_config('crawltick', time(), 'tool_crawler');
+                return false;
             }
 
             if (empty($nodes)) {
@@ -1296,7 +1300,7 @@ class crawler {
                     // This code path will erroneously be triggered in the case of trailers. Not a big problem, especially not in
                     // the case of well-formed trailers. But we will then reset $httpmsg a bit too early.
                     if (preg_match('@^HTTP/[^ ]+ ([0-9]+) ([^\r\n]*)@', $header, $headerparts)) { // HTTP status-line.
-                        $httpmsg = $headerparts[2];
+                        $httpmsg = clean_param($headerparts[2], PARAM_TEXT);
                     } else {
                         $httpmsg = '';
                     }
@@ -1390,7 +1394,7 @@ class crawler {
 
             $final                    = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
             if ($final != $url) {
-                $result->redirect = $final;
+                $result->redirect = clean_param($final, PARAM_URL);
             } else {
                 $result->redirect = '';
             }
@@ -1603,5 +1607,14 @@ class crawler {
         $rs->close();
 
         return $recentcourses;
+    }
+
+    /**
+     * Updates the next crawl start time.
+     */
+    public static function update_next_crawl_start() {
+        $config = self::get_config();
+        $nextcrawl = strtotime($config->nextcrawlstart) ?: time() + WEEKSECS;
+        set_config('crawlnext', $nextcrawl, 'tool_crawler');
     }
 }

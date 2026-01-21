@@ -54,14 +54,51 @@ class crawl_task extends \core\task\scheduled_task {
     public function execute() {
         $config = \tool_crawler\robot\crawler::get_config();
         if ($config->disablebot === '1') {
+            mtrace('Crawling is disabled.');
+            return;
+        }
+        if (!self::crawl_task_required($config)) {
+            mtrace('Next crawl is due at ' . userdate($config->crawlnext));
             return;
         }
         $maxworkers = $config->max_workers;
         if (!$maxworkers) {
+            mtrace('No workers available.');
             return;
         }
         self::tool_crawler_add_adhoc_task($maxworkers);
     }
+
+    /**
+     * Checks whether a crawl task is required.
+     *
+     * @param mixed $config
+     * @return bool Whether a crawl task is required
+     */
+    public static function crawl_task_required($config): bool {
+        global $DB;
+
+        $crawlstart = $config->crawlstart;
+        $crawlend = $config->crawlend;
+
+        // The current crawl is ongoing.
+        if (!$crawlstart || $crawlstart > $crawlend) {
+            return true;
+        }
+
+        // The next crawl is due.
+        if ($config->crawlnext < time()) {
+            return true;
+        }
+
+        // Additional urls to crawl have been queued.
+        if ($DB->record_exists_select('tool_crawler_url', 'needscrawl > :crawlend', ['crawlend' => $crawlend])) {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Add a batch of ad hoc crawl tasks
      * @param integer $maxworkers the limit of concurrent adhoc crawl tasks (workers)

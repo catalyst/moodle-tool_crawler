@@ -55,6 +55,12 @@ if ($hassiteconfig) {
     ));
 
     $ADMIN->add('tool_crawler_cat', new admin_externalpage(
+        'tool_crawler_reference',
+        get_string('reference', 'tool_crawler'),
+        $CFG->wwwroot . '/admin/tool/crawler/report.php?report=reference'
+    ));
+
+    $ADMIN->add('tool_crawler_cat', new admin_externalpage(
         'tool_crawler_oversize',
         get_string('oversize', 'tool_crawler'),
         $CFG->wwwroot . '/admin/tool/crawler/report.php?report=oversize'
@@ -127,7 +133,9 @@ http://www.contentquality.com/'
 /report
 /rss
 /user
-/tag/"
+/tag/
+/mod/book/tool/print/
+"
         ));
 
         $settings->add(new admin_setting_configtextarea(
@@ -138,6 +146,7 @@ http://www.contentquality.com/'
 time
 lang
 useridlistid
+forceview
 "
         ));
 
@@ -170,7 +179,6 @@ useridlistid
             0,
             $options
         ));
-
 
         $settings->add($setting = new admin_setting_configselect(
             'tool_crawler/coursemode',
@@ -235,14 +243,13 @@ useridlistid
         ));
 
         $options = [];
-        foreach (
-            [
-                    TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE,
-                    TOOL_CRAWLER_NETWORKSTRAIN_RESOLUTE,
-                    TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE,
-                    TOOL_CRAWLER_NETWORKSTRAIN_WASTEFUL,
-                ] as $option
-        ) {
+        $strain = [
+            TOOL_CRAWLER_NETWORKSTRAIN_REASONABLE,
+            TOOL_CRAWLER_NETWORKSTRAIN_RESOLUTE,
+            TOOL_CRAWLER_NETWORKSTRAIN_EXCESSIVE,
+            TOOL_CRAWLER_NETWORKSTRAIN_WASTEFUL,
+        ];
+        foreach ($strain as $option) {
             $options[$option] = new lang_string('networkstrain' . $option, 'tool_crawler');
         }
         $settings->add(new admin_setting_configselect(
@@ -252,6 +259,18 @@ useridlistid
             TOOL_CRAWLER_NETWORKSTRAIN_WASTEFUL,
             $options
         ));
+
+        $setting = new admin_setting_configtext(
+            'tool_crawler/nextcrawlstart',
+            get_string('nextcrawlstart', 'tool_crawler'),
+            get_string('nextcrawlstartdesc', 'tool_crawler'),
+            'next Saturday 1am',
+            PARAM_TEXT
+        );
+        $setting->set_updatedcallback(function () {
+            \tool_crawler\robot\crawler::update_next_crawl_start();
+        });
+        $settings->add($setting);
 
         $options = [
             86400 => new lang_string('secondstotime86400'),
@@ -274,7 +293,7 @@ useridlistid
             'tool_crawler/disablebot',
             new lang_string('disablebot', 'tool_crawler'),
             new lang_string('disablebotdesc', 'tool_crawler'),
-            '0'
+            '1'
         ));
 
         $options = [

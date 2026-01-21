@@ -28,8 +28,6 @@ use core\event\course_module_updated;
 use core\event\course_updated;
 use tool_crawler\robot\crawler;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Event observer for tool_crawler.
  */

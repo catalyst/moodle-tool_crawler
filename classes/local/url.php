@@ -27,8 +27,6 @@ namespace tool_crawler\local;
 
 use tool_crawler\robot\crawler;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * url class.
  *
@@ -212,8 +210,8 @@ class url extends \core\persistent {
                     OR lastcrawled < needscrawl)";
         $params = null;
         if (!empty($courseid)) {
-            $sql .= " AND courseid = :courseid";
-            $params = ["courseid" => $courseid];
+            $sql .= " AND courseid = ?";
+            $params = [$courseid];
         }
         return $DB->get_field_sql($sql, $params);
     }
@@ -231,18 +229,19 @@ class url extends \core\persistent {
 
         $sql = "SELECT COUNT(*)
                   FROM {tool_crawler_url}
-                 WHERE lastcrawled >= :lastcrawled";
+                 WHERE lastcrawled >= ?";
 
         if (!empty($lastcrawled)) {
-            $params = ["lastcrawled" => $lastcrawled];
+            $params = [$lastcrawled];
         } else {
-            $params = ["lastcrawled" => crawler::get_config()->crawlstart];
+            $params = [crawler::get_config()->crawlstart];
         }
 
         if (!empty($courseid)) {
-            $sql .= " AND courseid = :courseid";
-            $params = array_merge($params, ["courseid" => $courseid]);
+            $sql .= " AND courseid = ?";
+            $params = array_merge($params, [$courseid]);
         }
+
         return $DB->get_field_sql($sql, $params);
     }
 

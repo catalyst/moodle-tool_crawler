@@ -56,6 +56,11 @@ $courserows = [
         get_string('broken', 'tool_crawler')
     ),
     new tabobject(
+        'reference',
+        new moodle_url('/admin/tool/crawler/report.php', ['report' => 'reference'] + $courseparam),
+        get_string('reference', 'tool_crawler')
+    ),
+    new tabobject(
         'oversize',
         new moodle_url('/admin/tool/crawler/report.php', ['report' => 'oversize'] + $courseparam),
         get_string('oversize', 'tool_crawler')

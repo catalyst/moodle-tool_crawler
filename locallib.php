@@ -23,8 +23,7 @@
  */
 
 use tool_crawler\local\url;
-
-defined('MOODLE_INTERNAL') || die();
+require_once($CFG->dirroot . '/admin/tool/crawler/constants.php');
 
 /**
  * Renders a link as HTML.
@@ -55,8 +54,10 @@ function tool_crawler_link($url, $label, $redirect = '', $labelishtml = false, $
     }
 
     $canviewsitelevelreports = has_capability('moodle/site:config', context_system::instance());
-    $html = $canviewsitelevelreports ? html_writer::link(new moodle_url('url.php', ['courseid' => $courseid, 'url' => $url]), $label) : $label;
-    $html .= '<br><small>' . html_writer::link($url, htmlspecialchars($url, ENT_NOQUOTES | ENT_HTML401), ['target' => 'link']) . '</small>';
+    $html = $canviewsitelevelreports ? html_writer::link(new moodle_url('url.php', ['courseid'=> $courseid, 'url' => $url]), $label) : $label;
+    $html .= '<br><small>';
+    $html .= html_writer::link($url, htmlspecialchars($url, ENT_NOQUOTES | ENT_HTML401), ['target' => 'link']);
+    $html .= '</small>';
 
     if ($redirect) {
         $linkhtmlsnippet = html_writer::link($redirect, htmlspecialchars($redirect, ENT_NOQUOTES | ENT_HTML401));
@@ -103,7 +104,7 @@ function tool_crawler_http_code($row) {
     }
     $msg = htmlspecialchars($msg, ENT_NOQUOTES | ENT_HTML401);
 
-    $code = $row->httpcode;
+    $code = $row->httpcode ?? '';
     $cc = substr($code, 0, 1);
     $code = "$msg<br><small class='link-$cc" . "xx'>$code</small>";
     return $code;
@@ -218,7 +219,7 @@ function tool_crawler_url_gen_table($data) {
     $datetimeformat = get_string('strftimerecentsecondshtml', 'tool_crawler');
     $table->data = [];
     foreach ($data as $row) {
-        $title = trim($row->title);
+        $title = trim($row->title ?? '');
         if ($title == "") {
             $title = get_string('unknown', 'tool_crawler');
         }
@@ -231,7 +232,7 @@ function tool_crawler_url_gen_table($data) {
             $code,
             htmlspecialchars(tool_crawler_displaysize($row), ENT_NOQUOTES | ENT_HTML401),
             tool_crawler_link($row->target, $title, $row->redirect),
-            htmlspecialchars($row->mimetype, ENT_NOQUOTES | ENT_HTML401),
+            htmlspecialchars($row->mimetype ?? '', ENT_NOQUOTES | ENT_HTML401),
         ];
         $table->data[] = $data;
     }
@@ -264,6 +265,7 @@ function tool_crawler_url_create_page($url, $courseid = 0) {
     $PAGE->set_url($navurl);
     $PAGE->set_pagelayout('admin');
     $PAGE->set_title(get_string('urldetails', 'tool_crawler'));
+
     $page = $OUTPUT->header();
 
     $page .= $OUTPUT->heading(get_string('urldetails', 'tool_crawler'));
@@ -277,7 +279,7 @@ function tool_crawler_url_create_page($url, $courseid = 0) {
 
     $page .= '<h3>' . htmlspecialchars(get_string('outgoingurls', 'tool_crawler'), ENT_NOQUOTES | ENT_HTML401) . '</h3>';
 
-    $data  = $DB->get_records_sql("
+    $data = $DB->get_records_sql("
          SELECT concat(l.a, '-', l.b) AS id,
                 l.text,
                 l.idattr,
@@ -302,7 +304,7 @@ function tool_crawler_url_create_page($url, $courseid = 0) {
 
     $page .= '<h3>' . htmlspecialchars(get_string('incomingurls', 'tool_crawler'), ENT_NOQUOTES | ENT_HTML401) . '</h3>';
 
-    $data  = $DB->get_records_sql("
+    $data = $DB->get_records_sql("
          SELECT concat(l.a, '-', l.b) AS id,
                 l.text,
                 l.idattr,
