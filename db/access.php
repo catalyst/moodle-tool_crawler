@@ -24,16 +24,16 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$capabilities = array(
-    'tool/crawler:courseconfig' => array(
+$capabilities = [
+    'tool/crawler:courseconfig' => [
 
         'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
 
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
+        'archetypes' => [
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
-);
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+];

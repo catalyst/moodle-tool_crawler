@@ -40,7 +40,7 @@ class courselinkchecker extends moodleform {
         $mform->addElement('hidden', 'courseid', $course->id);
         $mform->setType('courseid', PARAM_INT);
 
-        $buttonarray = array();
+        $buttonarray = [];
         if (empty($queuecourse)) {
             $buttonarray[] = $mform->createElement('submit', 'addcourse', get_string('addcourse', 'tool_crawler'));
         } else {
@@ -53,7 +53,5 @@ class courselinkchecker extends moodleform {
         }
         $buttonarray[] = $mform->createElement('cancel');
         $mform->addGroup($buttonarray, 'buttonar', '', ' ', false);
-
     }
 }
-

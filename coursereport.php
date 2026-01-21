@@ -43,13 +43,15 @@ $PAGE->set_heading($heading);
 $table = new \tool_crawler\table\course_links('course_links', $url, $courseid, $page);
 $output = $PAGE->get_renderer('tool_crawler');
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('numberurlsfound', 'tool_crawler',
-    array(
-        'reports_number' =>  \tool_crawler\helper::count_broken_links($courseid),
-        'report_type' => 'broken'
-    )
+echo $OUTPUT->heading(get_string(
+    'numberurlsfound',
+    'tool_crawler',
+    [
+        'reports_number' => \tool_crawler\helper::count_broken_links($courseid),
+        'report_type' => 'broken',
+    ]
 ));
-echo get_string( 'broken_header', 'tool_crawler');
+echo get_string('broken_header', 'tool_crawler');
 $runcrawlerurl = new moodle_url('/admin/tool/crawler/course.php', ['id' => $course->id]);
 echo html_writer::link($runcrawlerurl, get_string('addcourse', 'tool_crawler'));
 echo $output->render($table);

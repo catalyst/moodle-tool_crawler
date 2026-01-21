@@ -61,7 +61,7 @@ if ($mform->is_cancelled()) {
     echo $OUTPUT->header();
     echo $OUTPUT->heading($title);
     if (!empty($queuecourse)) {
-        list($eta, $duration, $progress) = \tool_crawler\helper::calculate_progress($queuecourse->courseid);
+        [$eta, $duration, $progress] = \tool_crawler\helper::calculate_progress($queuecourse->courseid);
         $html = '';
         if (!empty($progress)) {
             $br = "<br/>";

@@ -25,9 +25,9 @@
 
 define('CLI_SCRIPT', true);
 
-require(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php');
-require_once($CFG->libdir.'/clilib.php');
-require_once($CFG->dirroot .'/admin/tool/crawler/lib.php');
+require(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/config.php');
+require_once($CFG->libdir . '/clilib.php');
+require_once($CFG->dirroot . '/admin/tool/crawler/lib.php');
 
 global $DB;
 
@@ -40,4 +40,3 @@ $DB->set_field('tool_crawler_course', 'timestart', null);
 $DB->set_field('tool_crawler_course', 'timefinish', null);
 
 @unlink($CFG->dataroot . '/tool_crawler_cookies.txt');
-

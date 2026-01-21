@@ -34,7 +34,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class robot_cleanup extends \core\task\scheduled_task {
-
     /**
      * Get task name
      */
@@ -70,11 +69,11 @@ class robot_cleanup extends \core\task\scheduled_task {
         $retentionperiod = \tool_crawler\robot\crawler::get_config()->retentionperiod;
         $lastcrawlend = \tool_crawler\robot\crawler::get_config()->crawlend;
         if ($retentionperiod) {
-            $param = array(
+            $param = [
                 'currenttime' => $currenttime,
                 'lastcrawlfinished' => $lastcrawlend,
-                'expiredate' => $currenttime - $retentionperiod
-            );
+                'expiredate' => $currenttime - $retentionperiod,
+            ];
             $where = 'lastcrawled <= :currenttime
                   AND lastcrawled <= :lastcrawlfinished
                   AND lastcrawled <= :expiredate';
@@ -83,11 +82,11 @@ class robot_cleanup extends \core\task\scheduled_task {
         }
 
         // Throw and log event that robot_cleanup task was finished and pass number of deleted records.
-        $eventdata = array(
-            'other' => array(
-                'numrecsdeleted' => $numrecsdeleted
-            )
-        );
+        $eventdata = [
+            'other' => [
+                'numrecsdeleted' => $numrecsdeleted,
+            ],
+        ];
         $event = \tool_crawler\event\robot_cleanup_completed::create($eventdata);
         $event->trigger();
     }

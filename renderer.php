@@ -26,7 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 use tool_crawler\table\course_links;
 
 class tool_crawler_renderer extends plugin_renderer_base {
-
     /**
      * Render table.
      * @param course_links $table course_links table
@@ -39,5 +38,4 @@ class tool_crawler_renderer extends plugin_renderer_base {
         ob_end_clean();
         return $o;
     }
-
 }

@@ -55,7 +55,6 @@ function tool_crawler_crawl($verbose = false) {
 
     // If we need to start a new crawl, add new items to the queue.
     if (!$crawlstart || $crawlstart <= $crawlend) {
-
         $start = time();
         set_config('crawlstart', $start, 'tool_crawler');
 
@@ -71,7 +70,7 @@ function tool_crawler_crawl($verbose = false) {
                 $robot->mark_for_crawl($CFG->wwwroot . '/', 'course/view.php?id=' . $courseid, $courseid);
             }
         } else {
-            $robot->mark_for_crawl($CFG->wwwroot.'/', $config->seedurl);
+            $robot->mark_for_crawl($CFG->wwwroot . '/', $config->seedurl);
         }
         // Create a new history record.
         $history = new stdClass();
@@ -83,7 +82,7 @@ function tool_crawler_crawl($verbose = false) {
         $history->cronticks = 0;
         $history->id = $DB->insert_record('tool_crawler_history', $history);
     } else {
-        $history = $DB->get_record('tool_crawler_history', array('startcrawl' => $crawlstart));
+        $history = $DB->get_record('tool_crawler_history', ['startcrawl' => $crawlstart]);
     }
 
     $cronstart = time();
@@ -118,9 +117,9 @@ function tool_crawler_summary($courseid) {
 
     global $DB;
 
-    $result = array();
-    $result['large']  = array();
-    $result['nearby'] = array();
+    $result = [];
+    $result['large']  = [];
+    $result['nearby'] = [];
 
     // Breakdown counts of status codes by 200, 300, 400, 500.
     $result['broken']   = $DB->get_records_sql("
@@ -132,9 +131,9 @@ function tool_crawler_summary($courseid) {
       LEFT JOIN {course}            c ON c.id = a.courseid
           WHERE a.courseid = :course
        GROUP BY substr(b.httpcode,0,2)
-    ", array('course' => $courseid) );
+    ", ['course' => $courseid]);
 
-    $e = (object) array('count' => 0);
+    $e = (object) ['count' => 0];
     if (!array_key_exists('0', $result['broken'])) {
         $result['broken']['0'] = $e;
     }
@@ -168,13 +167,19 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
     if ($courseconfig) {
         $coursemode = get_config('tool_crawler', 'coursemode');
         if ($coursemode) {
-            $url = new moodle_url('/admin/tool/crawler/course.php', array('id' => $course->id));
-            $navigation->add(get_string('pluginname', 'tool_crawler'),
-                $url, $navigation::TYPE_SETTING, null, 'crawler', new pix_icon('i/warning', ''));
+            $url = new moodle_url('/admin/tool/crawler/course.php', ['id' => $course->id]);
+            $navigation->add(
+                get_string('pluginname', 'tool_crawler'),
+                $url,
+                $navigation::TYPE_SETTING,
+                null,
+                'crawler',
+                new pix_icon('i/warning', '')
+            );
         }
     }
 
-    $reports = array('queued', 'recent', 'broken', 'oversize');
+    $reports = ['queued', 'recent', 'broken', 'oversize'];
 
     $coursereports = $navigation->get('coursereports');
     if (!$coursereports) {
@@ -184,7 +189,7 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
     if ($coursereports && ($siteconfig || $courseconfig)) {
         $node = $coursereports->add(
             get_string('pluginname', 'tool_crawler'),
-            new moodle_url('/admin/tool/crawler/report.php', array('report' => 'queued', 'course' => $course->id)),
+            new moodle_url('/admin/tool/crawler/report.php', ['report' => 'queued', 'course' => $course->id]),
             navigation_node::TYPE_CONTAINER,
             null,
             'linkchecker',
@@ -192,7 +197,7 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
         );
 
         if ($courseconfig) {
-            $url = new moodle_url('/admin/tool/crawler/coursereport.php', array('courseid' => $course->id));
+            $url = new moodle_url('/admin/tool/crawler/coursereport.php', ['courseid' => $course->id]);
             $node->add(
                 get_string('coursereport', 'tool_crawler'),
                 $url,
@@ -205,7 +210,7 @@ function tool_crawler_extend_navigation_course($navigation, $course, $coursecont
 
         if ($siteconfig) {
             foreach ($reports as $rpt) {
-                $url = new moodle_url('/admin/tool/crawler/report.php', array('report' => $rpt, 'course' => $course->id));
+                $url = new moodle_url('/admin/tool/crawler/report.php', ['report' => $rpt, 'course' => $course->id]);
                 $node->add(
                     get_string($rpt, 'tool_crawler'),
                     $url,

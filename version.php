@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * Defines the version of tool_crawler
  *
@@ -33,6 +32,6 @@ $plugin->requires  = 2016021800;        // Requires this Moodle version.
 $plugin->supported = [34, 405];
 $plugin->component = 'tool_crawler'; // To check on upgrade, that module sits in correct place.
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->dependencies = array(
+$plugin->dependencies = [
     'auth_basic' => ANY_VERSION,
-);
+];

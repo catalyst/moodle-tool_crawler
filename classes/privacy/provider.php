@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Privacy Subsystem implementation for tool_crawler.
  *
@@ -35,7 +36,6 @@ use core_privacy\local\legacy_polyfill;
  */
 class provider implements
     \core_privacy\local\metadata\null_provider {
-
     use legacy_polyfill;
 
     /**
@@ -50,5 +50,4 @@ class provider implements
     public static function _get_reason() {
         return 'privacy:no_data_reason';
     }
-
 }

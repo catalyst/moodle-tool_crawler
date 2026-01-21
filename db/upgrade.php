@@ -39,7 +39,6 @@ function xmldb_tool_crawler_upgrade($oldversion) {
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2019022000) {
-
         core_php_time_limit::raise();
 
         $tablename = 'tool_crawler_url';
@@ -62,8 +61,16 @@ function xmldb_tool_crawler_upgrade($oldversion) {
 
     if ($oldversion < 2019072600) {
         $table = new xmldb_table('tool_crawler_url');
-        $field = new xmldb_field('filesizestatus', XMLDB_TYPE_INTEGER, 1, null, false, false, TOOL_CRAWLER_FILESIZE_EXACT,
-                'filesize');
+        $field = new xmldb_field(
+            'filesizestatus',
+            XMLDB_TYPE_INTEGER,
+            1,
+            null,
+            false,
+            false,
+            TOOL_CRAWLER_FILESIZE_EXACT,
+            'filesize'
+        );
 
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
@@ -85,7 +92,7 @@ function xmldb_tool_crawler_upgrade($oldversion) {
     if ($oldversion < 2019100300) {
         $table = new xmldb_table('tool_crawler_url');
         $field = new xmldb_field('priority', XMLDB_TYPE_INTEGER, '10', null, false, false, TOOL_CRAWLER_PRIORITY_DEFAULT);
-        $index = new xmldb_index('priority_needscrawl', XMLDB_INDEX_NOTUNIQUE, array('needscrawl', 'priority'));
+        $index = new xmldb_index('priority_needscrawl', XMLDB_INDEX_NOTUNIQUE, ['needscrawl', 'priority']);
 
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
@@ -97,7 +104,6 @@ function xmldb_tool_crawler_upgrade($oldversion) {
     }
 
     if ($oldversion < 2020012300) {
-
         // Define field level to be added to tool_crawler_url.
         $table = new xmldb_table('tool_crawler_url');
         $field = new xmldb_field('level', XMLDB_TYPE_INTEGER, '1', null, null, null, '2', 'priority');
@@ -122,7 +128,7 @@ function xmldb_tool_crawler_upgrade($oldversion) {
         }
         // Add new urlhash field to the url table and index it.
         $field = new xmldb_field('urlhash', XMLDB_TYPE_CHAR, '255', null, true, false);
-        $index = new xmldb_index('urlhash', XMLDB_INDEX_NOTUNIQUE, array('urlhash'));
+        $index = new xmldb_index('urlhash', XMLDB_INDEX_NOTUNIQUE, ['urlhash']);
 
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
@@ -167,7 +173,7 @@ function xmldb_tool_crawler_upgrade($oldversion) {
     if ($oldversion < 2020100100) {
         // Add lastmod as an index in the tool_crawler_edge table.
         $table = new xmldb_table('tool_crawler_edge');
-        $index = new xmldb_index('lastmod', XMLDB_INDEX_NOTUNIQUE, array('lastmod'));
+        $index = new xmldb_index('lastmod', XMLDB_INDEX_NOTUNIQUE, ['lastmod']);
 
         if (!$dbman->index_exists($table, $index)) {
             $dbman->add_index($table, $index);
