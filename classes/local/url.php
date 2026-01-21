@@ -210,8 +210,8 @@ class url extends \core\persistent {
                     OR lastcrawled < needscrawl)";
         $params = null;
         if (!empty($courseid)) {
-            $sql .= " AND courseid = :courseid";
-            $params = ["courseid" => $courseid];
+            $sql .= " AND courseid = ?";
+            $params = [$courseid];
         }
         return $DB->get_field_sql($sql, $params);
     }
@@ -239,7 +239,7 @@ class url extends \core\persistent {
 
         if (!empty($courseid)) {
             $sql .= " AND courseid = ?";
-            $params = array_merge($params, ["courseid" => $courseid]);
+            $params = array_merge($params, [$courseid]);
         }
 
         return $DB->get_field_sql($sql, $params);
