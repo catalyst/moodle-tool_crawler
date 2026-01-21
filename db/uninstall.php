@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Hook called just before the plugin is uninstalled. Removes the cookie jar which had been used by the plugin if it exists.
  *

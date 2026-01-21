@@ -31,12 +31,12 @@ require_once($CFG->dirroot . '/admin/tool/crawler/lib.php');
 
 [$options, $unrecognized] = cli_get_params(
     [
-    'help'      => false,
-    'url'   => null,
+        'help'      => false,
+        'url'   => null,
     ],
     [
-    'h' => 'help',
-    'u' => 'url',
+        'h' => 'help',
+        'u' => 'url',
     ]
 );
 

@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace tool_crawler;
+
 use tool_crawler\local\url;
 use tool_crawler\robot\crawler;
 
@@ -37,7 +39,7 @@ require_once(__DIR__ . '/../../constants.php');
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class robot_crawler_test extends advanced_testcase {
+final class robot_crawler_test extends \advanced_testcase {
     /**
      * @var \tool_crawler\robot\crawler Crawler to use in tests.
      */
@@ -52,14 +54,15 @@ final class robot_crawler_test extends advanced_testcase {
         $this->resetAfterTest(true);
 
         $this->robot = new \tool_crawler\robot\crawler();
+        set_config('disablebot', 0, 'tool_crawler');
     }
 
     /**
-     * @return array of test cases
-     *
      * Combinations of base and relative parts of URL
+     *
+     * @return array of test cases
      */
-    public function absolute_urls_provider() {
+    public function absolute_urls_provider(): array {
         return [
             [
                 'base' => 'http://test.com/sub/',
@@ -110,9 +113,9 @@ final class robot_crawler_test extends advanced_testcase {
     }
 
     /**
-     * @dataProvider absolute_urls_provider
-     *
      * Executing test cases returned by function provider()
+     *
+     * @dataProvider absolute_urls_provider
      *
      * @param string $base Base part of URL
      * @param array $links Combinations of relative paths of URL and expected result
@@ -124,11 +127,11 @@ final class robot_crawler_test extends advanced_testcase {
     }
 
     /**
-     * @return array of test cases
-     *
      * Local and external URLs and their tricky combinations
+     *
+     * @return array of test cases
      */
-    public function should_auth_provider() {
+    public function should_auth_provider(): array {
         return [
             [false, 'http://my_moodle.com', 'http://evil.com/blah/http://my_moodle.com'],
             [false, 'http://my_moodle.com', 'http://my_moodle.com.actually.im.evil.com'],
@@ -142,9 +145,9 @@ final class robot_crawler_test extends advanced_testcase {
     }
 
     /**
-     * @dataProvider should_auth_provider
-     *
      * Tests method should_be_authenticated($url) of class \tool_crawler\robot\crawler()
+     *
+     * @dataProvider should_auth_provider
      *
      * @param bool $expected
      * @param string $myurl URL of current Moodle installation
@@ -165,7 +168,9 @@ final class robot_crawler_test extends advanced_testcase {
         $this->assertNotEmpty($param);
     }
 
-    /** Regression test for Issue #17  */
+    /**
+     * Regression test for Issue #17
+     */
     public function test_reset_queries(): void {
         global $DB;
         // Create a new object.
@@ -322,7 +327,7 @@ final class robot_crawler_test extends advanced_testcase {
 
         $linktoexclude = '<div class="exclude"><a href="http://crawler.test/foo/bar.php"></div>';
 
-        $node = new stdClass();
+        $node = new \stdClass();
         $node->contents = $page . $linktoexclude;
         $node->url      = $url;
         $node->id       = $insertid;
@@ -350,7 +355,7 @@ final class robot_crawler_test extends advanced_testcase {
      *
      * @return array of potential crawler priority codes.
      */
-    public function priority_provider() {
+    public function priority_provider(): array {
         return [
             ['high' => TOOL_CRAWLER_PRIORITY_HIGH],
             ['normal' => TOOL_CRAWLER_PRIORITY_NORMAL],
@@ -359,9 +364,9 @@ final class robot_crawler_test extends advanced_testcase {
     }
 
     /**
-     * @dataProvider priority_provider
-     *
      * Test for issue #108 - passing node crawl priority to child nodes when parsing html.
+     *
+     * @dataProvider priority_provider
      *
      * @param int $parentpriority the priority of the parent queue item
      */
@@ -393,7 +398,7 @@ HTML;
         $parentnode = $this->robot->parse_html($node, $node->externalurl);
 
         // Internal node direct child.
-        $url = new moodle_url('/' . $directchildlocalurl);
+        $url = new \moodle_url('/' . $directchildlocalurl);
         $node = $DB->get_record('tool_crawler_url', ['urlhash' => url::hash_url($url->raw_out())]);
         $node->url = $CFG->wwwroot . '/' . $directchildlocalurl;
         $node->httpcode = 200;
@@ -428,7 +433,7 @@ HTML;
     /**
      * Test for Issue #120:Specified external urls should be excluded.
      */
-    public function should_be_crawled_provider() {
+    public function should_be_crawled_provider(): array {
         return [
             ['http://moodle.org/', false],
             ['http://validator.w3.org/', false],
@@ -518,7 +523,7 @@ HTML;
      *
      * @return  array
      */
-    public function crawler_url_string_matches_provider() {
+    public function crawler_url_string_matches_provider(): array {
         return [
             ['/index.php', '/index.php', true],
             ['/some/dir/index.php', '/index.php', true], // Different from core function.
@@ -563,7 +568,7 @@ HTML;
      *
      * @return  array
      */
-    public function url_validity_check_provider() {
+    public function url_validity_check_provider(): array {
         return [
             ['/index.php', true],
             ['/some/dir/index.php', true],
@@ -574,9 +579,9 @@ HTML;
     }
 
     /**
-     * @dataProvider url_validity_check_provider
-     *
      * Check url validity
+     *
+     * @dataProvider url_validity_check_provider
      *
      * @param string $url the url to test
      * @param bool $expected the expected result
@@ -596,7 +601,7 @@ HTML;
      *
      * @return  array
      */
-    public function page_title_validity_check_provider() {
+    public function page_title_validity_check_provider(): array {
         return [
             [['contents' => '<title>Invalid <i>title</i><title><body></body>'], 'Invalid title'],
             [['contents' => '<title>Valid title<title><body></body>'], 'Valid title'],
@@ -604,9 +609,9 @@ HTML;
     }
 
     /**
-     * @dataProvider page_title_validity_check_provider
-     *
      * Test for Issue #143: invalid character in page title.
+     *
+     * @dataProvider page_title_validity_check_provider
      *
      * @param array $node The node to test.
      * @param string $expected

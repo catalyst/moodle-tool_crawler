@@ -21,6 +21,7 @@
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once(__DIR__ . '/locallib.php');
@@ -44,6 +45,7 @@ if ($action == 'makebot') {
 $crawlstart     = $config->crawlstart;
 $crawlend       = $config->crawlend;
 $crawltick      = $config->crawltick;
+$crawlnext      = $config->crawlnext;
 $boterror       = $robot->is_bot_valid();
 $queuesize      = $url->get_queue_size();
 $recent         = $url->get_processed();
@@ -55,10 +57,13 @@ $oversize       = $robot->get_num_oversize();
 
 if ($queuesize == 0 || $recent == 0) {
     $progress = 1;
+    $message = '';
 } else if ($oldqueuesize == 0) {
     $progress = $recent / ($recent + $queuesize);
+    $message = $recent . ' / ' . ($recent + $queuesize);
 } else {
     $progress = $recent / ($recent + max($oldqueuesize, $queuesize));
+    $message = $recent . ' / ' . ($recent + max($oldqueuesize, $queuesize));
 }
 
 // If old queue is zero the use current queue.
@@ -70,6 +75,7 @@ $robot = $DB->get_record('user', ['username' => $config->botusername]);
 $table = new html_table();
 $table->head = [get_string('robotstatus', 'tool_crawler')];
 $table->headspan = [2, 1];
+$table->attributes['class'] = 'generaltable table table-hover w-auto';
 $table->data = [
     [
         get_string('botuser', 'tool_crawler'),
@@ -86,7 +92,12 @@ $table->data = [
     ],
     [
         get_string('progress', 'tool_crawler'),
-        get_string('progresseta', 'tool_crawler', [
+
+        $OUTPUT->render_from_template('core/progress_bar', [
+            'value' => round($progress * 100, 1),
+            'message' => $message,
+        ])
+        . get_string('progresseta', 'tool_crawler', [
             'percent' => sprintf('%.2f%%', $progress * 100),
             'eta' => userdate($eta),
         ])
@@ -102,6 +113,10 @@ $table->data = [
     [
         get_string('lastcrawlend', 'tool_crawler'),
         $crawlend ? userdate($crawlend) : get_string('neverfinished', 'tool_crawler'),
+    ],
+    [
+        get_string('nextcrawldue', 'tool_crawler'),
+        $crawlnext ? userdate($crawlnext) : '-',
     ],
     [
         get_string('lastcrawlproc', 'tool_crawler'),
@@ -125,8 +140,8 @@ $table->data = [
     ],
     [
         get_string('broken', 'tool_crawler'),
-        "<a href=\"report.php?report=broken\">" . tool_crawler_numberformat($numpageswithurlsbroken)
-                . " / " . tool_crawler_numberformat($numurlsbroken) . "</a>",
+        "<a href=\"report.php?report=reference\">" . tool_crawler_numberformat($numpageswithurlsbroken) . "</a>" .
+            " / " . "<a href=\"report.php?report=broken\">" . tool_crawler_numberformat($numurlsbroken) . "</a>",
     ],
     [
         get_string('oversize', 'tool_crawler'),
@@ -137,6 +152,9 @@ $table->data = [
 $report = 'index';
 require('tabs.php');
 echo $tabs;
+if ($boterror) {
+    $table->rowclasses[0] = 'table-warning';
+}
 echo html_writer::table($table);
 
 $table = new html_table();
@@ -152,6 +170,7 @@ $table->head = [
 ];
 $datetimeformat = get_string('strftimerecentsecondshtml', 'tool_crawler');
 $table->data = [];
+$table->attributes['class'] = 'generaltable table table-hover w-auto';
 $table->colclasses = ['', '', '', 'rightalign', 'rightalign', 'rightalign', 'rightalign', 'rightalign'];
 $history = $DB->get_records('tool_crawler_history', [], 'startcrawl DESC', '*', 0, 5);
 foreach ($history as $record) {
@@ -160,7 +179,12 @@ foreach ($history as $record) {
     } else {
         $delta = time() - $record->startcrawl;
     }
-    $duration = sprintf('%02d:%02d:%02d', $delta / 60 / 60, $delta / 60 % 60, $delta % 60);
+    $duration = sprintf(
+        '%02d:%02d:%02d',
+        floor($delta / 60 / 60),
+        floor($delta / 60) % 60,
+        floor($delta) % 60
+    );
     $table->data[] = [
         userdate($record->startcrawl, $datetimeformat),
         $record->endcrawl ? userdate($record->endcrawl, $datetimeformat) : '-',

@@ -24,8 +24,6 @@
 
 namespace tool_crawler\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The crawl start event class.
  *

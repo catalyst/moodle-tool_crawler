@@ -21,9 +21,11 @@
  * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once(__DIR__ . '/locallib.php');
 
+require_login(null, false);
 $url = required_param('url', PARAM_RAW);
 $courseid = optional_param('courseid', 0, PARAM_INT);
 echo tool_crawler_url_create_page($url, $courseid);

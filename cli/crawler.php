@@ -33,9 +33,11 @@ require_once($CFG->dirroot . '/admin/tool/crawler/lib.php');
     [
         'help'      => false,
         'verbose'   => 1,
+        'force'     => false,
     ],
     [
-                'h' => 'help',
+        'h' => 'help',
+        'f' => 'force',
     ]
 );
 
@@ -54,7 +56,11 @@ if ($options['verbose'] && (!is_numeric($options['verbose']) || $options['verbos
     die();
 }
 
+if ($options['force']) {
+    // Ignore next crawl start time.
+    unset_config('crawlnext', 'tool_crawler');
+}
+
 \core\local\cli\shutdown::script_supports_graceful_exit();
 
 tool_crawler_crawl($options['verbose']);
-exit(0);

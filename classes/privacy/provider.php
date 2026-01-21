@@ -24,8 +24,6 @@
 
 namespace tool_crawler\privacy;
 
-defined('MOODLE_INTERNAL') || die();
-
 use core_privacy\local\legacy_polyfill;
 
 /**
@@ -47,7 +45,7 @@ class provider implements
      *
      * @return  string
      */
-    public static function _get_reason() {
+    public static function get_reason(): string {
         return 'privacy:no_data_reason';
     }
 }
