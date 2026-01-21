@@ -81,5 +81,3 @@ class crawl_task extends \core\task\scheduled_task {
         }
     }
 }
-
-

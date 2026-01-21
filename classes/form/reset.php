@@ -65,6 +65,5 @@ class reset extends moodleform {
 
         $mform->addElement('html', $html);
         $this->add_action_buttons(true, get_string('resetprogress_warning_button', 'tool_crawler'));
-
     }
 }

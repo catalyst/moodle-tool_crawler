@@ -24,7 +24,7 @@
  */
 
 require(dirname(__FILE__) . '/../../../config.php');
-require_once($CFG->dirroot .'/admin/tool/crawler/lib.php');
+require_once($CFG->dirroot . '/admin/tool/crawler/lib.php');
 require_once($CFG->libdir . '/adminlib.php');
 
 require_login(null, false);
@@ -36,7 +36,6 @@ $form = new \tool_crawler\form\reset(null);
 $baseurl = new moodle_url('/admin/tool/crawler/');
 
 if ($data = $form->get_data()) {
-
     if ($form->is_submitted()) {
         global $DB;
 

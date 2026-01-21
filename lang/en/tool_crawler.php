@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * Defines the lang strings of tool_crawler plugin
  *
@@ -24,6 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
+$string['addcourse'] = 'Run link checker';
 $string['adhoc_crawl_task'] = 'Adhoc crawl task';
 $string['autocreate'] = 'Auto create';
 $string['bigfilesize'] = 'Size of big files';
@@ -69,33 +69,37 @@ Options:
 Example:
 $sudo -u www-data php scrape-as.php --url=https://host.example/
 ';
-$string['addcourse'] = 'Run link checker';
 $string['configmissing'] = 'Config missing';
 $string['course'] = 'Course';
-$string['crawler:courseconfig'] = 'User with this permission can configure link checker at course context';
 $string['coursemode'] = 'Course Mode';
 $string['coursemode_desc'] = 'If enabled, only crawl links in courses where the link crawler is enabled. "uselogs" and "seed url" will be ignored. User will need \'tool/crawler:courseconfig\' permission to be able to run the course link checker and receive notification';
 $string['coursereport'] = 'Crawled Link report';
-$string['curcrawlstart'] = 'Current crawl started at';
+$string['crawl_task'] = 'Parallel crawling task';
 $string['crawlend'] = 'Crawl end';
+$string['crawler:courseconfig'] = 'User with this permission can configure link checker at course context';
 $string['crawlstart'] = 'Crawl start';
 $string['cronticks'] = 'Cron ticks';
+$string['curcrawlstart'] = 'Current crawl started at';
+$string['custompriority'] = 'Custom: {$a}';
 $string['debugging'] = 'Verbose debugging';
-$string['debugoff'] = 'Debugging off';
-$string['debugnormal'] = 'Normal debugging';
-$string['debugverbose'] = 'Verbose debugging';
 $string['debuggingdesc'] = 'This turns on debugging in the task output';
+$string['debugnormal'] = 'Normal debugging';
+$string['debugoff'] = 'Debugging off';
+$string['debugverbose'] = 'Verbose debugging';
+$string['defaultpriority'] = 'Low';
 $string['disablebot'] = 'Disable the link crawler robot';
 $string['disablebotdesc'] = 'Make the crawler do nothing when a scheduled task is executed. This effectively prevents crawling of links and running of bot cleanup functions. Intended to deactivate or temporarily pause the crawler without having to disable all its scheduled tasks.';
 $string['duration'] = 'Duration';
+$string['emailcontent'] = 'The link checker has been completed for the course: {$a}';
+$string['emailsubject'] = 'Course link checker';
 $string['emailto'] = 'Notify course link checker to this email address';
 $string['emailto_desc'] = 'Emails will be sent to all users with \'tool/crawler:courseconfig\' permission  and this email address when link checking is completed in a course';
-$string['emailsubject'] = 'Course link checker';
-$string['emailcontent'] = 'The link checker has been completed for the course: {$a}';
 $string['event:crawlstart'] = 'Link check crawl started';
 $string['event:crawlstartdesc'] = 'Link check crawl started {$a}';
 $string['eventrobotcleanupcompleted'] = 'Linkchecker robot cleanup completed';
 $string['eventrobotcleanupstarted'] = 'Linkchecker robot cleanup started';
+$string['excludecourses'] = 'Exclude courses';
+$string['excludecoursesdesc'] = 'One course short name per line and the * wildchar usage is also accepted. eg If you have a course short names such as COMP100_SEM1_2020 then you could exclude all COMP100 courses with <code>COMP100*</code> or all 2019 courses with <code>*_2019</code>';
 $string['excludeexturl'] = 'Exclude external URLs';
 $string['excludeexturldesc'] = 'One URL per line and the * wildchar at any position is also accepted. Each is matched against the full URL.';
 $string['excludemdldom'] = 'Exclude Moodle DOM parts';
@@ -104,8 +108,6 @@ $string['excludemdlparam'] = 'Exclude Moodle URL parameters';
 $string['excludemdlparamdesc'] = 'One parameter key per line. URLs using this will still be crawled but with these params removed to avoid duplicates.';
 $string['excludemdlurl'] = 'Exclude Moodle URLs';
 $string['excludemdlurldesc'] = 'One URL per line and the * wildchar at any position is also accepted. Each is matched excluding the wwwroot.';
-$string['excludecourses'] = 'Exclude courses';
-$string['excludecoursesdesc'] = 'One course short name per line and the * wildchar usage is also accepted. eg If you have a course short names such as COMP100_SEM1_2020 then you could exclude all COMP100 courses with <code>COMP100*</code> or all 2019 courses with <code>*_2019</code>';
 $string['fetcherror'] = 'Curl Error: {$a->errormessage}';
 $string['found'] = 'Found';
 $string['frompage'] = 'From page';
@@ -113,6 +115,8 @@ $string['good'] = 'Good';
 $string['greaterthansize'] = '> {$a->size}';
 $string['hellorobot'] = 'Hello robot: \'{$a->botusername}\'';
 $string['hellorobotheading'] = 'Hello robot!';
+$string['highpriority'] = 'High';
+$string['httpcode'] = 'Httpcode';
 $string['idattr'] = 'HTML context';
 $string['incomingurls'] = 'Incoming URLs';
 $string['incourse'] = 'In course';
@@ -122,6 +126,8 @@ $string['lastcrawlproc'] = 'Last crawl process';
 $string['lastqueuesize'] = 'Last queue size';
 $string['links'] = 'Links';
 $string['linktext'] = 'Link text';
+$string['max_workers'] = 'Max workers';
+$string['max_workersdesc'] = 'The max number of adhoc crawl tasks (workers) that should run at any time in parallel.';
 $string['maxcrontime'] = 'Cron run limit';
 $string['maxcrontimedesc'] = 'The crawler will keep crawling until this limit (in seconds) is hit on each cron tick.';
 $string['maxtime'] = 'Max execution time';
@@ -144,43 +150,36 @@ $string['networkstrainwasteful'] = 'wasteful';
 $string['neverfinished'] = 'Never finished';
 $string['neverrun'] = 'Never run';
 $string['no'] = 'No';
+$string['normalpriority'] = 'Normal';
 $string['notyetknown'] = 'Not yet known';
 $string['numberurlsfound'] = 'Found {$a->reports_number} {$a->report_type} URLs';
 $string['numlinks'] = 'Total links';
 $string['numurls'] = 'Total URLs';
 $string['onqueue'] = 'The link checking hasn\'t started yet';
+$string['outgoingurls'] = 'Outgoing URLs';
 $string['oversize'] = 'Big / slow links';
 $string['oversize_header'] = '<p>Big files with multiple incoming links to them will be duplicated.</p>';
-$string['outgoingurls'] = 'Outgoing URLs';
-$string['crawl_task'] = 'Parallel crawling task';
-$string['max_workers'] = 'Max workers';
-$string['max_workersdesc'] = 'The max number of adhoc crawl tasks (workers) that should run at any time in parallel.';
-$string['progress'] = 'Progress';
-$string['progresseta'] = '{$a->percent}; ETA is {$a->eta}';
 $string['pluginname'] = 'Link crawler robot';
 $string['priority'] = 'Priority';
+$string['progress'] = 'Progress';
+$string['progresseta'] = '{$a->percent}; ETA is {$a->eta}';
 $string['queuecourse'] = 'Adding course to link checker queue';
-$string['defaultpriority'] = 'Low';
-$string['normalpriority'] = 'Normal';
-$string['httpcode'] = 'Httpcode';
-$string['highpriority'] = 'High';
-$string['custompriority'] = 'Custom: {$a}';
 $string['queued'] = 'Queued';
 $string['queued_header'] = '<p>The title and course are only known if the URL has been seen on a previous crawl.</p>';
 $string['recent'] = 'Recently crawled';
+$string['recent_header'] = '';
 $string['recentactivity'] = 'Days of recent activity';
 $string['recentactivitydesc'] = 'A course will only be crawled if it has been viewed in the last number of days set here.';
-$string['recent_header'] = '';
 $string['redirect'] = 'Redirect: {$a->redirectlink}';
 $string['resetcourse'] = 'Rerun link checker';
-$string['response'] = 'Response';
-$string['retentionperiod'] = 'Retention period for bad URLs';
-$string['retentionperioddesc'] = 'How many days to keep bad URLs in database.';
-$string['retry'] = 'Retry';
 $string['resetprogress'] = 'Reset Progress';
 $string['resetprogress_header'] = 'Reset Crawler Progress';
 $string['resetprogress_warning'] = 'Warning. You are about to reset the crawler. Are you sure you want to do this?';
 $string['resetprogress_warning_button'] = 'Reset crawler';
+$string['response'] = 'Response';
+$string['retentionperiod'] = 'Retention period for bad URLs';
+$string['retentionperioddesc'] = 'How many days to keep bad URLs in database.';
+$string['retry'] = 'Retry';
 $string['robotcleanup'] = 'Robot cleanup';
 $string['robotstatus'] = 'Status';
 $string['seedurl'] = 'Seed URL';
@@ -192,18 +191,18 @@ $string['status'] = 'Status';
 $string['stopcourse'] = 'Remove link checker';
 $string['strftimerecentsecondshtml'] = '%h %e,&nbsp;%H:%M:%S';
 $string['symbolforunknown'] = '?';
-$string['usehead'] = 'Enable HTTP HEAD requests';
-$string['useheaddesc'] = '<p>Try HTTP HEAD requests first when scraping links, before falling back to HTTP GET requests. This normally saves time and network transmissions on the average web.</p>
-<p>If this option is disabled, HTTP HEAD requests will not be sent; the crawler will only use HTTP GET requests. This is not recommended.</p>
-<p>The default setting, compatible with releases 2018070200 and earlier of the link crawler robot, is disabled, while the recommended value, especially for new installations, is enabled.</p>';
-$string['useraccount'] = 'User account';
 $string['unknown'] = 'Unknown';
 $string['url'] = 'URL';
 $string['urldetails'] = 'URL details';
 $string['urldetails_help'] = 'This shows all incoming and outgoing links for this URL.
 Links which have been blacklisted or which are in excluded DOM elements will not be shown.';
+$string['usehead'] = 'Enable HTTP HEAD requests';
+$string['useheaddesc'] = '<p>Try HTTP HEAD requests first when scraping links, before falling back to HTTP GET requests. This normally saves time and network transmissions on the average web.</p>
+<p>If this option is disabled, HTTP HEAD requests will not be sent; the crawler will only use HTTP GET requests. This is not recommended.</p>
+<p>The default setting, compatible with releases 2018070200 and earlier of the link crawler robot, is disabled, while the recommended value, especially for new installations, is enabled.</p>';
 $string['uselogs'] = 'Use log tables';
 $string['uselogsdesc'] = 'If enabled, only crawl links that are part of courses with recent activity. Uses table mdl_logstore_standard_log.';
+$string['useraccount'] = 'User account';
 $string['useragent'] = 'Bot user agent string';
 $string['useragentdesc'] = 'The user agent name to use in the HTTP headers, without a version. The version of this plugin is automatically appended. This setting can be left empty and will default to the built in Bot useragent.';
 $string['whenqueued'] = 'When queued';

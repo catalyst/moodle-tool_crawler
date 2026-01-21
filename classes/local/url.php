@@ -46,109 +46,109 @@ class url extends \core\persistent {
      * @return array
      */
     protected static function define_properties() {
-        return array(
-            'url' => array(
+        return [
+            'url' => [
                 'type' => PARAM_TEXT,
-            ),
-            'urlhash' => array(
+            ],
+            'urlhash' => [
                 'type' => PARAM_TEXT,
-            ),
-            'externalurl' => array(
+            ],
+            'externalurl' => [
                 'type' => PARAM_TEXT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'lastcrawled' => array(
+            ],
+            'lastcrawled' => [
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'needscrawl' => array(
+            ],
+            'needscrawl' => [
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'httpcode' => array(
+            ],
+            'httpcode' => [
                 'type' => PARAM_TEXT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'mimetype' => array(
+            ],
+            'mimetype' => [
                 'type' => PARAM_TEXT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'title' => array(
+            ],
+            'title' => [
                 'type' => PARAM_TEXT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'downloadduration' => array(
+            ],
+            'downloadduration' => [
                 'type' => PARAM_FLOAT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'filesize' => array(
+            ],
+            'filesize' => [
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'filesizestatus' => array(
+            ],
+            'filesizestatus' => [
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'redirect' => array(
+            ],
+            'redirect' => [
                 'type' => PARAM_TEXT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'courseid' => array(
+            ],
+            'courseid' => [
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'contextid' => array(
+            ],
+            'contextid' => [
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'cmid' => array(
+            ],
+            'cmid' => [
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'ignoreduserid' => array(
+            ],
+            'ignoreduserid' => [
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'ignoredtime' => array(
+            ],
+            'ignoredtime' => [
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'httpmsg' => array(
+            ],
+            'httpmsg' => [
                 'type' => PARAM_TEXT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'errormsg' => array(
+            ],
+            'errormsg' => [
                 'type' => PARAM_TEXT,
                 'null' => NULL_ALLOWED,
                 'default' => null,
-            ),
-            'priority' => array(
+            ],
+            'priority' => [
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
                 'default' => '0',
-            ),
-            'urllevel' => array(
+            ],
+            'urllevel' => [
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
                 'default' => '2',
-            ),
-        );
+            ],
+        ];
     }
 
     /**
@@ -170,7 +170,6 @@ class url extends \core\persistent {
         global $DB;
 
         if ($node = new url($nodeid)) {
-
             $time = crawler::get_config()->crawlstart;
 
             // Mark all nodes that link to this as needing a recrawl.
@@ -193,7 +192,7 @@ class url extends \core\persistent {
             // Delete all edges that point to this node.
             $DB->delete_records('tool_crawler_edge', ['b' => $nodeid]);
             // Delete the 'to' node as it may be completely wrong.
-            $DB->delete_records('tool_crawler_url', array('id' => $nodeid) );
+            $DB->delete_records('tool_crawler_url', ['id' => $nodeid]);
         }
     }
 

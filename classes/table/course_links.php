@@ -33,7 +33,6 @@ use html_writer;
 use stdClass;
 
 class course_links extends table_sql implements renderable {
-
     private $courseid;
 
     private $page;
@@ -69,14 +68,14 @@ class course_links extends table_sql implements renderable {
      * @throws \coding_exception
      */
     protected function define_table_columns() {
-        $cols = array(
+        $cols = [
             'lastcrawledtime' => get_string('lastcrawledtime', 'tool_crawler'),
             'priority' => get_string('priority', 'tool_crawler'),
             'response' => get_string('response', 'tool_crawler'),
             'httpcode' => get_string('httpcode', 'tool_crawler'),
             'target' => get_string('links', 'tool_crawler'),
             'url' => get_string('frompage', 'tool_crawler'),
-        );
+        ];
 
         $this->define_columns(array_keys($cols));
         $this->define_headers(array_values($cols));
@@ -133,14 +132,14 @@ class course_links extends table_sql implements renderable {
              LEFT JOIN {course} c ON c.id = a.courseid
                  WHERE c.id = $this->courseid";
 
-        if (!$count ) {
+        if (!$count) {
             $sort = $this->get_sql_sort();
             if (!empty($sort)) {
                 $sql .= " ORDER BY $sort";
             }
         }
 
-        return array($sql, []);
+        return [$sql, []];
     }
 
     /**
@@ -152,8 +151,8 @@ class course_links extends table_sql implements renderable {
     public function query_db($pagesize, $useinitialsbar = true) {
         global $DB;
 
-        list($countsql, $countparams) = $this->get_sql_and_params(true);
-        list($sql, $params) = $this->get_sql_and_params();
+        [$countsql, $countparams] = $this->get_sql_and_params(true);
+        [$sql, $params] = $this->get_sql_and_params();
         $total = $DB->count_records_sql($countsql, $countparams);
         $this->pagesize($pagesize, $total);
         $records = $DB->get_records_sql($sql, $params, $this->pagesize * $this->page, $this->pagesize);
@@ -226,5 +225,4 @@ class course_links extends table_sql implements renderable {
     protected function col_url(stdClass $row) {
         return tool_crawler_link($row->url, $row->title, $row->redirect, false, $this->courseid);
     }
-
 }

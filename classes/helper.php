@@ -58,7 +58,7 @@ class helper {
         '502' => 'Invalid response from inbound server.',
         '503' => 'Temporary overload or scheduled maintenance',
         '504' => 'The server did not receive a timely response from an upstream server.',
-        '505' => 'The version of HTTP is not supported by the server.'
+        '505' => 'The version of HTTP is not supported by the server.',
     ];
 
     /**
@@ -71,7 +71,7 @@ class helper {
         global $DB;
         $record = self::get_queue_course($courseid);
 
-        if(!empty($record)) {
+        if (!empty($record)) {
             $record->timestart = null;
             $record->timefinish = null;
             $DB->update_record('tool_crawler_course', $record);
@@ -85,7 +85,6 @@ class helper {
 
         // Reset.
         self::clear_course_link($courseid);
-
     }
 
     /**
@@ -140,7 +139,7 @@ class helper {
      * @param int $courseid
      * @throws \dml_exception
      */
-    public static function start_course_crawling($courseid){
+    public static function start_course_crawling($courseid) {
         global $DB;
         $DB->set_field('tool_crawler_course', 'timestart', time(), ['courseid' => $courseid]);
     }
@@ -151,7 +150,7 @@ class helper {
      * @param int $courseid
      * @throws \dml_exception
      */
-    public static function finish_course_crawling($courseid){
+    public static function finish_course_crawling($courseid) {
         global $DB;
         $DB->set_field('tool_crawler_course', 'timefinish', time(), ['courseid' => $courseid]);
         self::send_email($courseid);
@@ -263,7 +262,6 @@ class helper {
              LEFT JOIN {tool_crawler_url}  a ON l.a = a.id
              LEFT JOIN {course} c ON c.id = a.courseid
                  WHERE b.httpcode != '200' AND c.id = :courseid";
-        return $DB->count_records_sql($sql, ['courseid'=> $courseid]);
+        return $DB->count_records_sql($sql, ['courseid' => $courseid]);
     }
-
 }
