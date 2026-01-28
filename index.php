@@ -73,7 +73,7 @@ $eta = floor($duration / $progress + $crawlstart);
 $robot = $DB->get_record('user', ['username' => $config->botusername]);
 $botrowdata = [get_string('botuser', 'tool_crawler')];
 
-// Do not display links to bot user if it doesn't exist
+// Do not display links to bot user if it doesn't exist.
 if ($robot) {
     $botrowdata[] = implode(' | ', [
         $robot->username,
