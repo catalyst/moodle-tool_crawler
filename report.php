@@ -146,8 +146,8 @@ if ($report == 'broken' || $report == 'reference') {
     foreach ($data as $row) {
         if ($retryall == 1) {
             $retryid = $row->toid;
-            $robot = new \tool_crawler\robot\crawler();
-            $robot->reset_for_recrawl($retryid);
+            $persistent = new \tool_crawler\local\url();
+            $persistent->reset_for_recrawl($retryid);
             continue;
         }
 
