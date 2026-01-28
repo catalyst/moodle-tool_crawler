@@ -73,7 +73,7 @@ define('TOOL_CRAWLER_HEADER_LIMIT', 16 * 1024);
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class crawler {
-
+    /** @var array Retrieved courses from get_recentcourses */
     private static $recentcourses = false;
 
     /**
@@ -1311,9 +1311,7 @@ class crawler {
 
         curl_setopt($s, CURLOPT_BUFFERSIZE, 128);
         curl_setopt($s, CURLOPT_NOPROGRESS, false);
-        curl_setopt($s, CURLOPT_PROGRESSFUNCTION, function(
-            $downloadsize, $downloaded, $uploadsize, $uploaded
-        ){
+        curl_setopt($s, CURLOPT_PROGRESSFUNCTION, function ($downloadsize, $downloaded, $uploadsize, $uploaded) {
             // If $Downloaded exceeds bigfilesize, returning non-0 breaks the connection!
             return ($downloaded > (1024 * 1000 * self::get_config()->bigfilesize)) ? 1 : 0;
         });

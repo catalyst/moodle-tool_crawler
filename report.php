@@ -32,9 +32,9 @@ require_login(null, false);
 $report     = optional_param('report', '', PARAM_ALPHANUMEXT);
 $page       = optional_param('page', 0, PARAM_INT);
 $perpage    = optional_param('perpage', 50, PARAM_INT);
-$courseid   = optional_param('course',  0,  PARAM_INT);
-$retryid    = optional_param('retryid', 0,  PARAM_INT);
-$retryall    = optional_param('retryall', 0,  PARAM_BOOL);
+$courseid   = optional_param('course', 0, PARAM_INT);
+$retryid    = optional_param('retryid', 0, PARAM_INT);
+$retryall    = optional_param('retryall', 0, PARAM_BOOL);
 $start = $page * $perpage;
 
 $sqlfilter = '';
@@ -183,8 +183,13 @@ if ($report == 'broken' || $report == 'reference') {
         redirect($url->raw_out(true), get_string('retryallmessage', 'tool_crawler'));
     }
     if (!empty($table->data)) {
-        $retryallbutton = html_writer::link(new moodle_url($navurl->out(), array('retryall' => 1 )),
-                           get_string('retryall', 'tool_crawler'));
+        $retryallbutton = html_writer::link(
+            new moodle_url(
+                $navurl->out(),
+                ['retryall' => 1]
+            ),
+            get_string('retryall', 'tool_crawler')
+        );
     }
 } else if ($report == 'queued') {
     $sql = " FROM {tool_crawler_url} a
