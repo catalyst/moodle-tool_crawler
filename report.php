@@ -85,6 +85,7 @@ if ($retryid) {
 }
 
 $datetimeformat = get_string('strftimerecentsecondshtml', 'tool_crawler');
+$retryallbutton = '';
 
 if ($report == 'broken' || $report == 'reference') {
     $reference = $report == 'reference';
@@ -180,6 +181,10 @@ if ($report == 'broken' || $report == 'reference') {
     if ($retryall == 1) {
         $url = $PAGE->url;
         redirect($url->raw_out(true), get_string('retryallmessage', 'tool_crawler'));
+    }
+    if (!empty($table->data)) {
+        $retryallbutton = html_writer::link(new moodle_url($navurl->out(), array('retryall' => 1 )),
+                           get_string('retryall', 'tool_crawler'));
     }
 } else if ($report == 'queued') {
     $sql = " FROM {tool_crawler_url} a
@@ -387,10 +392,7 @@ echo $OUTPUT->heading(get_string(
     ]
 ));
 echo get_string($report . '_header', 'tool_crawler');
-if (count($data) > 1) {
-    echo html_writer::link(new moodle_url($navurl->out(), array('retryall' => 1 )),
-                           get_string('retryall', 'tool_crawler'));
-}
+echo $retryallbutton;
 echo html_writer::table($table);
 echo $OUTPUT->paging_bar($count, $page, $perpage, $baseurl);
 echo $OUTPUT->footer();
