@@ -23,7 +23,7 @@
  */
 
 use tool_crawler\local\url;
-require_once($CFG->dirroot . '/admin/tool/crawler/constants.php');
+require_once(__DIR__ . '/constants.php');
 
 /**
  * Renders a link as HTML.
