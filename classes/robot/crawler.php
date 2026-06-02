@@ -73,6 +73,9 @@ define('TOOL_CRAWLER_HEADER_LIMIT', 16 * 1024);
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class crawler {
+    /** @var array Retrieved courses from get_recentcourses */
+    private static $recentcourses = false;
+
     /**
      * Returns configuration object if it has been initialised.
      * If it is not initialises then it creates and returns it.
@@ -1306,6 +1309,13 @@ class crawler {
             $method = 'GET';
         }
 
+        curl_setopt($s, CURLOPT_BUFFERSIZE, 128);
+        curl_setopt($s, CURLOPT_NOPROGRESS, false);
+        curl_setopt($s, CURLOPT_PROGRESSFUNCTION, function ($downloadsize, $downloaded, $uploadsize, $uploaded) {
+            // If $Downloaded exceeds bigfilesize, returning non-0 breaks the connection!
+            return ($downloaded > (1024 * 1000 * self::get_config()->bigfilesize)) ? 1 : 0;
+        });
+
         $result = (object) [];
         $result->url              = $url;
 
@@ -1528,6 +1538,11 @@ class crawler {
      * @return array
      */
     public function get_recentcourses() {
+
+        if (self::$recentcourses != false) {
+            return self::$recentcourses;
+        }
+
         global $DB;
         $config = self::get_config();
 
@@ -1558,6 +1573,7 @@ class crawler {
         }
         $rs->close();
 
+        self::$recentcourses = $recentcourses;
         return $recentcourses;
     }
 
