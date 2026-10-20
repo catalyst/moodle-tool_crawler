@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_crawler\robot\crawler;
+
 require(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once('locallib.php');
@@ -168,10 +170,21 @@ if ($report == 'broken' || $report == 'reference') {
 } else if ($report == 'queued') {
     $sql = " FROM {tool_crawler_url} a
        LEFT JOIN {course} c ON c.id = a.courseid
-           WHERE (a.lastcrawled IS NULL OR a.lastcrawled < needscrawl)
+           WHERE (a.lastcrawled IS NULL OR a.lastcrawled < a.needscrawl)
                  $sqlfilter";
 
     $opts = [];
+    // Only count URLs in courses that process_queue() would actually crawl.
+    $crawler = new crawler();
+    $allowedcourses = $crawler->get_allowed_courses();
+    if ($allowedcourses !== false) {
+        if (empty($allowedcourses)) {
+            $sql .= " AND 1 = 0";
+        } else {
+            [$insql, $opts] = $DB->get_in_or_equal($allowedcourses, SQL_PARAMS_NAMED, 'allowed');
+            $sql .= " AND a.courseid $insql";
+        }
+    }
     $data = $DB->get_records_sql(
         "SELECT a.id,
                 a.url target,

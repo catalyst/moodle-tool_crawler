@@ -523,6 +523,21 @@ class crawler {
     }
 
     /**
+     * Course ids eligible for crawling, or false when not restricted by course.
+     *
+     * @return int[]|false
+     */
+    public function get_allowed_courses() {
+        $config = self::get_config();
+        if ($config->coursemode == 1) {
+            return \tool_crawler\helper::get_onqueue_course_ids();
+        } else if ($config->uselogs == 1) {
+            return $this->get_recentcourses();
+        }
+        return false;
+    }
+
+    /**
      * Crawl as many URL's as we can in the time limit
      * This function will run in parallel with itself
      * and use locking to only grab any item once
@@ -535,12 +550,7 @@ class crawler {
         global $DB;
         $config = $this::get_config();
 
-        $allowedcourses = false;
-        if ($config->coursemode == 1) {
-            $allowedcourses = \tool_crawler\helper::get_onqueue_course_ids();
-        } else if ($config->uselogs == 1) {
-            $allowedcourses = $this->get_recentcourses();
-        }
+        $allowedcourses = $this->get_allowed_courses();
 
         // Iterate through the queue.
         $cronstart = time();
@@ -551,6 +561,10 @@ class crawler {
         $lockfactory = \core\lock\lock_config::get_lock_factory('tool_crawler_process_queue');
         if ($config->coursemode == 1 || $config->uselogs == 1) {
             if (empty($allowedcourses)) {
+                // No eligible courses, so nothing can be crawled right now.
+                if ($verbose) {
+                    echo "No eligible courses to crawl\n";
+                }
                 return true;
             }
             $courselockfactory = \core\lock\lock_config::get_lock_factory('tool_crawler_process_course_queue');
