@@ -139,6 +139,8 @@ final class robot_cleanup_test extends \advanced_testcase {
      * Read plugin config params.
      * Execute robot_cleanup scheduled task.
      * Check if only 1 record (out of 3 configured above) is left in table {tool_crawler_url}.
+     *
+     * @covers \tool_crawler\task\robot_cleanup::execute
      */
     public function test_robot_cleanup(): void {
         global $DB;

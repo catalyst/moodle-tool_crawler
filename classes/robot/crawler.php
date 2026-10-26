@@ -108,7 +108,7 @@ class crawler {
         $botuser = $DB->get_record('user', ['username' => $botusername]);
         if (!$botuser) {
             return get_string('botusermissing', 'tool_crawler') .
-                ' <a href="?action=makebot">' . get_string('autocreate', 'tool_crawler') . '</a>';
+                ' <a href="?action=makebot&sesskey=' . sesskey() . '">' . get_string('autocreate', 'tool_crawler') . '</a>';
         }
 
         // Do a test crawl over the network.

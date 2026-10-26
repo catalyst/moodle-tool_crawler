@@ -77,8 +77,29 @@ require('tabs.php');
 echo $tabs;
 
 if ($retryid) {
-    $persistent = new \tool_crawler\local\url();
-    $persistent->reset_for_recrawl($retryid);
+    require_sesskey();
+    if (!$DB->record_exists('tool_crawler_url', ['id' => $retryid])) {
+        throw new \moodle_exception('invalidrecordunknown');
+    }
+    if ($courseid) {
+        // Course-scoped view: verify the broken URL is actually linked from a page belonging
+        // to the authorised course. Broken target URLs are often external (courseid=NULL),
+        // instead of checking the target's own courseid, check via the edge table instead.
+        $inscope = $DB->record_exists_sql(
+            "SELECT 1 FROM {tool_crawler_edge} l
+               JOIN {tool_crawler_url} a ON l.a = a.id
+              WHERE l.b = ? AND a.courseid = ?",
+            [$retryid, $courseid]
+        );
+        if (!$inscope) {
+            throw new \moodle_exception('nopermissions', 'error', '', 'recrawl this node');
+        }
+    } else {
+        // Admin view: site-config capability is already enforced above, but assert it here
+        // explicitly so this block is safe if the page-level check ever changes.
+        require_capability('moodle/site:config', context_system::instance());
+    }
+    \tool_crawler\local\url::reset_for_recrawl($retryid);
 }
 
 $datetimeformat = get_string('strftimerecentsecondshtml', 'tool_crawler');
@@ -150,7 +171,7 @@ if ($report == 'broken' || $report == 'reference') {
         }
         $data = [
             html_writer::link(
-                new moodle_url($baseurl, ['retryid' => $row->toid ]),
+                new moodle_url($baseurl, ['retryid' => $row->toid, 'sesskey' => sesskey()]),
                 get_string('retry', 'tool_crawler')
             ),
             userdate($row->lastcrawled, $datetimeformat),
