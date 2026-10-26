@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_crawler\robot\crawler;
+
 require(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once('locallib.php');
@@ -75,8 +77,29 @@ require('tabs.php');
 echo $tabs;
 
 if ($retryid) {
-    $persistent = new \tool_crawler\local\url();
-    $persistent->reset_for_recrawl($retryid);
+    require_sesskey();
+    if (!$DB->record_exists('tool_crawler_url', ['id' => $retryid])) {
+        throw new \moodle_exception('invalidrecordunknown');
+    }
+    if ($courseid) {
+        // Course-scoped view: verify the broken URL is actually linked from a page belonging
+        // to the authorised course. Broken target URLs are often external (courseid=NULL),
+        // instead of checking the target's own courseid, check via the edge table instead.
+        $inscope = $DB->record_exists_sql(
+            "SELECT 1 FROM {tool_crawler_edge} l
+               JOIN {tool_crawler_url} a ON l.a = a.id
+              WHERE l.b = ? AND a.courseid = ?",
+            [$retryid, $courseid]
+        );
+        if (!$inscope) {
+            throw new \moodle_exception('nopermissions', 'error', '', 'recrawl this node');
+        }
+    } else {
+        // Admin view: site-config capability is already enforced above, but assert it here
+        // explicitly so this block is safe if the page-level check ever changes.
+        require_capability('moodle/site:config', context_system::instance());
+    }
+    \tool_crawler\local\url::reset_for_recrawl($retryid);
 }
 
 $datetimeformat = get_string('strftimerecentsecondshtml', 'tool_crawler');
@@ -148,7 +171,7 @@ if ($report == 'broken' || $report == 'reference') {
         }
         $data = [
             html_writer::link(
-                new moodle_url($baseurl, ['retryid' => $row->toid ]),
+                new moodle_url($baseurl, ['retryid' => $row->toid, 'sesskey' => sesskey()]),
                 get_string('retry', 'tool_crawler')
             ),
             userdate($row->lastcrawled, $datetimeformat),
@@ -168,10 +191,21 @@ if ($report == 'broken' || $report == 'reference') {
 } else if ($report == 'queued') {
     $sql = " FROM {tool_crawler_url} a
        LEFT JOIN {course} c ON c.id = a.courseid
-           WHERE (a.lastcrawled IS NULL OR a.lastcrawled < needscrawl)
+           WHERE (a.lastcrawled IS NULL OR a.lastcrawled < a.needscrawl)
                  $sqlfilter";
 
     $opts = [];
+    // Only count URLs in courses that process_queue() would actually crawl.
+    $crawler = new crawler();
+    $allowedcourses = $crawler->get_allowed_courses();
+    if ($allowedcourses !== false) {
+        if (empty($allowedcourses)) {
+            $sql .= " AND 1 = 0";
+        } else {
+            [$insql, $opts] = $DB->get_in_or_equal($allowedcourses, SQL_PARAMS_NAMED, 'allowed');
+            $sql .= " AND a.courseid $insql";
+        }
+    }
     $data = $DB->get_records_sql(
         "SELECT a.id,
                 a.url target,

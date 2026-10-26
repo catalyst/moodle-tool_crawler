@@ -208,10 +208,21 @@ class url extends \core\persistent {
                   FROM {tool_crawler_url}
                  WHERE (lastcrawled IS NULL
                     OR lastcrawled < needscrawl)";
-        $params = null;
+        $params = [];
         if (!empty($courseid)) {
             $sql .= " AND courseid = ?";
             $params = [$courseid];
+        }
+        // Only count URLs in courses that process_queue() would actually crawl.
+        $crawler = new crawler();
+        $allowedcourses = $crawler->get_allowed_courses();
+        if ($allowedcourses !== false) {
+            if (empty($allowedcourses)) {
+                return 0;
+            }
+            [$insql, $inparams] = $DB->get_in_or_equal($allowedcourses);
+            $sql .= " AND courseid $insql";
+            $params = array_merge($params, $inparams);
         }
         return $DB->get_field_sql($sql, $params);
     }

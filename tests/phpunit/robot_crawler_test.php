@@ -62,7 +62,7 @@ final class robot_crawler_test extends \advanced_testcase {
      *
      * @return array of test cases
      */
-    public function absolute_urls_provider(): array {
+    public static function absolute_urls_provider(): array {
         return [
             [
                 'base' => 'http://test.com/sub/',
@@ -119,6 +119,8 @@ final class robot_crawler_test extends \advanced_testcase {
      *
      * @param string $base Base part of URL
      * @param array $links Combinations of relative paths of URL and expected result
+     *
+     * @covers \tool_crawler\task\robot_cleanup::execute
      */
     public function test_absolute_urls($base, $links): void {
         foreach ($links as $key => $value) {
@@ -131,7 +133,7 @@ final class robot_crawler_test extends \advanced_testcase {
      *
      * @return array of test cases
      */
-    public function should_auth_provider(): array {
+    public static function should_auth_provider(): array {
         return [
             [false, 'http://my_moodle.com', 'http://evil.com/blah/http://my_moodle.com'],
             [false, 'http://my_moodle.com', 'http://my_moodle.com.actually.im.evil.com'],
@@ -152,6 +154,8 @@ final class robot_crawler_test extends \advanced_testcase {
      * @param bool $expected
      * @param string $myurl URL of current Moodle installation
      * @param string $testurl URL where we should authenticate
+     *
+     * @covers \tool_crawler\robot\crawler::should_be_authenticated
      */
     public function test_should_be_authenticated($expected, $myurl, $testurl): void {
         global $CFG;
@@ -162,6 +166,8 @@ final class robot_crawler_test extends \advanced_testcase {
 
     /**
      * Tests existence of new plugin parameter 'retentionperiod'
+     *
+     * @covers \tool_crawler\robot\crawler
      */
     public function test_param_retention_exists(): void {
         $param = get_config('tool_crawler', 'retentionperiod');
@@ -170,6 +176,8 @@ final class robot_crawler_test extends \advanced_testcase {
 
     /**
      * Regression test for Issue #17
+     *
+     * @covers \tool_crawler\local\url::reset_for_recrawl
      */
     public function test_reset_queries(): void {
         global $DB;
@@ -219,6 +227,8 @@ final class robot_crawler_test extends \advanced_testcase {
     /**
      * Regression test for Issue #48: database must store URI without HTML-escaping, but URI must still be escaped when it is output
      * to an HTML document.
+     *
+     * @covers \tool_crawler\robot\crawler::mark_for_crawl
      */
     public function test_uri_escaping(): void {
         $baseurl = 'http://crawler.test/';
@@ -244,6 +254,8 @@ final class robot_crawler_test extends \advanced_testcase {
 
     /**
      * Regression test for an issue similar to Issue #48: redirection URI must be escaped when it is output to an HTML document.
+     *
+     * @covers \tool_crawler\robot\crawler::parse_html
      */
     public function test_redirection_uri_escaping(): void {
         global $DB;
@@ -291,6 +303,8 @@ final class robot_crawler_test extends \advanced_testcase {
 
     /**
      * Test for Issue #92: specified dom elements in the config should be excluded.
+     *
+     * @covers \tool_crawler\robot\crawler::parse_html
      */
     public function test_should_be_excluded(): void {
         global $DB;
@@ -355,7 +369,7 @@ final class robot_crawler_test extends \advanced_testcase {
      *
      * @return array of potential crawler priority codes.
      */
-    public function priority_provider(): array {
+    public static function priority_provider(): array {
         return [
             ['high' => TOOL_CRAWLER_PRIORITY_HIGH],
             ['normal' => TOOL_CRAWLER_PRIORITY_NORMAL],
@@ -369,6 +383,8 @@ final class robot_crawler_test extends \advanced_testcase {
      * @dataProvider priority_provider
      *
      * @param int $parentpriority the priority of the parent queue item
+     *
+     * @covers \tool_crawler\robot\crawler::parse_html
      */
     public function test_parse_html_priority_inheritance($parentpriority): void {
         global $CFG, $DB;
@@ -433,7 +449,7 @@ HTML;
     /**
      * Test for Issue #120:Specified external urls should be excluded.
      */
-    public function should_be_crawled_provider(): array {
+    public static function should_be_crawled_provider(): array {
         return [
             ['http://moodle.org/', false],
             ['http://validator.w3.org/', false],
@@ -450,6 +466,8 @@ HTML;
      * @dataProvider should_be_crawled_provider
      * @param   string $url
      * @param   bool   $expected
+     *
+     * @covers \tool_crawler\robot\crawler::mark_for_crawl
      */
     public function test_should_be_crawled($url, $expected): void {
         global $CFG;
@@ -471,6 +489,7 @@ HTML;
     /**
      * We must insert the hash of the url whenever we update the tool_crawler_url table.
      *
+     * @covers \tool_crawler\local\url::hash_url
      */
     public function test_url_creates_hash(): void {
         global $DB;
@@ -515,6 +534,7 @@ HTML;
         self::assertTrue(url::hash_url($newurl) === $newurlrecord->urlhash);
         self::assertTrue(url::hash_url($newurl) === $persistent->get('urlhash'));
     }
+
     /**
      * Data provider for string matches
      * This data is taken from the moodle (>3.7) core profiling_string_matches_provider function
@@ -523,7 +543,7 @@ HTML;
      *
      * @return  array
      */
-    public function crawler_url_string_matches_provider(): array {
+    public static function crawler_url_string_matches_provider(): array {
         return [
             ['/index.php', '/index.php', true],
             ['/some/dir/index.php', '/index.php', true], // Different from core function.
@@ -557,6 +577,8 @@ HTML;
      * @param   string $string
      * @param   string $patterns
      * @param   bool   $expected
+     *
+     * @covers \tool_crawler\robot\crawler::crawler_url_string_matches
      */
     public function test_crawler_url_string_matches($string, $patterns, $expected): void {
         $result = $this->robot->crawler_url_string_matches($string, $patterns);
@@ -568,7 +590,7 @@ HTML;
      *
      * @return  array
      */
-    public function url_validity_check_provider(): array {
+    public static function url_validity_check_provider(): array {
         return [
             ['/index.php', true],
             ['/some/dir/index.php', true],
@@ -585,6 +607,8 @@ HTML;
      *
      * @param string $url the url to test
      * @param bool $expected the expected result
+     *
+     * @covers \tool_crawler\robot\crawler::mark_for_crawl
      */
     public function test_invalid_url($url, $expected): void {
         $baseurl = 'https://www.example.com/moodle';
@@ -601,7 +625,7 @@ HTML;
      *
      * @return  array
      */
-    public function page_title_validity_check_provider(): array {
+    public static function page_title_validity_check_provider(): array {
         return [
             [['contents' => '<title>Invalid <i>title</i><title><body></body>'], 'Invalid title'],
             [['contents' => '<title>Valid title<title><body></body>'], 'Valid title'],
@@ -615,6 +639,8 @@ HTML;
      *
      * @param array $node The node to test.
      * @param string $expected
+     *
+     * @covers \tool_crawler\robot\crawler::parse_html
      */
     public function test_check_page_title_validity($node, $expected): void {
         $this->resetAfterTest(true);

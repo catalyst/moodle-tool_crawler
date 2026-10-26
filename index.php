@@ -39,6 +39,7 @@ $url = new \tool_crawler\local\url();
 $config = $robot::get_config();
 
 if ($action == 'makebot') {
+    require_sesskey();
     $botuser = $robot->auto_create_bot();
 }
 
@@ -71,25 +72,38 @@ $duration = time() - $crawlstart;
 $eta = floor($duration / $progress + $crawlstart);
 
 $robot = $DB->get_record('user', ['username' => $config->botusername]);
+$botrowdata = [get_string('botuser', 'tool_crawler')];
+
+// Do not display links to bot user if it doesn't exist.
+if ($robot) {
+    $botrowdata[] = implode(' | ', [
+        $robot->username,
+        $boterror ? $boterror : get_string('good', 'tool_crawler'),
+        html_writer::link(
+            new moodle_url(
+                '/user/editadvanced.php',
+                ['id' => $robot->id, 'courseid' => 1]
+            ),
+            get_string('useraccount', 'tool_crawler')
+        ),
+        html_writer::link(
+            new moodle_url(
+                '/admin/roles/usersroles.php',
+                ['userid' => $robot->id, 'courseid' => 1]
+            ),
+            get_string('roles')
+        ),
+    ]);
+} else {
+    $botrowdata[] = $boterror;
+}
 
 $table = new html_table();
 $table->head = [get_string('robotstatus', 'tool_crawler')];
 $table->headspan = [2, 1];
 $table->attributes['class'] = 'generaltable table table-hover w-auto';
 $table->data = [
-    [
-        get_string('botuser', 'tool_crawler'),
-        $robot->username
-        . ' | ' . ($boterror ? $boterror : get_string('good', 'tool_crawler'))
-        . ' | ' . html_writer::link(new moodle_url(
-            '/user/editadvanced.php',
-            ['id' => $robot->id, 'courseid' => 1]
-        ), get_string('useraccount', 'tool_crawler'))
-        . ' | ' . html_writer::link(new moodle_url(
-            '/admin/roles/usersroles.php',
-            ['userid' => $robot->id, 'courseid' => 1]
-        ), get_string('roles')),
-    ],
+    $botrowdata,
     [
         get_string('progress', 'tool_crawler'),
 

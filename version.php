@@ -19,15 +19,15 @@
  *
  * @package    tool_crawler
  * @author     Brendan Heywood <brendan@catalyst-au.net>
- * @copyright  Catalyst IT
+ * @copyright  2015 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 
-$plugin->version   = 2025122301;        // The current plugin version (Date: YYYYMMDDXX).
-$plugin->release   = 2025122301;        // The current plugin version (Date: YYYYMMDDXX).
+$plugin->version   = 2025122303;        // The current plugin version (Date: YYYYMMDDXX).
+$plugin->release   = 2025122303;        // The current plugin version (Date: YYYYMMDDXX).
 $plugin->requires  = 2016021800;        // Requires this Moodle version.
 $plugin->supported = [34, 405];
 $plugin->component = 'tool_crawler'; // To check on upgrade, that module sits in correct place.
